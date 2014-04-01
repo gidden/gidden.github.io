@@ -414,45 +414,45 @@ ul#nav li.current a { color: #F06000; }
 }
 
 .critthink {
-  	width: 86%;
+  	width: 90%;
   	-moz-animation: critthink 2s ease;
   	-webkit-animation: critthink 2s ease;
 }
 @-moz-keyframes critthink {
   0%   { width: 0px;  }
-  100% { width: 86%;  }
+  100% { width: 90%;  }
 }
 @-webkit-keyframes critthink {
   0%   { width: 0px;  }
-  100% { width: 86%;  }
+  100% { width: 90%;  }
 }
 
 .writing {
-  	width: 82%;
+  	width: 85%;
   	-moz-animation: writing 2s ease;
   	-webkit-animation: writing 2s ease;
 }
 @-moz-keyframes writing {
   0%   { width: 0px;  }
-  100% { width: 82%;  }
+  100% { width: 85%;  }
 }
 @-webkit-keyframes writing {
   0%   { width: 0px;  }
-  100% { width: 82%;  }
+  100% { width: 85%;  }
 }
 
 .policy {
-  	width: 76%;
+  	width: 85%;
   	-moz-animation: policy 2s ease;
   	-webkit-animation: policy 2s ease;
 }
 @-moz-keyframes policy {
   0%   { width: 0px;  }
-  100% { width: 76%;  }
+  100% { width: 85%;  }
 }
 @-webkit-keyframes policy {
   0%   { width: 0px;  }
-  100% { width: 76%;  }
+  100% { width: 85%;  }
 }
 
 /* ------------------------------------------------------------------ */
