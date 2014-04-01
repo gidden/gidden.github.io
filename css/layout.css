@@ -357,6 +357,20 @@ ul#nav li.current a { color: #F06000; }
   100% { width: 85%;  }
 }
 
+.latex {
+  	width: 90%;
+  	-moz-animation: latex 2s ease;
+  	-webkit-animation: latex 2s ease;
+}
+@-moz-keyframes latex {
+  0%   { width: 0px;  }
+  100% { width: 90%;  }
+}
+@-webkit-keyframes latex {
+  0%   { width: 0px;  }
+  100% { width: 90%;  }
+}
+
 .css {
   	width: 20%;
   	-moz-animation: css 2s ease;
