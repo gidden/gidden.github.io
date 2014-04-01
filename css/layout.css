@@ -358,17 +358,17 @@ ul#nav li.current a { color: #F06000; }
 }
 
 .latex {
-  	width: 90%;
+  	width: 85%;
   	-moz-animation: latex 2s ease;
   	-webkit-animation: latex 2s ease;
 }
 @-moz-keyframes latex {
   0%   { width: 0px;  }
-  100% { width: 90%;  }
+  100% { width: 85%;  }
 }
 @-webkit-keyframes latex {
   0%   { width: 0px;  }
-  100% { width: 90%;  }
+  100% { width: 85%;  }
 }
 
 .css {
