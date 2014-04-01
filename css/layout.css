@@ -478,7 +478,11 @@ ul#nav li.current a { color: #F06000; }
 .portfolio-item .item-wrap {
    background: #fff;
    overflow: hidden;
+   height: 240px;
+   width: 240px;
    position: relative;
+   background-color: transparent;
+   text-align: center;
 
    -webkit-transition: all 0.3s ease-in-out;
    -moz-transition: all 0.3s ease-in-out;
@@ -537,7 +541,7 @@ ul#nav li.current a { color: #F06000; }
 .portfolio-item .item-wrap img {
    vertical-align: bottom;
 }
-.portfolio-item .portfolio-item-meta { padding: 18px }
+.portfolio-item .portfolio-item-meta { padding: 18px; }
 .portfolio-item .portfolio-item-meta h5 {
    font: 14px/21px 'opensans-bold', sans-serif;
    color: #fff;
