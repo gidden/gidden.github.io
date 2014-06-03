@@ -73,7 +73,7 @@ header .banner-text h3 {
 }
 header .banner-text h3 span,
 header .banner-text h3 a {
-   color: #194343;/* #909090; */
+   color: #FFFFFF;/* #909090; */
 }
 header .banner-text hr {
    width: 60%;
@@ -95,7 +95,7 @@ header .social li {
    padding: 0;
 }
 header .social li a { 
-   color: #194343;/*#686868; */
+   color: #303030;
 }
 header .social li a:hover { 
     color: #11ABB0; 
