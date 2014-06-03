@@ -38,11 +38,11 @@ feel like I've had all the tools in my toolbox, but never the exact amount of
 time or motivation. But here it is. I decided to make my first post a little
 meta: some of the nuts and bolts of how I actually came to develop this blog.</p>
 <p>First of all, I needed somewhere to host this thing. As luck turned out, I
-recently went through the work of developing my <a class="reference external" href="mattgidden.com">website</a>. Using Github's <a class="reference external" href="https://pages.github.com/">pages</a> feature
-was a natural choice. I'm still a bit of a website noob, so (at the time of
-writing), I'm just using the extended domain <a class="reference external" href="mattgidden.com/blog">mattgidden.com/blog</a>. One day I'll get a better grasp on subdomains and look
-to make it rather <tt class="docutils literal">blog.mattgidden.com</tt> or some such. I have the feeling that
-the ghpages-all-in-one-website approach may be limiting there.</p>
+recently went through the work of developing my <a class="reference external" href="http://mattgidden.com">website</a>. Using Github's <a class="reference external" href="https://pages.github.com/">pages</a>
+feature was a natural choice. I'm still a bit of a website noob, so (at the time
+of writing), I'm just using the extended domain <a class="reference external" href="http://mattgidden.com/blog">mattgidden.com/blog</a>. One day I'll get a better grasp on subdomains
+and look to make it rather <tt class="docutils literal">blog.mattgidden.com</tt> or some such. I have the
+feeling that the ghpages-all-in-one-website approach may be limiting there.</p>
 </div>
 <div class="section" id="how-do-you-say-notebook-in-french">
 <h2>How do you say 'notebook' in French?</h2>
@@ -56,9 +56,9 @@ use. I really only looked at two:</p>
 (un)fortunately, my use case was a bit more complicated. Since I'm using Github
 as my only (free) webhosting service, I need it to support <em>all</em> of my
 websites. Not only was I interested in having a blog, but I also wanted to host
-my <a class="reference external" href="http://sphinx-doc.org/">Sphinx-generated</a> <a class="reference external" href="github.com/gidden/cyclopts">Cyclopts</a> project <a class="reference external" href="mattgidden.com/cyclopts">documentation</a>. This ran afoul of a major design decision in Jekyll
-and the way Sphinx generates websites: Jekyll doesn't publish directories that
-start with a <cite>_</cite>, and Sphinx generates websites with exactly those kinds of
+my <a class="reference external" href="http://sphinx-doc.org/">Sphinx-generated</a> <a class="reference external" href="http://github.com/gidden/cyclopts">Cyclopts</a> project <a class="reference external" href="http://mattgidden.com/cyclopts">documentation</a>. This ran afoul of a major design decision in
+Jekyll and the way Sphinx generates websites: Jekyll doesn't publish directories
+that start with a <cite>_</cite>, and Sphinx generates websites with exactly those kinds of
 directories. The answer? <a class="reference external" href="https://github.com/blog/572-bypassing-jekyll-on-github-pages">Bypass Jekyll</a>. The
 consequence? We bypassed Jekyll.</p>
 <p>But, lo, we get a nice benefit. You see, Jekyll has no native <a class="reference external" href="http://sphinx-doc.org/rest.html">ReST</a> support. It has a <a class="reference external" href="https://github.com/xdissent/jekyll-rst">plugin</a>, but I found it hard to use. I happen
