@@ -1,0 +1,675 @@
+
+
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>cyclopts.tools &mdash; Cyclopts 0.1.0 documentation</title>
+    
+    <link rel="stylesheet" href="../../_static/cloud.css" type="text/css" />
+    <link rel="stylesheet" href="../../_static/pygments.css" type="text/css" />
+    <link rel="stylesheet" href="//fonts.googleapis.com/css?family=Noticia+Text|Open+Sans|Droid+Sans+Mono" type="text/css" />
+    
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    '../../',
+        VERSION:     '0.1.0',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="../../_static/jquery.js"></script>
+    <script type="text/javascript" src="../../_static/underscore.js"></script>
+    <script type="text/javascript" src="../../_static/doctools.js"></script>
+    <script type="text/javascript" src="../../_static/jquery.cookie.js"></script>
+    <script type="text/javascript" src="../../_static/cloud.js"></script>
+    <link rel="top" title="Cyclopts 0.1.0 documentation" href="../../index.html" />
+    <link rel="up" title="Module code" href="../index.html" /> 
+        <meta name="viewport" content="width=device-width, initial-scale=1">
+  </head>
+  <body>
+    <div class="relbar-top">
+        
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../../genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="../../py-modindex.html" title="Python Module Index"
+             >modules</a> &nbsp; &nbsp;</li>
+    <li><a href="../../index.html">Cyclopts 0.1.0 documentation</a> &raquo;</li>
+
+          <li><a href="../index.html" accesskey="U">Module code</a> &raquo;</li> 
+      </ul>
+    </div>
+    </div>
+  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body">
+            
+  <h1>Source code for cyclopts.tools</h1><div class="highlight"><pre>
+<span class="sd">&quot;&quot;&quot;Provides some useful tools for working with Cyclopts, including reporting</span>
+<span class="sd">output.</span>
+
+<span class="sd">:author: Matthew Gidden &lt;matthew.gidden@gmail.com&gt;</span>
+<span class="sd">&quot;&quot;&quot;</span>
+<span class="kn">from</span> <span class="nn">__future__</span> <span class="kn">import</span> <span class="n">print_function</span>
+
+<span class="kn">import</span> <span class="nn">os</span>
+<span class="kn">import</span> <span class="nn">io</span>
+<span class="kn">import</span> <span class="nn">uuid</span>
+<span class="kn">import</span> <span class="nn">shutil</span>
+<span class="kn">import</span> <span class="nn">operator</span>
+<span class="kn">import</span> <span class="nn">tables</span> <span class="kn">as</span> <span class="nn">t</span>
+<span class="kn">import</span> <span class="nn">numpy</span> <span class="kn">as</span> <span class="nn">np</span>
+<span class="kn">from</span> <span class="nn">functools</span> <span class="kn">import</span> <span class="nb">reduce</span>
+<span class="kn">from</span> <span class="nn">itertools</span> <span class="kn">import</span> <span class="n">product</span>
+<span class="kn">from</span> <span class="nn">collections</span> <span class="kn">import</span> <span class="n">defaultdict</span><span class="p">,</span> <span class="n">Iterable</span>
+
+<span class="kn">import</span> <span class="nn">cyclopts</span>
+<span class="kn">from</span> <span class="nn">cyclopts.params</span> <span class="kn">import</span> <span class="n">CONSTR_ARGS</span><span class="p">,</span> <span class="n">Param</span><span class="p">,</span> <span class="n">BoolParam</span><span class="p">,</span> <span class="n">SupConstrParam</span><span class="p">,</span> <span class="n">CoeffParam</span><span class="p">,</span> \
+    <span class="n">ReactorRequestSampler</span><span class="p">,</span> <span class="n">ReactorRequestBuilder</span> <span class="c">#, ReactorSupplySampler</span>
+<span class="kn">from</span> <span class="nn">cyclopts.execute</span> <span class="kn">import</span> <span class="n">ArcFlow</span><span class="p">,</span> <span class="n">SolverParams</span><span class="p">,</span> <span class="n">execute_exchange</span>
+
+<span class="k">class</span> <span class="nc">NotSpecified</span><span class="p">(</span><span class="nb">object</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;A helper class singleton for run control meaning that a &#39;real&#39; value</span>
+<span class="sd">    has not been given.&quot;&quot;&quot;</span>
+    <span class="k">def</span> <span class="nf">__repr__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">return</span> <span class="s">&quot;NotSpecified&quot;</span>
+
+<span class="n">NotSpecified</span> <span class="o">=</span> <span class="n">NotSpecified</span><span class="p">()</span>
+
+<span class="c">#</span>
+<span class="c"># Run Control</span>
+<span class="c">#</span>
+<span class="c"># Code basis taken from xdress&#39; run control in xdress/utils.py.</span>
+<span class="c">#  </span>
+<div class="viewcode-block" id="RunControl"><a class="viewcode-back" href="../../pyapi/tools.html#cyclopts.tools.RunControl">[docs]</a><span class="k">class</span> <span class="nc">RunControl</span><span class="p">(</span><span class="nb">object</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;A composable configuration class for cyclopts. Unlike argparse.Namespace,</span>
+<span class="sd">    this keeps the object dictionary (__dict__) separate from the run control</span>
+<span class="sd">    attributes dictionary (_dict). Modified from xdress&#39; run control in</span>
+<span class="sd">    xdress/utils.py&quot;&quot;&quot;</span>
+
+    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Parameters</span>
+<span class="sd">        -------------</span>
+<span class="sd">        kwargs : optional</span>
+<span class="sd">            Items to place into run control.</span>
+
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_dict</span> <span class="o">=</span> <span class="p">{}</span>
+        <span class="k">for</span> <span class="n">k</span><span class="p">,</span> <span class="n">v</span> <span class="ow">in</span> <span class="n">kwargs</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
+            <span class="nb">setattr</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">k</span><span class="p">,</span> <span class="n">v</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_updaters</span> <span class="o">=</span> <span class="p">{}</span>
+
+    <span class="k">def</span> <span class="nf">__getattr__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">key</span><span class="p">):</span>
+        <span class="k">if</span> <span class="n">key</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">_dict</span><span class="p">:</span>
+            <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_dict</span><span class="p">[</span><span class="n">key</span><span class="p">]</span>
+        <span class="k">elif</span> <span class="n">key</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">__dict__</span><span class="p">:</span>
+            <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">__dict__</span><span class="p">[</span><span class="n">key</span><span class="p">]</span>
+        <span class="k">elif</span> <span class="n">key</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">__class__</span><span class="o">.</span><span class="n">__dict__</span><span class="p">:</span>
+            <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">__class__</span><span class="o">.</span><span class="n">__dict__</span><span class="p">[</span><span class="n">key</span><span class="p">]</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">msg</span> <span class="o">=</span> <span class="s">&quot;RunControl object has no attribute {0!r}.&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">key</span><span class="p">)</span>
+            <span class="k">raise</span> <span class="ne">AttributeError</span><span class="p">(</span><span class="n">msg</span><span class="p">)</span>
+
+    <span class="k">def</span> <span class="nf">__setattr__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">key</span><span class="p">,</span> <span class="n">value</span><span class="p">):</span>
+        <span class="k">if</span> <span class="n">key</span><span class="o">.</span><span class="n">startswith</span><span class="p">(</span><span class="s">&#39;_&#39;</span><span class="p">):</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">__dict__</span><span class="p">[</span><span class="n">key</span><span class="p">]</span> <span class="o">=</span> <span class="n">value</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">if</span> <span class="n">value</span> <span class="ow">is</span> <span class="n">NotSpecified</span> <span class="ow">and</span> <span class="n">key</span> <span class="ow">in</span> <span class="bp">self</span><span class="p">:</span>
+                <span class="k">return</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_dict</span><span class="p">[</span><span class="n">key</span><span class="p">]</span> <span class="o">=</span> <span class="n">value</span>
+
+    <span class="k">def</span> <span class="nf">__delattr__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">key</span><span class="p">):</span>
+        <span class="k">if</span> <span class="n">key</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">_dict</span><span class="p">:</span>
+            <span class="k">del</span> <span class="bp">self</span><span class="o">.</span><span class="n">_dict</span><span class="p">[</span><span class="n">key</span><span class="p">]</span>
+        <span class="k">elif</span> <span class="n">key</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">__dict__</span><span class="p">:</span>
+            <span class="k">del</span> <span class="bp">self</span><span class="o">.</span><span class="n">__dict__</span><span class="p">[</span><span class="n">key</span><span class="p">]</span>
+        <span class="k">elif</span> <span class="n">key</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">__class__</span><span class="o">.</span><span class="n">__dict__</span><span class="p">:</span>
+            <span class="k">del</span> <span class="bp">self</span><span class="o">.</span><span class="n">__class__</span><span class="o">.</span><span class="n">__dict__</span><span class="p">[</span><span class="n">key</span><span class="p">]</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">msg</span> <span class="o">=</span> <span class="s">&quot;RunControl object has no attribute {0!r}.&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">key</span><span class="p">)</span>
+            <span class="k">raise</span> <span class="ne">AttributeError</span><span class="p">(</span><span class="n">msg</span><span class="p">)</span>
+
+    <span class="k">def</span> <span class="nf">__iter__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">return</span> <span class="nb">iter</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_dict</span><span class="p">)</span>
+
+    <span class="k">def</span> <span class="nf">__repr__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="n">keys</span> <span class="o">=</span> <span class="nb">sorted</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_dict</span><span class="o">.</span><span class="n">keys</span><span class="p">())</span>
+        <span class="n">s</span> <span class="o">=</span> <span class="s">&quot;, &quot;</span><span class="o">.</span><span class="n">join</span><span class="p">([</span><span class="s">&quot;{0!s}={1!r}&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">k</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">_dict</span><span class="p">[</span><span class="n">k</span><span class="p">])</span> <span class="k">for</span> <span class="n">k</span> <span class="ow">in</span> <span class="n">keys</span><span class="p">])</span>
+        <span class="k">return</span> <span class="s">&quot;{0}({1})&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">__class__</span><span class="o">.</span><span class="n">__name__</span><span class="p">,</span> <span class="n">s</span><span class="p">)</span>
+
+    <span class="k">def</span> <span class="nf">_pformat</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="n">keys</span> <span class="o">=</span> <span class="nb">sorted</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_dict</span><span class="o">.</span><span class="n">keys</span><span class="p">())</span>
+        <span class="n">f</span> <span class="o">=</span> <span class="k">lambda</span> <span class="n">k</span><span class="p">:</span> <span class="s">&quot;{0!s}={1}&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">k</span><span class="p">,</span> <span class="n">pformat</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_dict</span><span class="p">[</span><span class="n">k</span><span class="p">],</span> <span class="n">indent</span><span class="o">=</span><span class="mi">2</span><span class="p">))</span>
+        <span class="n">s</span> <span class="o">=</span> <span class="s">&quot;,</span><span class="se">\n</span><span class="s"> &quot;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="nb">map</span><span class="p">(</span><span class="n">f</span><span class="p">,</span> <span class="n">keys</span><span class="p">))</span>
+        <span class="k">return</span> <span class="s">&quot;{0}({1})&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">__class__</span><span class="o">.</span><span class="n">__name__</span><span class="p">,</span> <span class="n">s</span><span class="p">)</span>
+
+    <span class="k">def</span> <span class="nf">__contains__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">key</span><span class="p">):</span>
+        <span class="k">return</span> <span class="n">key</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">_dict</span> <span class="ow">or</span> <span class="n">key</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">__dict__</span> <span class="ow">or</span> \
+                                    <span class="n">key</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">__class__</span><span class="o">.</span><span class="n">__dict__</span>
+
+    <span class="k">def</span> <span class="nf">__eq__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">other</span><span class="p">):</span>
+        <span class="k">if</span> <span class="nb">hasattr</span><span class="p">(</span><span class="n">other</span><span class="p">,</span> <span class="s">&#39;_dict&#39;</span><span class="p">):</span>
+            <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_dict</span> <span class="o">==</span> <span class="n">other</span><span class="o">.</span><span class="n">_dict</span>
+        <span class="k">elif</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">other</span><span class="p">,</span> <span class="n">Mapping</span><span class="p">):</span>
+            <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_dict</span> <span class="o">==</span> <span class="n">other</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">return</span> <span class="bp">NotImplemented</span>
+
+    <span class="k">def</span> <span class="nf">__ne__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">other</span><span class="p">):</span>
+        <span class="k">if</span> <span class="nb">hasattr</span><span class="p">(</span><span class="n">other</span><span class="p">,</span> <span class="s">&#39;_dict&#39;</span><span class="p">):</span>
+            <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_dict</span> <span class="o">!=</span> <span class="n">other</span><span class="o">.</span><span class="n">_dict</span>
+        <span class="k">elif</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">other</span><span class="p">,</span> <span class="n">Mapping</span><span class="p">):</span>
+            <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_dict</span> <span class="o">!=</span> <span class="n">other</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">return</span> <span class="bp">NotImplemented</span>
+
+    <span class="k">def</span> <span class="nf">_update</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">other</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Updates the rc with values from another mapping.  If this rc has</span>
+<span class="sd">        if a key is in self, other, and self._updaters, then the updaters</span>
+<span class="sd">        value is called to perform the update.  This function should return</span>
+<span class="sd">        a copy to be safe and not update in-place.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="nb">hasattr</span><span class="p">(</span><span class="n">other</span><span class="p">,</span> <span class="s">&#39;_dict&#39;</span><span class="p">):</span>
+            <span class="n">other</span> <span class="o">=</span> <span class="n">other</span><span class="o">.</span><span class="n">_dict</span>
+        <span class="k">elif</span> <span class="ow">not</span> <span class="nb">hasattr</span><span class="p">(</span><span class="n">other</span><span class="p">,</span> <span class="s">&#39;items&#39;</span><span class="p">):</span>
+            <span class="n">other</span> <span class="o">=</span> <span class="nb">dict</span><span class="p">(</span><span class="n">other</span><span class="p">)</span>
+        <span class="k">for</span> <span class="n">k</span><span class="p">,</span> <span class="n">v</span> <span class="ow">in</span> <span class="n">other</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
+            <span class="k">if</span> <span class="n">v</span> <span class="ow">is</span> <span class="n">NotSpecified</span><span class="p">:</span>
+                <span class="k">pass</span>
+            <span class="k">elif</span> <span class="n">k</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">_updaters</span> <span class="ow">and</span> <span class="n">k</span> <span class="ow">in</span> <span class="bp">self</span><span class="p">:</span>
+                <span class="n">v</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_updaters</span><span class="p">[</span><span class="n">k</span><span class="p">](</span><span class="nb">getattr</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">k</span><span class="p">),</span> <span class="n">v</span><span class="p">)</span>
+            <span class="nb">setattr</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">k</span><span class="p">,</span> <span class="n">v</span><span class="p">)</span>
+</div>
+<div class="viewcode-block" id="parse_rc"><a class="viewcode-back" href="../../pyapi/tools.html#cyclopts.tools.parse_rc">[docs]</a><span class="k">def</span> <span class="nf">parse_rc</span><span class="p">(</span><span class="n">files</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Parse a list of rc files.</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    files : list or str</span>
+<span class="sd">        the files to parse</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">files</span> <span class="o">=</span> <span class="p">[</span><span class="n">files</span><span class="p">]</span> <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">files</span><span class="p">,</span> <span class="nb">basestring</span><span class="p">)</span> <span class="k">else</span> <span class="n">files</span>
+    <span class="n">rc</span> <span class="o">=</span> <span class="n">RunControl</span><span class="p">()</span>
+    <span class="k">for</span> <span class="n">rcfile</span> <span class="ow">in</span> <span class="n">files</span><span class="p">:</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">isfile</span><span class="p">(</span><span class="n">rcfile</span><span class="p">):</span>
+            <span class="k">continue</span>
+        <span class="n">rcdict</span> <span class="o">=</span> <span class="p">{}</span>
+        <span class="n">exec_file</span><span class="p">(</span><span class="n">rcfile</span><span class="p">,</span> <span class="n">rcdict</span><span class="p">,</span> <span class="n">rcdict</span><span class="p">)</span>
+        <span class="n">rc</span><span class="o">.</span><span class="n">_update</span><span class="p">(</span><span class="n">rcdict</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">rc</span>
+</div>
+<div class="viewcode-block" id="exec_file"><a class="viewcode-back" href="../../pyapi/tools.html#cyclopts.tools.exec_file">[docs]</a><span class="k">def</span> <span class="nf">exec_file</span><span class="p">(</span><span class="n">filename</span><span class="p">,</span> <span class="n">glb</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span> <span class="n">loc</span><span class="o">=</span><span class="bp">None</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;A function equivalent to the Python 2.x execfile statement.&quot;&quot;&quot;</span>
+    <span class="k">with</span> <span class="n">io</span><span class="o">.</span><span class="n">open</span><span class="p">(</span><span class="n">filename</span><span class="p">,</span> <span class="s">&#39;r&#39;</span><span class="p">)</span> <span class="k">as</span> <span class="n">f</span><span class="p">:</span>
+        <span class="n">src</span> <span class="o">=</span> <span class="n">f</span><span class="o">.</span><span class="n">read</span><span class="p">()</span>
+    <span class="k">exec</span><span class="p">(</span><span class="nb">compile</span><span class="p">(</span><span class="n">src</span><span class="p">,</span> <span class="n">filename</span><span class="p">,</span> <span class="s">&quot;exec&quot;</span><span class="p">),</span> <span class="n">glb</span><span class="p">,</span> <span class="n">loc</span><span class="p">)</span>
+        </div>
+<div class="viewcode-block" id="SamplerBuilder"><a class="viewcode-back" href="../../pyapi/tools.html#cyclopts.tools.SamplerBuilder">[docs]</a><span class="k">class</span> <span class="nc">SamplerBuilder</span><span class="p">(</span><span class="nb">object</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;A helper class to build configure instances of parameter samplers</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+<div class="viewcode-block" id="SamplerBuilder.build"><a class="viewcode-back" href="../../pyapi/tools.html#cyclopts.tools.SamplerBuilder.build">[docs]</a>    <span class="k">def</span> <span class="nf">build</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">rc</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Builds all permutations of samplers.</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        rc : RunControl</span>
+<span class="sd">            A RunControl object defined by the user&#39;s parsed rc file.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">params_dict</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_parse</span><span class="p">(</span><span class="n">rc</span><span class="p">)</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_build</span><span class="p">(</span><span class="n">params_dict</span><span class="p">)</span>
+    </div>
+    <span class="k">def</span> <span class="nf">_build</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">params_dict</span><span class="p">):</span>
+        <span class="n">params_list</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_constr_params</span><span class="p">(</span><span class="n">params_dict</span><span class="p">)</span>
+        <span class="n">n_samplers</span> <span class="o">=</span> <span class="nb">reduce</span><span class="p">(</span><span class="n">operator</span><span class="o">.</span><span class="n">mul</span><span class="p">,</span> <span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">l</span><span class="p">)</span> <span class="k">for</span> <span class="n">_</span><span class="p">,</span> <span class="n">l</span> <span class="ow">in</span> <span class="n">params_list</span><span class="p">),</span> <span class="mi">1</span><span class="p">)</span>
+        <span class="n">samplers</span> <span class="o">=</span> <span class="p">[</span><span class="n">ReactorRequestSampler</span><span class="p">()</span> <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">n_samplers</span><span class="p">)]</span>
+        <span class="c">## for supply implementation</span>
+        <span class="c"># samplers = [ReactorRequestSampler() if params_dict[&#39;request&#39;] \</span>
+        <span class="c">#                 else ReactorSupplySampler() for range(n_samplers)]</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_add_params</span><span class="p">(</span><span class="n">samplers</span><span class="p">,</span> <span class="n">params_list</span><span class="p">)</span>
+        <span class="k">return</span> <span class="p">[</span><span class="n">sampler</span> <span class="k">for</span> <span class="n">sampler</span> <span class="ow">in</span> <span class="n">samplers</span> <span class="k">if</span> <span class="n">sampler</span><span class="o">.</span><span class="n">valid</span><span class="p">()]</span>
+
+    <span class="k">def</span> <span class="nf">_parse</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">rc</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Provides a dictionary of parameter names to all constructor arguments</span>
+<span class="sd">        for a resource exchange range of instances.</span>
+<span class="sd">        </span>
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        rc : RunControl</span>
+<span class="sd">            A RunControl object defined by the user&#39;s parsed rc file.</span>
+<span class="sd">        </span>
+<span class="sd">        Returns</span>
+<span class="sd">        -------</span>
+<span class="sd">        params_dict : dict</span>
+<span class="sd">            A dictionary whose keys are parameter names and values are lists of</span>
+<span class="sd">            ranges of constructor arguments.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">params_dict</span> <span class="o">=</span> <span class="p">{}</span>
+        <span class="n">s</span> <span class="o">=</span> <span class="n">ReactorRequestSampler</span><span class="p">()</span> <span class="c"># only works for reactor requests for now</span>
+        <span class="k">for</span> <span class="n">k</span><span class="p">,</span> <span class="n">v</span> <span class="ow">in</span> <span class="n">rc</span><span class="o">.</span><span class="n">_dict</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
+            <span class="n">name</span> <span class="o">=</span> <span class="n">k</span>
+            <span class="n">attr</span> <span class="o">=</span> <span class="n">v</span>
+            <span class="k">if</span> <span class="nb">hasattr</span><span class="p">(</span><span class="n">s</span><span class="p">,</span> <span class="n">name</span><span class="p">):</span>
+                <span class="n">vals</span> <span class="o">=</span> <span class="p">[]</span>
+                <span class="n">args</span> <span class="o">=</span> <span class="n">CONSTR_ARGS</span><span class="p">[</span><span class="nb">type</span><span class="p">(</span><span class="nb">getattr</span><span class="p">(</span><span class="n">s</span><span class="p">,</span> <span class="n">name</span><span class="p">))]</span>
+                <span class="k">for</span> <span class="n">arg</span> <span class="ow">in</span> <span class="n">args</span><span class="p">:</span>
+                    <span class="k">if</span> <span class="n">arg</span> <span class="ow">in</span> <span class="n">attr</span><span class="p">:</span>
+                        <span class="n">vals</span> <span class="o">+=</span> <span class="p">[</span><span class="n">attr</span><span class="p">[</span><span class="n">arg</span><span class="p">]]</span>
+                <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">vals</span><span class="p">)</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">:</span>
+                    <span class="n">params_dict</span><span class="p">[</span><span class="n">name</span><span class="p">]</span> <span class="o">=</span> <span class="n">vals</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="k">print</span><span class="p">(</span><span class="s">&quot;Found an entry named {0} that &quot;</span>
+                      <span class="s">&quot;is unknown to the parser.&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">k</span><span class="p">))</span>
+                
+        <span class="c"># for name in s.__dict__:</span>
+        <span class="c">#     if hasattr(rc, name):</span>
+        <span class="c">#         vals = []</span>
+        <span class="c">#         args = CONSTR_ARGS[type(getattr(s, name))]</span>
+        <span class="c">#         attr = getattr(rc, name)</span>
+        <span class="c">#         for arg in args:</span>
+        <span class="c">#             if arg in attr:</span>
+        <span class="c">#                 vals += [attr[arg]]</span>
+        <span class="c">#         if len(vals) &gt; 0:</span>
+        <span class="c">#             params_dict[name] = vals</span>
+        <span class="k">return</span> <span class="n">params_dict</span>
+        
+    <span class="k">def</span> <span class="nf">_constr_params</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">params_dict</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Returns input for _add_subtree() given input for build()&quot;&quot;&quot;</span>
+        <span class="n">params_dict</span> <span class="o">=</span> <span class="p">{</span><span class="n">k</span><span class="p">:</span> <span class="p">[</span><span class="n">i</span> <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="n">product</span><span class="p">(</span><span class="o">*</span><span class="n">v</span><span class="p">)]</span> \
+                           <span class="k">for</span> <span class="n">k</span><span class="p">,</span> <span class="n">v</span> <span class="ow">in</span> <span class="n">params_dict</span><span class="o">.</span><span class="n">items</span><span class="p">()}</span>
+        <span class="n">s</span> <span class="o">=</span> <span class="n">ReactorRequestSampler</span><span class="p">()</span>
+        <span class="k">return</span> <span class="p">[(</span><span class="n">k</span><span class="p">,</span> <span class="p">[</span><span class="nb">type</span><span class="p">(</span><span class="nb">getattr</span><span class="p">(</span><span class="n">s</span><span class="p">,</span> <span class="n">k</span><span class="p">))(</span><span class="o">*</span><span class="n">args</span><span class="p">)</span> <span class="k">for</span> <span class="n">args</span> <span class="ow">in</span> <span class="n">v</span><span class="p">])</span> \
+                    <span class="k">for</span> <span class="n">k</span><span class="p">,</span> <span class="n">v</span> <span class="ow">in</span> <span class="n">params_dict</span><span class="o">.</span><span class="n">items</span><span class="p">()]</span>
+
+    <span class="k">def</span> <span class="nf">_add_params</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">samplers</span><span class="p">,</span> <span class="n">params_list</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Configures samplers with all possible perturbations of parameters.&quot;&quot;&quot;</span>
+        <span class="n">pairings</span> <span class="o">=</span> <span class="p">[[(</span><span class="n">name</span><span class="p">,</span> <span class="n">param</span><span class="p">)</span> <span class="k">for</span> <span class="n">param</span> <span class="ow">in</span> <span class="n">params</span><span class="p">]</span> <span class="k">for</span> <span class="n">name</span><span class="p">,</span> <span class="n">params</span> <span class="ow">in</span> <span class="n">params_list</span><span class="p">]</span>
+        <span class="n">perturbations</span> <span class="o">=</span> <span class="p">[</span><span class="n">p</span> <span class="k">for</span> <span class="n">p</span> <span class="ow">in</span> <span class="n">product</span><span class="p">(</span><span class="o">*</span><span class="n">pairings</span><span class="p">)]</span>
+        <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">perturbations</span><span class="p">)):</span>
+            <span class="k">for</span> <span class="n">name</span><span class="p">,</span> <span class="n">param</span> <span class="ow">in</span> <span class="n">perturbations</span><span class="p">[</span><span class="n">i</span><span class="p">]:</span>
+                <span class="nb">setattr</span><span class="p">(</span><span class="n">samplers</span><span class="p">[</span><span class="n">i</span><span class="p">],</span> <span class="n">name</span><span class="p">,</span> <span class="n">param</span><span class="p">)</span>
+</div>
+<span class="k">class</span> <span class="nc">SolverDesc</span><span class="p">(</span><span class="n">t</span><span class="o">.</span><span class="n">IsDescription</span><span class="p">):</span>
+    <span class="n">sim_id</span> <span class="o">=</span> <span class="n">t</span><span class="o">.</span><span class="n">StringCol</span><span class="p">(</span><span class="mi">36</span><span class="p">)</span> <span class="c"># len(str(uuid.uuid4())) == 36</span>
+    <span class="nb">type</span> <span class="o">=</span> <span class="n">t</span><span class="o">.</span><span class="n">StringCol</span><span class="p">(</span><span class="mi">12</span><span class="p">)</span>
+
+<span class="k">class</span> <span class="nc">GraphDesc</span><span class="p">(</span><span class="n">t</span><span class="o">.</span><span class="n">IsDescription</span><span class="p">):</span>
+    <span class="n">graph_id</span> <span class="o">=</span> <span class="n">t</span><span class="o">.</span><span class="n">StringCol</span><span class="p">(</span><span class="mi">36</span><span class="p">)</span>  <span class="c"># len(str(uuid.uuid4())) == 36</span>
+    <span class="n">n_supply</span> <span class="o">=</span> <span class="n">t</span><span class="o">.</span><span class="n">Int32Col</span><span class="p">()</span>
+    <span class="n">n_request</span> <span class="o">=</span> <span class="n">t</span><span class="o">.</span><span class="n">Int32Col</span><span class="p">()</span>
+    <span class="n">n_sup_nodes</span> <span class="o">=</span> <span class="n">t</span><span class="o">.</span><span class="n">Int32Col</span><span class="p">()</span>
+    <span class="n">n_req_nodes</span> <span class="o">=</span> <span class="n">t</span><span class="o">.</span><span class="n">Int32Col</span><span class="p">()</span>
+    <span class="n">n_arcs</span> <span class="o">=</span> <span class="n">t</span><span class="o">.</span><span class="n">Int32Col</span><span class="p">()</span>
+
+<span class="k">class</span> <span class="nc">RRSamplerDesc</span><span class="p">(</span><span class="n">t</span><span class="o">.</span><span class="n">IsDescription</span><span class="p">):</span>
+    <span class="n">graph_id</span> <span class="o">=</span> <span class="n">t</span><span class="o">.</span><span class="n">StringCol</span><span class="p">(</span><span class="mi">36</span><span class="p">)</span> <span class="c"># len(str(uuid.uuid4())) == 36</span>
+    <span class="n">n_commods</span> <span class="o">=</span> <span class="n">t</span><span class="o">.</span><span class="n">Int32Col</span><span class="p">()</span> 
+    <span class="n">n_request</span> <span class="o">=</span> <span class="n">t</span><span class="o">.</span><span class="n">Int32Col</span><span class="p">()</span>
+    <span class="n">assem_per_req</span> <span class="o">=</span> <span class="n">t</span><span class="o">.</span><span class="n">Int32Col</span><span class="p">()</span>
+    <span class="n">assem_multi_commod</span> <span class="o">=</span> <span class="n">t</span><span class="o">.</span><span class="n">Float32Col</span><span class="p">()</span>
+    <span class="n">req_multi_commods</span> <span class="o">=</span> <span class="n">t</span><span class="o">.</span><span class="n">Int32Col</span><span class="p">()</span>
+    <span class="n">exclusive</span> <span class="o">=</span> <span class="n">t</span><span class="o">.</span><span class="n">Float32Col</span><span class="p">()</span>
+    <span class="n">n_req_constr</span> <span class="o">=</span> <span class="n">t</span><span class="o">.</span><span class="n">Int32Col</span><span class="p">()</span>
+    <span class="n">n_supply</span> <span class="o">=</span> <span class="n">t</span><span class="o">.</span><span class="n">Int32Col</span><span class="p">()</span> 
+    <span class="n">sup_multi</span> <span class="o">=</span> <span class="n">t</span><span class="o">.</span><span class="n">Float32Col</span><span class="p">()</span>
+    <span class="n">sup_multi_commods</span> <span class="o">=</span> <span class="n">t</span><span class="o">.</span><span class="n">Int32Col</span><span class="p">()</span> 
+    <span class="n">n_sup_constr</span> <span class="o">=</span> <span class="n">t</span><span class="o">.</span><span class="n">Int32Col</span><span class="p">()</span> 
+    <span class="n">sup_constr_val</span> <span class="o">=</span> <span class="n">t</span><span class="o">.</span><span class="n">Float32Col</span><span class="p">()</span>
+    <span class="n">connection</span> <span class="o">=</span> <span class="n">t</span><span class="o">.</span><span class="n">Float32Col</span><span class="p">()</span>
+
+<span class="c"># class RSSamplerDesc(t.IsDescription):</span>
+<span class="c">#     sim_id = t.StringCol(36) # len(str(uuid.uuid4())) == 36</span>
+<span class="c">#     sol_type = t.StringCol(12)</span>
+
+<span class="k">class</span> <span class="nc">FlowDesc</span><span class="p">(</span><span class="n">t</span><span class="o">.</span><span class="n">IsDescription</span><span class="p">):</span>
+    <span class="n">sim_id</span> <span class="o">=</span> <span class="n">t</span><span class="o">.</span><span class="n">StringCol</span><span class="p">(</span><span class="mi">36</span><span class="p">)</span> <span class="c"># len(str(uuid.uuid4())) == 36</span>
+    <span class="n">arc_id</span> <span class="o">=</span> <span class="n">t</span><span class="o">.</span><span class="n">Int64Col</span><span class="p">()</span>
+    <span class="n">flow</span> <span class="o">=</span> <span class="n">t</span><span class="o">.</span><span class="n">Float64Col</span><span class="p">()</span>
+
+<span class="k">class</span> <span class="nc">SolnDesc</span><span class="p">(</span><span class="n">t</span><span class="o">.</span><span class="n">IsDescription</span><span class="p">):</span>
+    <span class="n">sim_id</span> <span class="o">=</span> <span class="n">t</span><span class="o">.</span><span class="n">StringCol</span><span class="p">(</span><span class="mi">36</span><span class="p">)</span> <span class="c"># len(str(uuid.uuid4())) == 36</span>
+    <span class="n">graph_id</span> <span class="o">=</span> <span class="n">t</span><span class="o">.</span><span class="n">StringCol</span><span class="p">(</span><span class="mi">36</span><span class="p">)</span> <span class="c"># len(str(uuid.uuid4())) == 36</span>
+    <span class="n">time</span> <span class="o">=</span> <span class="n">t</span><span class="o">.</span><span class="n">Float64Col</span><span class="p">()</span> <span class="c"># in seconds</span>
+    <span class="n">obj</span> <span class="o">=</span> <span class="n">t</span><span class="o">.</span><span class="n">Float64Col</span><span class="p">()</span> 
+    <span class="n">cyclus_version</span> <span class="o">=</span> <span class="n">t</span><span class="o">.</span><span class="n">StringCol</span><span class="p">(</span><span class="mi">12</span><span class="p">)</span>
+    <span class="n">cyclopts_version</span> <span class="o">=</span> <span class="n">t</span><span class="o">.</span><span class="n">StringCol</span><span class="p">(</span><span class="mi">12</span><span class="p">)</span>
+
+<span class="k">class</span> <span class="nc">Reporter</span><span class="p">(</span><span class="nb">object</span><span class="p">):</span>
+    
+    <span class="k">def</span> <span class="nf">report_solver</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">row</span><span class="p">,</span> <span class="n">sim_id</span><span class="p">,</span> <span class="n">graph_id</span><span class="p">,</span> <span class="n">sparams</span><span class="p">):</span>
+        <span class="n">row</span><span class="p">[</span><span class="s">&#39;sim_id&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="nb">str</span><span class="p">(</span><span class="n">sim_id</span><span class="p">)</span>
+        <span class="n">row</span><span class="p">[</span><span class="s">&#39;type&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">sparams</span><span class="o">.</span><span class="n">type</span>
+        <span class="n">row</span><span class="o">.</span><span class="n">append</span><span class="p">()</span>
+
+    <span class="k">def</span> <span class="nf">report_graph</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">row</span><span class="p">,</span> <span class="n">sim_id</span><span class="p">,</span> <span class="n">graph_id</span><span class="p">,</span> <span class="n">gparams</span><span class="p">):</span>
+        <span class="n">row</span><span class="p">[</span><span class="s">&#39;graph_id&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">graph_id</span>
+        <span class="n">row</span><span class="p">[</span><span class="s">&#39;n_supply&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">gparams</span><span class="o">.</span><span class="n">v_nodes_per_sup</span><span class="p">)</span>
+        <span class="n">row</span><span class="p">[</span><span class="s">&#39;n_request&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">gparams</span><span class="o">.</span><span class="n">u_nodes_per_req</span><span class="p">)</span>
+        <span class="n">row</span><span class="p">[</span><span class="s">&#39;n_sup_nodes&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="nb">sum</span><span class="p">([</span><span class="nb">len</span><span class="p">(</span><span class="n">vec</span><span class="p">)</span> <span class="k">for</span> <span class="n">k</span><span class="p">,</span> <span class="n">vec</span> <span class="ow">in</span> <span class="n">gparams</span><span class="o">.</span><span class="n">v_nodes_per_sup</span><span class="o">.</span><span class="n">items</span><span class="p">()])</span>
+        <span class="n">row</span><span class="p">[</span><span class="s">&#39;n_req_nodes&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="nb">sum</span><span class="p">([</span><span class="nb">len</span><span class="p">(</span><span class="n">vec</span><span class="p">)</span> <span class="k">for</span> <span class="n">k</span><span class="p">,</span> <span class="n">vec</span> <span class="ow">in</span> <span class="n">gparams</span><span class="o">.</span><span class="n">u_nodes_per_req</span><span class="o">.</span><span class="n">items</span><span class="p">()])</span>
+        <span class="n">row</span><span class="p">[</span><span class="s">&#39;n_arcs&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">gparams</span><span class="o">.</span><span class="n">arc_pref</span><span class="p">)</span>
+        <span class="n">row</span><span class="o">.</span><span class="n">append</span><span class="p">()</span>
+    
+    <span class="k">def</span> <span class="nf">report_rr_sampler</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">row</span><span class="p">,</span> <span class="n">sim_id</span><span class="p">,</span> <span class="n">graph_id</span><span class="p">,</span> <span class="n">sampler</span><span class="p">):</span>
+        <span class="n">s</span> <span class="o">=</span> <span class="n">sampler</span>
+
+        <span class="n">params</span> <span class="o">=</span> <span class="p">[</span><span class="s">&#39;sup_multi_commods&#39;</span><span class="p">,</span>
+                  <span class="s">&#39;n_sup_constr&#39;</span><span class="p">,</span>
+                  <span class="s">&#39;n_commods&#39;</span><span class="p">,</span> 
+                  <span class="s">&#39;n_request&#39;</span><span class="p">,</span>
+                  <span class="s">&#39;assem_per_req&#39;</span><span class="p">,</span>
+                  <span class="s">&#39;req_multi_commods&#39;</span><span class="p">,</span>
+                  <span class="s">&#39;n_req_constr&#39;</span><span class="p">,</span>
+                  <span class="s">&#39;n_supply&#39;</span><span class="p">,</span>
+                  <span class="p">]</span>
+
+        <span class="n">bool_params</span> <span class="o">=</span> <span class="p">[</span><span class="s">&#39;connection&#39;</span><span class="p">,</span>
+                       <span class="s">&#39;assem_multi_commod&#39;</span><span class="p">,</span>
+                       <span class="s">&#39;exclusive&#39;</span><span class="p">,</span>
+                       <span class="s">&#39;sup_multi&#39;</span>
+                       <span class="p">]</span>
+
+        <span class="n">constr_params</span> <span class="o">=</span> <span class="p">[</span><span class="s">&#39;sup_constr_val&#39;</span><span class="p">]</span>
+
+        <span class="n">row</span><span class="p">[</span><span class="s">&#39;graph_id&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">graph_id</span>
+        <span class="k">for</span> <span class="n">param</span> <span class="ow">in</span> <span class="n">params</span><span class="p">:</span>
+            <span class="k">if</span> <span class="nb">hasattr</span><span class="p">(</span><span class="n">s</span><span class="p">,</span> <span class="n">param</span><span class="p">):</span>
+                <span class="n">row</span><span class="p">[</span><span class="n">param</span><span class="p">]</span> <span class="o">=</span> <span class="nb">getattr</span><span class="p">(</span><span class="n">s</span><span class="p">,</span> <span class="n">param</span><span class="p">)</span><span class="o">.</span><span class="n">avg</span>
+        <span class="k">for</span> <span class="n">param</span> <span class="ow">in</span> <span class="n">bool_params</span><span class="p">:</span>
+            <span class="k">if</span> <span class="nb">hasattr</span><span class="p">(</span><span class="n">s</span><span class="p">,</span> <span class="n">param</span><span class="p">):</span>
+                <span class="n">row</span><span class="p">[</span><span class="n">param</span><span class="p">]</span> <span class="o">=</span> <span class="nb">getattr</span><span class="p">(</span><span class="n">s</span><span class="p">,</span> <span class="n">param</span><span class="p">)</span><span class="o">.</span><span class="n">cutoff</span>
+        <span class="k">for</span> <span class="n">param</span> <span class="ow">in</span> <span class="n">constr_params</span><span class="p">:</span>
+            <span class="k">if</span> <span class="nb">hasattr</span><span class="p">(</span><span class="n">s</span><span class="p">,</span> <span class="n">param</span><span class="p">):</span>
+                <span class="n">row</span><span class="p">[</span><span class="n">param</span><span class="p">]</span> <span class="o">=</span> <span class="nb">getattr</span><span class="p">(</span><span class="n">s</span><span class="p">,</span> <span class="n">param</span><span class="p">)</span><span class="o">.</span><span class="n">cutoff</span>
+        <span class="n">row</span><span class="o">.</span><span class="n">append</span><span class="p">()</span>
+
+    <span class="c">#</span>
+    <span class="c"># TO DO</span>
+    <span class="c">#</span>
+        
+    <span class="c"># def report_rs_sampler(self, row, sim_id, graph_id, sampler):</span>
+    <span class="c">#     row[&#39;sim_id&#39;] = str(sim_id)</span>
+    
+    <span class="k">def</span> <span class="nf">report_flows</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">row</span><span class="p">,</span> <span class="n">sim_id</span><span class="p">,</span> <span class="n">graph_id</span><span class="p">,</span> <span class="n">flows</span><span class="p">):</span>
+        <span class="k">for</span> <span class="n">f</span> <span class="ow">in</span> <span class="n">flows</span><span class="p">:</span>
+            <span class="n">row</span><span class="p">[</span><span class="s">&#39;sim_id&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="nb">str</span><span class="p">(</span><span class="n">sim_id</span><span class="p">)</span>
+            <span class="n">row</span><span class="p">[</span><span class="s">&#39;arc_id&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">f</span><span class="o">.</span><span class="n">id</span>
+            <span class="n">row</span><span class="p">[</span><span class="s">&#39;flow&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">f</span><span class="o">.</span><span class="n">flow</span>
+            <span class="n">row</span><span class="o">.</span><span class="n">append</span><span class="p">()</span>
+
+    <span class="k">def</span> <span class="nf">report_solution</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">row</span><span class="p">,</span> <span class="n">sim_id</span><span class="p">,</span> <span class="n">graph_id</span><span class="p">,</span> <span class="n">soln</span><span class="p">):</span>
+        <span class="n">row</span><span class="p">[</span><span class="s">&#39;sim_id&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">sim_id</span>
+        <span class="n">row</span><span class="p">[</span><span class="s">&#39;graph_id&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">graph_id</span>
+        <span class="n">row</span><span class="p">[</span><span class="s">&#39;time&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">soln</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+        <span class="n">row</span><span class="p">[</span><span class="s">&#39;obj&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">soln</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span>
+        <span class="n">row</span><span class="p">[</span><span class="s">&#39;cyclus_version&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">soln</span><span class="p">[</span><span class="mi">2</span><span class="p">]</span>
+        <span class="n">row</span><span class="p">[</span><span class="s">&#39;cyclopts_version&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">soln</span><span class="p">[</span><span class="mi">3</span><span class="p">]</span>
+        <span class="n">row</span><span class="o">.</span><span class="n">append</span><span class="p">()</span>
+            
+<div class="viewcode-block" id="report"><a class="viewcode-back" href="../../pyapi/tools.html#cyclopts.tools.report">[docs]</a><span class="k">def</span> <span class="nf">report</span><span class="p">(</span><span class="n">sampler</span><span class="p">,</span> <span class="n">gparams</span><span class="p">,</span> <span class="n">sparams</span><span class="p">,</span> <span class="n">soln</span><span class="p">,</span> <span class="n">sim_id</span> <span class="o">=</span> <span class="bp">None</span><span class="p">,</span> <span class="n">db_path</span> <span class="o">=</span> <span class="bp">None</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Dumps parameter and solution information to an HDF5 database.</span>
+<span class="sd">    </span>
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    sampler : ReactorRequestSampler or ReactorSupplySampler </span>
+<span class="sd">        The sampler used to generate the exchange instance</span>
+<span class="sd">    gparams : GraphParams</span>
+<span class="sd">        ExchangeGraph-defining parameters</span>
+<span class="sd">    sparams : SolverParams</span>
+<span class="sd">        ExchangeSolver-defining parameters</span>
+<span class="sd">    soln : Solution</span>
+<span class="sd">        The solved graph&#39;s solution.</span>
+<span class="sd">    sim_id : int, optional</span>
+<span class="sd">        The simulation id to use in the database. A UUID is generated by </span>
+<span class="sd">        default.</span>
+<span class="sd">    db_path : str, optional</span>
+<span class="sd">        The database to dump information to. The default is cyclopts.h5 </span>
+<span class="sd">        file placed in the current working directory.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">db_path</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">getcwd</span><span class="p">(),</span> <span class="s">&#39;cyclopts.h5&#39;</span><span class="p">)</span> <span class="k">if</span> <span class="n">db_path</span> <span class="ow">is</span> <span class="bp">None</span> \
+        <span class="k">else</span> <span class="n">db_path</span>
+    <span class="n">sim_id</span> <span class="o">=</span> <span class="n">uuid</span><span class="o">.</span><span class="n">uuid4</span><span class="p">()</span><span class="o">.</span><span class="n">int</span> <span class="k">if</span> <span class="n">sim_id</span> <span class="ow">is</span> <span class="bp">None</span> <span class="k">else</span> <span class="n">sim_id</span>
+    <span class="n">graph_id</span> <span class="o">=</span> <span class="nb">str</span><span class="p">(</span><span class="n">gparams</span><span class="o">.</span><span class="n">id</span><span class="p">)</span>
+
+    <span class="n">mode</span> <span class="o">=</span> <span class="s">&quot;a&quot;</span> <span class="k">if</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">exists</span><span class="p">(</span><span class="n">db_path</span><span class="p">)</span> <span class="k">else</span> <span class="s">&quot;w&quot;</span>
+    <span class="n">filters</span> <span class="o">=</span> <span class="n">t</span><span class="o">.</span><span class="n">Filters</span><span class="p">(</span><span class="n">complevel</span><span class="o">=</span><span class="mi">4</span><span class="p">)</span>
+    <span class="n">h5file</span> <span class="o">=</span> <span class="n">t</span><span class="o">.</span><span class="n">open_file</span><span class="p">(</span><span class="n">db_path</span><span class="p">,</span> <span class="n">mode</span><span class="o">=</span><span class="n">mode</span><span class="p">,</span> <span class="n">title</span><span class="o">=</span><span class="s">&quot;Cyclopts Output&quot;</span><span class="p">,</span> <span class="n">filters</span><span class="o">=</span><span class="n">filters</span><span class="p">)</span>
+    
+    <span class="n">flows</span> <span class="o">=</span> <span class="p">[</span><span class="n">ArcFlow</span><span class="p">(</span><span class="n">soln</span><span class="o">.</span><span class="n">flows</span><span class="p">[</span><span class="n">i</span><span class="p">:])</span> <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">soln</span><span class="o">.</span><span class="n">flows</span><span class="p">))]</span>
+    <span class="c">#print(&quot;nflows:&quot;, len(flows))</span>
+    <span class="n">obj</span> <span class="o">=</span> <span class="nb">sum</span><span class="p">([</span><span class="n">f</span><span class="o">.</span><span class="n">flow</span> <span class="o">/</span> <span class="n">gparams</span><span class="o">.</span><span class="n">arc_pref</span><span class="p">[</span><span class="n">f</span><span class="o">.</span><span class="n">id</span><span class="p">]</span> <span class="k">for</span> <span class="n">f</span> <span class="ow">in</span> <span class="n">flows</span><span class="p">])</span>
+    <span class="n">solnparams</span> <span class="o">=</span> <span class="p">[</span><span class="n">soln</span><span class="o">.</span><span class="n">time</span><span class="p">,</span> <span class="n">obj</span><span class="p">,</span> <span class="n">soln</span><span class="o">.</span><span class="n">cyclus_version</span><span class="p">,</span> <span class="n">cyclopts</span><span class="o">.</span><span class="n">__version__</span><span class="p">]</span>
+
+    <span class="n">tables</span> <span class="o">=</span> <span class="p">[(</span><span class="s">&#39;solver&#39;</span><span class="p">,</span> <span class="n">SolverDesc</span><span class="p">,</span> <span class="s">&#39;Solver Params&#39;</span><span class="p">,</span> <span class="n">sparams</span><span class="p">),</span>
+              <span class="p">(</span><span class="s">&#39;flows&#39;</span><span class="p">,</span> <span class="n">FlowDesc</span><span class="p">,</span> <span class="s">&#39;Arc Flows&#39;</span><span class="p">,</span> <span class="n">flows</span><span class="p">),</span>
+              <span class="p">(</span><span class="s">&#39;solution&#39;</span><span class="p">,</span> <span class="n">SolnDesc</span><span class="p">,</span> <span class="s">&#39;Solution Params&#39;</span><span class="p">,</span> <span class="n">solnparams</span><span class="p">),</span>
+              <span class="p">(</span><span class="s">&#39;graph&#39;</span><span class="p">,</span> <span class="n">GraphDesc</span><span class="p">,</span> <span class="s">&#39;Graph Params&#39;</span><span class="p">,</span> <span class="n">gparams</span><span class="p">),</span>
+              <span class="p">]</span>
+    <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">sampler</span><span class="p">,</span> <span class="n">ReactorRequestSampler</span><span class="p">):</span>
+        <span class="n">tables</span> <span class="o">+=</span> <span class="p">[(</span><span class="s">&#39;rr_sampler&#39;</span><span class="p">,</span> <span class="n">RRSamplerDesc</span><span class="p">,</span> <span class="s">&#39;Reactor Request Sampling&#39;</span><span class="p">,</span> <span class="n">sampler</span><span class="p">)]</span>
+<span class="c"># TODO</span>
+<span class="c">#    elif isinstance(sampler, ReactorSupplySampler):</span>
+<span class="c">#        tables += [(&#39;rssample&#39;, SolnDesc, &#39;Reactor Supply Params&#39;, sampler)]</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="k">raise</span> <span class="ne">TypeError</span><span class="p">(</span><span class="s">&quot;Sampler is of an unknown type.&quot;</span><span class="p">)</span>
+
+    <span class="n">r</span> <span class="o">=</span> <span class="n">Reporter</span><span class="p">()</span>
+    <span class="k">for</span> <span class="n">name</span><span class="p">,</span> <span class="n">desc</span><span class="p">,</span> <span class="n">title</span><span class="p">,</span> <span class="n">data</span> <span class="ow">in</span> <span class="n">tables</span><span class="p">:</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">name</span> <span class="ow">in</span> <span class="n">h5file</span><span class="o">.</span><span class="n">root</span><span class="o">.</span><span class="n">_v_children</span><span class="p">:</span>
+            <span class="n">h5file</span><span class="o">.</span><span class="n">create_table</span><span class="p">(</span><span class="s">&quot;/&quot;</span><span class="p">,</span> <span class="n">name</span><span class="p">,</span> <span class="n">desc</span><span class="p">,</span> <span class="n">title</span><span class="p">,</span> <span class="n">filters</span><span class="o">=</span><span class="n">filters</span><span class="p">)</span>
+        <span class="k">if</span> <span class="nb">hasattr</span><span class="p">(</span><span class="n">r</span><span class="p">,</span> <span class="s">&#39;report_&#39;</span> <span class="o">+</span> <span class="n">name</span><span class="p">):</span>
+            <span class="n">row</span> <span class="o">=</span> <span class="n">h5file</span><span class="o">.</span><span class="n">get_node</span><span class="p">(</span><span class="s">&#39;/&#39;</span> <span class="o">+</span> <span class="n">name</span><span class="p">)</span><span class="o">.</span><span class="n">row</span>
+            <span class="n">meth</span> <span class="o">=</span> <span class="nb">getattr</span><span class="p">(</span><span class="n">r</span><span class="p">,</span> <span class="s">&#39;report_&#39;</span> <span class="o">+</span> <span class="n">name</span><span class="p">)</span>
+            <span class="n">meth</span><span class="p">(</span><span class="n">row</span><span class="p">,</span> <span class="n">sim_id</span><span class="p">,</span> <span class="n">graph_id</span><span class="p">,</span> <span class="n">data</span><span class="p">)</span>
+        
+    <span class="n">h5file</span><span class="o">.</span><span class="n">close</span><span class="p">()</span>
+            </div>
+<div class="viewcode-block" id="combine"><a class="viewcode-back" href="../../pyapi/tools.html#cyclopts.tools.combine">[docs]</a><span class="k">def</span> <span class="nf">combine</span><span class="p">(</span><span class="n">files</span><span class="p">,</span> <span class="n">new_file</span> <span class="o">=</span> <span class="bp">None</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Combines two or more databases with identical layout, writing their</span>
+<span class="sd">    output into a new file or appending to the first in the list.</span>
+<span class="sd">    </span>
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    files : list</span>
+<span class="sd">        A list of all databases to combine</span>
+<span class="sd">    new_file : str, optional</span>
+<span class="sd">        The new database to write to. If None, all databases are appended to the</span>
+<span class="sd">        end of the first database in the list.</span>
+<span class="sd">    &quot;&quot;&quot;</span> 
+    <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">files</span><span class="p">)</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
+        <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s">&quot;Must have at least one file to combine.&quot;</span><span class="p">)</span>
+
+    <span class="k">if</span> <span class="n">new_file</span> <span class="ow">is</span> <span class="ow">not</span> <span class="bp">None</span> <span class="ow">and</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">exists</span><span class="p">(</span><span class="n">new_file</span><span class="p">):</span>
+        <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s">&#39;Cannot write combined hdf5 files to an existing location.&#39;</span><span class="p">)</span>
+
+    <span class="k">if</span> <span class="n">new_file</span> <span class="ow">is</span> <span class="ow">not</span> <span class="bp">None</span><span class="p">:</span>
+        <span class="n">shutil</span><span class="o">.</span><span class="n">copyfile</span><span class="p">(</span><span class="n">files</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="n">new_file</span><span class="p">)</span>
+
+    <span class="n">fname</span> <span class="o">=</span> <span class="n">files</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="k">if</span> <span class="n">new_file</span> <span class="ow">is</span> <span class="bp">None</span> <span class="k">else</span> <span class="n">new_file</span>
+
+    <span class="n">f</span> <span class="o">=</span> <span class="n">t</span><span class="o">.</span><span class="n">open_file</span><span class="p">(</span><span class="n">fname</span><span class="p">,</span> <span class="s">&#39;a&#39;</span><span class="p">)</span>
+    <span class="n">dbs</span> <span class="o">=</span> <span class="p">[</span><span class="n">t</span><span class="o">.</span><span class="n">open_file</span><span class="p">(</span><span class="n">files</span><span class="p">[</span><span class="n">i</span><span class="p">],</span> <span class="s">&#39;r&#39;</span><span class="p">)</span> <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="nb">len</span><span class="p">(</span><span class="n">files</span><span class="p">))]</span>
+    <span class="k">for</span> <span class="n">db</span> <span class="ow">in</span> <span class="n">dbs</span><span class="p">:</span>
+        <span class="n">tbls</span> <span class="o">=</span> <span class="p">[</span><span class="n">node</span><span class="o">.</span><span class="n">_v_name</span> <span class="k">for</span> <span class="n">node</span> <span class="ow">in</span> <span class="n">db</span><span class="o">.</span><span class="n">iter_nodes</span><span class="p">(</span><span class="s">&#39;/&#39;</span><span class="p">,</span> <span class="n">classname</span><span class="o">=</span><span class="s">&#39;Table&#39;</span><span class="p">)]</span>
+        <span class="k">for</span> <span class="n">tbl</span> <span class="ow">in</span> <span class="n">tbls</span><span class="p">:</span>
+            <span class="n">src</span> <span class="o">=</span> <span class="n">db</span><span class="o">.</span><span class="n">get_node</span><span class="p">(</span><span class="s">&#39;/&#39;</span><span class="p">,</span> <span class="n">name</span><span class="o">=</span><span class="n">tbl</span><span class="p">,</span> <span class="n">classname</span><span class="o">=</span><span class="s">&#39;Table&#39;</span><span class="p">)</span>
+            <span class="n">dest</span> <span class="o">=</span> <span class="n">f</span><span class="o">.</span><span class="n">get_node</span><span class="p">(</span><span class="s">&#39;/&#39;</span><span class="p">,</span> <span class="n">name</span><span class="o">=</span><span class="n">tbl</span><span class="p">,</span> <span class="n">classname</span><span class="o">=</span><span class="s">&#39;Table&#39;</span><span class="p">)</span>
+            <span class="n">dtypes</span> <span class="o">=</span> <span class="n">src</span><span class="o">.</span><span class="n">dtype</span><span class="o">.</span><span class="n">names</span>
+            
+            <span class="c"># this is a hack because appending rows throws an error</span>
+            <span class="c"># see http://stackoverflow.com/questions/17847587/pytables-appending-recarray</span>
+            <span class="c"># dest.append([row for row in src.iterrows()])</span>
+            <span class="k">for</span> <span class="n">src_row</span> <span class="ow">in</span> <span class="n">src</span><span class="o">.</span><span class="n">iterrows</span><span class="p">():</span>
+                <span class="n">dest_row</span> <span class="o">=</span> <span class="n">dest</span><span class="o">.</span><span class="n">row</span>
+                <span class="k">for</span> <span class="n">j</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">dtypes</span><span class="p">)):</span>
+                    <span class="n">dest_row</span><span class="p">[</span><span class="n">dtypes</span><span class="p">[</span><span class="n">j</span><span class="p">]]</span> <span class="o">=</span> <span class="n">src_row</span><span class="p">[</span><span class="n">j</span><span class="p">]</span>
+                <span class="n">dest_row</span><span class="o">.</span><span class="n">append</span><span class="p">()</span>
+        <span class="n">db</span><span class="o">.</span><span class="n">close</span><span class="p">()</span>
+    <span class="n">f</span><span class="o">.</span><span class="n">close</span><span class="p">()</span>
+    </div>
+<div class="viewcode-block" id="from_h5"><a class="viewcode-back" href="../../pyapi/tools.html#cyclopts.tools.from_h5">[docs]</a><span class="k">def</span> <span class="nf">from_h5</span><span class="p">(</span><span class="n">fin</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span> <span class="n">subinput</span><span class="o">=</span><span class="bp">None</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Converts an input HDF5 database into a list of Sampler-type objects that</span>
+<span class="sd">    represent discrete, individual data points in a possibly non-contiguous</span>
+<span class="sd">    dataspace.</span>
+
+<span class="sd">    If subinput is provided, it is read directly. If not, the entire database</span>
+<span class="sd">    converted.</span>
+<span class="sd">    </span>
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    fin : str</span>
+<span class="sd">        the input file name (*.h5)</span>
+<span class="sd">    subinput : dict</span>
+<span class="sd">        a subset of input to read int</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">fin</span> <span class="o">=</span> <span class="s">&quot;in.h5&quot;</span> <span class="k">if</span> <span class="n">fin</span> <span class="ow">is</span> <span class="bp">None</span> <span class="k">else</span> <span class="n">fin</span>
+    <span class="n">samplers</span> <span class="o">=</span> <span class="p">[]</span>
+    <span class="n">fin</span> <span class="o">=</span> <span class="n">t</span><span class="o">.</span><span class="n">open_file</span><span class="p">(</span><span class="n">fin</span><span class="p">,</span> <span class="n">mode</span><span class="o">=</span><span class="s">&#39;r&#39;</span><span class="p">)</span>
+    <span class="n">tbls</span> <span class="o">=</span> <span class="n">fin</span><span class="o">.</span><span class="n">root</span><span class="o">.</span><span class="n">_f_list_nodes</span><span class="p">(</span><span class="n">classname</span><span class="o">=</span><span class="s">&quot;Table&quot;</span><span class="p">)</span> \
+        <span class="k">if</span> <span class="n">subinput</span> <span class="ow">is</span> <span class="bp">None</span> <span class="k">else</span> \
+        <span class="p">[</span><span class="n">fin</span><span class="o">.</span><span class="n">root</span><span class="o">.</span><span class="n">_f_get_child</span><span class="p">(</span><span class="n">k</span><span class="p">)</span> <span class="k">for</span> <span class="n">k</span> <span class="ow">in</span> <span class="n">subinput</span><span class="o">.</span><span class="n">keys</span><span class="p">()]</span>
+    
+    <span class="k">for</span> <span class="n">tbl</span> <span class="ow">in</span> <span class="n">tbls</span><span class="p">:</span>
+        <span class="n">tblname</span> <span class="o">=</span> <span class="n">tbl</span><span class="o">.</span><span class="n">_v_name</span>
+        <span class="k">print</span><span class="p">(</span><span class="s">&quot;adding&quot;</span><span class="p">,</span> <span class="n">tblname</span><span class="p">)</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="nb">hasattr</span><span class="p">(</span><span class="n">cyclopts</span><span class="o">.</span><span class="n">params</span><span class="p">,</span> <span class="n">tblname</span><span class="p">):</span>
+            <span class="k">continue</span>
+        <span class="n">start</span> <span class="o">=</span> <span class="n">subinput</span><span class="p">[</span><span class="n">tblname</span><span class="p">][</span><span class="mi">0</span><span class="p">]</span> <span class="k">if</span> <span class="n">subinput</span> <span class="ow">is</span> <span class="ow">not</span> <span class="bp">None</span> <span class="k">else</span> <span class="mi">0</span>
+        <span class="n">stop</span> <span class="o">=</span> <span class="n">subinput</span><span class="p">[</span><span class="n">tblname</span><span class="p">][</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span> <span class="o">+</span> <span class="mi">1</span> <span class="k">if</span> <span class="n">subinput</span> <span class="ow">is</span> <span class="ow">not</span> <span class="bp">None</span> <span class="k">else</span> <span class="n">tbl</span><span class="o">.</span><span class="n">nrows</span>
+        <span class="k">for</span> <span class="n">row</span> <span class="ow">in</span> <span class="n">tbl</span><span class="o">.</span><span class="n">iterrows</span><span class="p">(</span><span class="n">start</span><span class="o">=</span><span class="n">start</span><span class="p">,</span> <span class="n">stop</span><span class="o">=</span><span class="n">stop</span><span class="p">):</span>
+            <span class="n">inst</span> <span class="o">=</span> <span class="nb">getattr</span><span class="p">(</span><span class="n">cyclopts</span><span class="o">.</span><span class="n">params</span><span class="p">,</span> <span class="n">tblname</span><span class="p">)()</span>
+            <span class="n">inst</span><span class="o">.</span><span class="n">import_h5</span><span class="p">(</span><span class="n">row</span><span class="p">)</span>
+            <span class="n">samplers</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">inst</span><span class="p">)</span>
+    <span class="n">fin</span><span class="o">.</span><span class="n">close</span><span class="p">()</span>
+    <span class="k">return</span> <span class="n">samplers</span>
+</div>
+<div class="viewcode-block" id="to_h5"><a class="viewcode-back" href="../../pyapi/tools.html#cyclopts.tools.to_h5">[docs]</a><span class="k">def</span> <span class="nf">to_h5</span><span class="p">(</span><span class="n">fin</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span> <span class="n">fout</span><span class="o">=</span><span class="bp">None</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Converts a contiguous dataspace as defined by an input run control file</span>
+<span class="sd">    into an HDF5 database. Each discrete point, as represented by a Sampler-type</span>
+<span class="sd">    object is converted into a row in a table of the object&#39;s name.</span>
+<span class="sd">    </span>
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    fin : str</span>
+<span class="sd">        the input file name (*.py)</span>
+<span class="sd">    fout : str</span>
+<span class="sd">        the output file name (*.h5)</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">fin</span> <span class="o">=</span> <span class="s">&quot;cycloptsrc.py&quot;</span> <span class="k">if</span> <span class="n">fin</span> <span class="ow">is</span> <span class="bp">None</span> <span class="k">else</span> <span class="n">fin</span>
+    <span class="n">fout</span> <span class="o">=</span> <span class="s">&quot;in.h5&quot;</span> <span class="k">if</span> <span class="n">fout</span> <span class="ow">is</span> <span class="bp">None</span> <span class="k">else</span> <span class="n">fout</span>
+    <span class="n">samplers</span> <span class="o">=</span> <span class="n">SamplerBuilder</span><span class="p">()</span><span class="o">.</span><span class="n">build</span><span class="p">(</span><span class="n">parse_rc</span><span class="p">(</span><span class="n">fin</span><span class="p">))</span>
+    <span class="n">filters</span> <span class="o">=</span> <span class="n">t</span><span class="o">.</span><span class="n">Filters</span><span class="p">(</span><span class="n">complevel</span><span class="o">=</span><span class="mi">4</span><span class="p">)</span>
+    <span class="n">fout</span> <span class="o">=</span> <span class="n">t</span><span class="o">.</span><span class="n">open_file</span><span class="p">(</span><span class="n">fout</span><span class="p">,</span> <span class="n">mode</span><span class="o">=</span><span class="s">&#39;a&#39;</span><span class="p">,</span> <span class="n">filters</span><span class="o">=</span><span class="n">filters</span><span class="p">)</span>
+
+    <span class="n">d</span> <span class="o">=</span> <span class="n">defaultdict</span><span class="p">(</span><span class="nb">list</span><span class="p">)</span>
+    <span class="k">for</span> <span class="n">s</span> <span class="ow">in</span> <span class="n">samplers</span><span class="p">:</span>
+        <span class="n">d</span><span class="p">[</span><span class="n">s</span><span class="o">.</span><span class="n">__class__</span><span class="o">.</span><span class="n">__name__</span><span class="p">]</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">s</span><span class="p">)</span>
+    <span class="k">for</span> <span class="n">name</span> <span class="ow">in</span> <span class="n">d</span><span class="o">.</span><span class="n">keys</span><span class="p">():</span>
+        <span class="k">if</span> <span class="n">name</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">fout</span><span class="o">.</span><span class="n">root</span><span class="o">.</span><span class="n">_f_list_nodes</span><span class="p">(</span><span class="n">classname</span><span class="o">=</span><span class="s">&quot;Table&quot;</span><span class="p">):</span>
+            <span class="k">print</span><span class="p">(</span><span class="s">&quot;creating table {0}&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">name</span><span class="p">))</span>
+            <span class="n">fout</span><span class="o">.</span><span class="n">create_table</span><span class="p">(</span><span class="n">fout</span><span class="o">.</span><span class="n">root</span><span class="p">,</span> <span class="n">name</span><span class="p">,</span> 
+                              <span class="n">d</span><span class="p">[</span><span class="n">name</span><span class="p">][</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">describe_h5</span><span class="p">(),</span> <span class="n">name</span> <span class="o">+</span> <span class="s">&quot; Table&quot;</span><span class="p">,</span> 
+                              <span class="n">filters</span><span class="o">=</span><span class="n">filters</span><span class="p">)</span>
+        <span class="n">tbl</span> <span class="o">=</span> <span class="n">fout</span><span class="o">.</span><span class="n">root</span><span class="o">.</span><span class="n">_f_get_child</span><span class="p">(</span><span class="n">name</span><span class="p">)</span>
+        <span class="n">row</span> <span class="o">=</span> <span class="n">tbl</span><span class="o">.</span><span class="n">row</span>
+        <span class="k">for</span> <span class="n">s</span> <span class="ow">in</span> <span class="n">d</span><span class="p">[</span><span class="n">name</span><span class="p">]:</span>
+            <span class="n">s</span><span class="o">.</span><span class="n">export_h5</span><span class="p">(</span><span class="n">row</span><span class="p">)</span>
+            <span class="n">row</span><span class="o">.</span><span class="n">append</span><span class="p">()</span>    
+        <span class="n">tbl</span><span class="o">.</span><span class="n">flush</span><span class="p">()</span>
+    <span class="n">fout</span><span class="o">.</span><span class="n">close</span><span class="p">()</span>
+</div>
+<div class="viewcode-block" id="exec_from_h5"><a class="viewcode-back" href="../../pyapi/tools.html#cyclopts.tools.exec_from_h5">[docs]</a><span class="k">def</span> <span class="nf">exec_from_h5</span><span class="p">(</span><span class="n">fin</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span> <span class="n">fout</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span> <span class="n">rc</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span> <span class="n">solvers</span><span class="o">=</span><span class="bp">None</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Runs an instance of Cyclopts.</span>
+<span class="sd">    </span>
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    fin : str, optional</span>
+<span class="sd">        the input file name (*.h5)</span>
+<span class="sd">    fout : str, optional</span>
+<span class="sd">        the output file name (*.h5)</span>
+<span class="sd">    rc : str, optional</span>
+<span class="sd">        the run control file</span>
+<span class="sd">    solvers : list, optional</span>
+<span class="sd">        the solvers to use on each generated instance</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">fin</span> <span class="o">=</span> <span class="s">&quot;in.h5&quot;</span> <span class="k">if</span> <span class="n">fin</span> <span class="ow">is</span> <span class="bp">None</span> <span class="k">else</span> <span class="n">fin</span>
+    <span class="n">fout</span> <span class="o">=</span> <span class="s">&quot;out.h5&quot;</span> <span class="k">if</span> <span class="n">fout</span> <span class="ow">is</span> <span class="bp">None</span> <span class="k">else</span> <span class="n">fout</span>
+    <span class="n">solvers</span> <span class="o">=</span> <span class="p">[</span><span class="s">&quot;cbc&quot;</span><span class="p">]</span> <span class="k">if</span> <span class="n">solvers</span> <span class="ow">is</span> <span class="bp">None</span> <span class="k">else</span> <span class="n">solvers</span>
+    
+    <span class="n">subinput</span> <span class="o">=</span> <span class="bp">None</span>
+    <span class="k">if</span> <span class="n">rc</span> <span class="ow">is</span> <span class="ow">not</span> <span class="bp">None</span><span class="p">:</span>
+        <span class="n">rcdict</span> <span class="o">=</span> <span class="n">parse_rc</span><span class="p">(</span><span class="n">rc</span><span class="p">)</span>
+        <span class="n">subinput</span> <span class="o">=</span> <span class="p">{</span><span class="n">rcdict</span><span class="o">.</span><span class="n">path</span><span class="p">:</span> <span class="n">rcdict</span><span class="o">.</span><span class="n">rows</span><span class="p">}</span>
+        
+    <span class="n">samplers</span> <span class="o">=</span> <span class="n">from_h5</span><span class="p">(</span><span class="n">fin</span><span class="p">,</span> <span class="n">subinput</span><span class="p">)</span>
+    <span class="n">execute_cyclopts</span><span class="p">(</span><span class="n">samplers</span><span class="p">,</span> <span class="n">solvers</span><span class="p">,</span> <span class="n">fout</span><span class="p">)</span>
+</div>
+<span class="k">def</span> <span class="nf">execute_cyclopts</span><span class="p">(</span><span class="n">samplers</span><span class="p">,</span> <span class="n">solvers</span><span class="p">,</span> <span class="n">db_path</span><span class="p">):</span> 
+    <span class="k">for</span> <span class="n">sampler</span> <span class="ow">in</span> <span class="n">samplers</span><span class="p">:</span>
+        <span class="k">for</span> <span class="n">solver</span> <span class="ow">in</span> <span class="n">solvers</span><span class="p">:</span>
+            <span class="n">rrb</span> <span class="o">=</span> <span class="n">ReactorRequestBuilder</span><span class="p">(</span><span class="n">sampler</span><span class="p">)</span>
+            <span class="n">gparams</span> <span class="o">=</span> <span class="n">rrb</span><span class="o">.</span><span class="n">build</span><span class="p">()</span>
+            <span class="n">sparams</span> <span class="o">=</span> <span class="n">SolverParams</span><span class="p">(</span><span class="n">solver</span><span class="p">)</span>
+            <span class="n">soln</span> <span class="o">=</span> <span class="n">execute_exchange</span><span class="p">(</span><span class="n">gparams</span><span class="p">,</span> <span class="n">sparams</span><span class="p">)</span>
+            <span class="n">report</span><span class="p">(</span><span class="n">sampler</span><span class="p">,</span> <span class="n">gparams</span><span class="p">,</span> <span class="n">sparams</span><span class="p">,</span> <span class="n">soln</span><span class="p">,</span> <span class="n">db_path</span><span class="o">=</span><span class="n">db_path</span><span class="p">)</span>
+</pre></div>
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar">
+        <div class="sphinxsidebarwrapper">
+<div id="searchbox" style="display: none">
+  <h3>Quick search</h3>
+    <form class="search" action="../../search.html" method="get">
+      <input type="text" name="q" />
+      <input type="submit" value="Go" />
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+    <p class="searchtip" style="font-size: 90%">
+    Enter search terms or a module, class or function name.
+    </p>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="relbar-bottom">
+        
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../../genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="../../py-modindex.html" title="Python Module Index"
+             >modules</a> &nbsp; &nbsp;</li>
+    <li><a href="../../index.html">Cyclopts 0.1.0 documentation</a> &raquo;</li>
+
+          <li><a href="../index.html" >Module code</a> &raquo;</li> 
+      </ul>
+    </div>
+    </div>
+
+    <div class="footer">
+        &copy; Copyright 2014, Matthew J. Gidden.
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.2.2.
+    </div>
+    <!-- cloud_sptheme 1.4 -->
+  </body>
+</html>

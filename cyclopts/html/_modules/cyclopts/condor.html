@@ -1,0 +1,398 @@
+
+
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>cyclopts.condor &mdash; Cyclopts 0.1.0 documentation</title>
+    
+    <link rel="stylesheet" href="../../_static/cloud.css" type="text/css" />
+    <link rel="stylesheet" href="../../_static/pygments.css" type="text/css" />
+    <link rel="stylesheet" href="//fonts.googleapis.com/css?family=Noticia+Text|Open+Sans|Droid+Sans+Mono" type="text/css" />
+    
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    '../../',
+        VERSION:     '0.1.0',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="../../_static/jquery.js"></script>
+    <script type="text/javascript" src="../../_static/underscore.js"></script>
+    <script type="text/javascript" src="../../_static/doctools.js"></script>
+    <script type="text/javascript" src="../../_static/jquery.cookie.js"></script>
+    <script type="text/javascript" src="../../_static/cloud.js"></script>
+    <link rel="top" title="Cyclopts 0.1.0 documentation" href="../../index.html" />
+    <link rel="up" title="Module code" href="../index.html" /> 
+        <meta name="viewport" content="width=device-width, initial-scale=1">
+  </head>
+  <body>
+    <div class="relbar-top">
+        
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../../genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="../../py-modindex.html" title="Python Module Index"
+             >modules</a> &nbsp; &nbsp;</li>
+    <li><a href="../../index.html">Cyclopts 0.1.0 documentation</a> &raquo;</li>
+
+          <li><a href="../index.html" accesskey="U">Module code</a> &raquo;</li> 
+      </ul>
+    </div>
+    </div>
+  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body">
+            
+  <h1>Source code for cyclopts.condor</h1><div class="highlight"><pre>
+<span class="kn">from</span> <span class="nn">__future__</span> <span class="kn">import</span> <span class="n">print_function</span>
+
+<span class="kn">import</span> <span class="nn">warnings</span>
+<span class="kn">import</span> <span class="nn">tables</span> <span class="kn">as</span> <span class="nn">t</span>
+<span class="kn">import</span> <span class="nn">shutil</span>
+<span class="kn">import</span> <span class="nn">time</span>
+<span class="kn">import</span> <span class="nn">os</span>
+<span class="kn">import</span> <span class="nn">io</span>
+
+<span class="k">try</span><span class="p">:</span>
+    <span class="kn">import</span> <span class="nn">paramiko</span> <span class="kn">as</span> <span class="nn">pm</span>
+    <span class="kn">import</span> <span class="nn">tarfile</span>
+    <span class="kn">from</span> <span class="nn">datetime</span> <span class="kn">import</span> <span class="n">datetime</span>
+    <span class="kn">import</span> <span class="nn">getpass</span>
+    <span class="kn">import</span> <span class="nn">glob</span>
+<span class="k">except</span> <span class="ne">ImportError</span><span class="p">:</span>
+    <span class="n">warnings</span><span class="o">.</span><span class="n">warn</span><span class="p">((</span><span class="s">&quot;The Condor module was not able to &quot;</span>
+                   <span class="s">&quot;import its necessary modules&quot;</span><span class="p">),</span> <span class="ne">ImportWarning</span><span class="p">)</span>
+
+<span class="kn">from</span> <span class="nn">cyclopts.tools</span> <span class="kn">import</span> <span class="n">combine</span>
+
+<span class="n">rc_template</span> <span class="o">=</span> <span class="s">u&quot;&quot;&quot;</span>
+<span class="s">path=&#39;{0}&#39; </span>
+<span class="s">rows=range({1}, {2})</span>
+<span class="s">&quot;&quot;&quot;</span>
+
+<span class="n">sub_template</span> <span class="o">=</span> <span class="s">u&quot;&quot;&quot;</span>
+<span class="s">universe = vanilla</span>
+<span class="s">executable = run.sh</span>
+<span class="s">arguments = {0}</span>
+<span class="s">output = {0}.out</span>
+<span class="s">error = {0}.err</span>
+<span class="s">log = {0}.log</span>
+<span class="s">requirements = (OpSysAndVer =?= &quot;SL6&quot;) &amp;&amp; Arch == &quot;X86_64&quot;</span>
+<span class="s">should_transfer_files = YES</span>
+<span class="s">when_to_transfer_output = ON_EXIT</span>
+<span class="s">transfer_input_files = ../../tars/cyclopts-build.tar.gz, {1}, {0}.rc</span>
+<span class="s">request_cpus = 1</span>
+<span class="s">request_memory = 2500</span>
+<span class="s">request_disk = 10242880</span>
+<span class="s">notification = never</span>
+<span class="s">queue</span>
+<span class="s">&quot;&quot;&quot;</span>
+
+<span class="n">run_template</span> <span class="o">=</span> <span class="s">u&quot;&quot;&quot;#!/bin/bash</span>
+<span class="s">tar -xf cyclopts-build.tar.gz</span>
+<span class="s">tar -xf cyclus-install.tar.gz</span>
+<span class="s">tar -xf cyclus-deps.tar.gz</span>
+<span class="s">tar -xf python-modules.tar.gz</span>
+<span class="s">tar -xf python-build.tar.gz</span>
+<span class="s">tar -xf scripts.tar.gz</span>
+<span class="s">source ./scripts/source.sh</span>
+<span class="s">mkdir -p $CYCLOPTS_INST_DIR/lib/python2.7/site-packages/</span>
+<span class="s">git clone https://github.com/gidden/cyclopts</span>
+<span class="s">cd cyclopts</span>
+<span class="s">./setup.py install --user</span>
+<span class="s">cd ..;</span>
+<span class="s">cyclopts exec -i {0} -o $1_out.h5 --solvers {solvers} --rc=$1.rc </span>
+<span class="s">rm *.tar.gz</span>
+<span class="s">&quot;&quot;&quot;</span>
+
+<span class="n">dag_template</span> <span class="o">=</span> <span class="s">u&quot;&quot;&quot;JOB J_{0} {0}.sub</span><span class="se">\n</span><span class="s">&quot;&quot;&quot;</span>
+
+<div class="viewcode-block" id="gen_files"><a class="viewcode-back" href="../../pyapi/condor.html#cyclopts.condor.gen_files">[docs]</a><span class="k">def</span> <span class="nf">gen_files</span><span class="p">(</span><span class="n">prefix</span><span class="o">=</span><span class="s">&quot;.&quot;</span><span class="p">,</span> <span class="n">db</span><span class="o">=</span><span class="s">&quot;in.h5&quot;</span><span class="p">,</span> <span class="n">solvers</span><span class="o">=</span><span class="p">[</span><span class="s">&#39;cbc&#39;</span><span class="p">],</span> 
+              <span class="n">tblname</span><span class="o">=</span><span class="s">&quot;ReactorRequestSampler&quot;</span><span class="p">,</span> <span class="n">subfile</span> <span class="o">=</span> <span class="s">&quot;dag.sub&quot;</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Generates all files needed to run a DAGMan instance of the given input</span>
+<span class="sd">    database.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">h5file</span> <span class="o">=</span> <span class="n">t</span><span class="o">.</span><span class="n">open_file</span><span class="p">(</span><span class="n">db</span><span class="p">,</span> <span class="n">mode</span><span class="o">=</span><span class="s">&#39;r&#39;</span><span class="p">)</span>
+    <span class="k">if</span> <span class="nb">hasattr</span><span class="p">(</span><span class="n">h5file</span><span class="o">.</span><span class="n">root</span><span class="p">,</span> <span class="n">tblname</span><span class="p">):</span>
+        <span class="n">tbl</span> <span class="o">=</span> <span class="nb">getattr</span><span class="p">(</span><span class="n">h5file</span><span class="o">.</span><span class="n">root</span><span class="p">,</span> <span class="n">tblname</span><span class="p">)</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="k">raise</span> <span class="ne">IOError</span><span class="p">(</span><span class="s">&quot;Can&#39;t find table with name {0}.&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">tbl</span><span class="p">))</span>
+    <span class="n">nrows</span> <span class="o">=</span> <span class="n">tbl</span><span class="o">.</span><span class="n">nrows</span>
+    <span class="n">h5file</span><span class="o">.</span><span class="n">close</span><span class="p">()</span>
+    
+    <span class="k">print</span><span class="p">(</span><span class="s">&quot;generating files for {0} runs&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">nrows</span><span class="p">))</span>
+    <span class="n">dag_lines</span> <span class="o">=</span> <span class="s">&quot;&quot;</span>
+    <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">nrows</span><span class="p">):</span>
+        <span class="n">rcname</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">prefix</span><span class="p">,</span> <span class="s">&quot;{0}.rc&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">i</span><span class="p">))</span>
+        <span class="k">with</span> <span class="n">io</span><span class="o">.</span><span class="n">open</span><span class="p">(</span><span class="n">rcname</span><span class="p">,</span> <span class="s">&#39;w&#39;</span><span class="p">)</span> <span class="k">as</span> <span class="n">f</span><span class="p">:</span>
+            <span class="n">f</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="n">rc_template</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">tblname</span><span class="p">,</span> <span class="n">i</span><span class="p">,</span> <span class="n">i</span><span class="o">+</span><span class="mi">1</span><span class="p">))</span>
+        <span class="n">subname</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">prefix</span><span class="p">,</span> <span class="s">&quot;{0}.sub&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">i</span><span class="p">))</span>
+        <span class="k">with</span> <span class="n">io</span><span class="o">.</span><span class="n">open</span><span class="p">(</span><span class="n">subname</span><span class="p">,</span> <span class="s">&#39;w&#39;</span><span class="p">)</span> <span class="k">as</span> <span class="n">f</span><span class="p">:</span>
+            <span class="n">f</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="n">sub_template</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">i</span><span class="p">,</span> <span class="n">db</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s">&quot;/&quot;</span><span class="p">)[</span><span class="o">-</span><span class="mi">1</span><span class="p">]))</span>
+        <span class="n">dag_lines</span> <span class="o">+=</span> <span class="n">dag_template</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">i</span><span class="p">)</span>
+    <span class="n">dag_lines</span> <span class="o">+=</span> <span class="s">&quot;DAGMAN_MAX_JOBS_IDLE = 1000</span><span class="se">\n</span><span class="s">&quot;</span>
+
+    <span class="n">runfile</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">prefix</span><span class="p">,</span> <span class="s">&quot;run.sh&quot;</span><span class="p">)</span>
+    <span class="n">solvers</span> <span class="o">=</span> <span class="s">&quot; &quot;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">solvers</span><span class="p">)</span>
+    <span class="k">with</span> <span class="n">io</span><span class="o">.</span><span class="n">open</span><span class="p">(</span><span class="n">runfile</span><span class="p">,</span> <span class="s">&#39;w&#39;</span><span class="p">)</span> <span class="k">as</span> <span class="n">f</span><span class="p">:</span>
+        <span class="n">f</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="n">run_template</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">db</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s">&#39;/&#39;</span><span class="p">)[</span><span class="o">-</span><span class="mi">1</span><span class="p">],</span> <span class="n">solvers</span><span class="o">=</span><span class="n">solvers</span><span class="p">))</span>
+
+    <span class="n">dagfile</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">prefix</span><span class="p">,</span> <span class="s">&quot;dag.sub&quot;</span><span class="p">)</span>
+    <span class="k">with</span> <span class="n">io</span><span class="o">.</span><span class="n">open</span><span class="p">(</span><span class="n">dagfile</span><span class="p">,</span> <span class="s">&#39;w&#39;</span><span class="p">)</span> <span class="k">as</span> <span class="n">f</span><span class="p">:</span>
+        <span class="n">f</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="n">dag_lines</span><span class="p">)</span>
+</div>
+<div class="viewcode-block" id="wait_till_found"><a class="viewcode-back" href="../../pyapi/condor.html#cyclopts.condor.wait_till_found">[docs]</a><span class="k">def</span> <span class="nf">wait_till_found</span><span class="p">(</span><span class="n">client</span><span class="p">,</span> <span class="n">path</span><span class="p">,</span> <span class="n">t_sleep</span><span class="o">=</span><span class="mi">5</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Queries a client if a an expected file exists until it does.&quot;&quot;&quot;</span>
+    <span class="k">print</span><span class="p">(</span><span class="s">&#39;Waiting for existence of {0}&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">path</span><span class="p">))</span>
+    <span class="n">found</span> <span class="o">=</span> <span class="bp">False</span>
+    <span class="k">while</span> <span class="ow">not</span> <span class="n">found</span><span class="p">:</span>
+        <span class="n">cmd</span> <span class="o">=</span> <span class="s">&quot;find {0}&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">path</span><span class="p">)</span>
+        <span class="k">print</span><span class="p">(</span><span class="s">&quot;Remotely executing &#39;{0}&#39;&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">cmd</span><span class="p">))</span>
+        <span class="n">stdin</span><span class="p">,</span> <span class="n">stdout</span><span class="p">,</span> <span class="n">stderr</span> <span class="o">=</span> <span class="n">client</span><span class="o">.</span><span class="n">exec_command</span><span class="p">(</span><span class="n">cmd</span><span class="p">)</span>
+        <span class="n">found</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">stdout</span><span class="o">.</span><span class="n">readlines</span><span class="p">())</span> <span class="o">&gt;</span> <span class="mi">0</span>
+        <span class="n">time</span><span class="o">.</span><span class="n">sleep</span><span class="p">(</span><span class="n">t_sleep</span><span class="p">)</span>
+</div>
+<div class="viewcode-block" id="submit"><a class="viewcode-back" href="../../pyapi/condor.html#cyclopts.condor.submit">[docs]</a><span class="k">def</span> <span class="nf">submit</span><span class="p">(</span><span class="n">client</span><span class="p">,</span> <span class="n">rundir</span><span class="p">,</span> <span class="n">tarname</span><span class="p">,</span> <span class="n">subfile</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Performs a condor DAG sumbission on a client using a tarball of all</span>
+<span class="sd">    submission-related data.</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    client : paramiko SSHClient</span>
+<span class="sd">        the client</span>
+<span class="sd">    rundir : str</span>
+<span class="sd">        the run directory on the client</span>
+<span class="sd">    tarname : str</span>
+<span class="sd">        data tarball name</span>
+<span class="sd">    subfile : str</span>
+<span class="sd">        the name of the submit file</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">ftp</span> <span class="o">=</span> <span class="n">client</span><span class="o">.</span><span class="n">open_sftp</span><span class="p">()</span>
+    <span class="k">print</span><span class="p">(</span><span class="s">&quot;Copying {0} to condor submit node.&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">tarname</span><span class="p">))</span>
+    <span class="n">ftp</span><span class="o">.</span><span class="n">put</span><span class="p">(</span><span class="n">tarname</span><span class="p">,</span> <span class="s">&quot;{0}/{1}&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">rundir</span><span class="p">,</span> <span class="n">tarname</span><span class="p">))</span>
+    <span class="n">ftp</span><span class="o">.</span><span class="n">close</span><span class="p">()</span>
+
+    <span class="n">dirname</span> <span class="o">=</span> <span class="n">tarname</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s">&quot;.tar.gz&quot;</span><span class="p">)[</span><span class="mi">0</span><span class="p">]</span>
+    <span class="n">cmd</span> <span class="o">=</span> <span class="p">(</span><span class="s">&quot;cd {rundir}; &quot;</span>
+           <span class="s">&quot;tar -xf {0}; &quot;</span>
+           <span class="s">&quot;cd {1}; &quot;</span>
+           <span class="s">&quot;condor_submit_dag {submit};&quot;</span><span class="p">)</span>
+    <span class="n">cmd</span> <span class="o">=</span> <span class="n">cmd</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">tarname</span><span class="p">,</span> <span class="n">dirname</span><span class="p">,</span> <span class="n">submit</span><span class="o">=</span><span class="n">subfile</span><span class="p">,</span> <span class="n">rundir</span><span class="o">=</span><span class="n">rundir</span><span class="p">)</span>
+    <span class="k">print</span><span class="p">(</span><span class="s">&quot;Remotely executing &#39;{0}&#39;&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">cmd</span><span class="p">))</span>
+    <span class="n">stdin</span><span class="p">,</span> <span class="n">stdout</span><span class="p">,</span> <span class="n">stderr</span> <span class="o">=</span> <span class="n">client</span><span class="o">.</span><span class="n">exec_command</span><span class="p">(</span><span class="n">cmd</span><span class="p">)</span>
+    
+    <span class="n">checkfile</span> <span class="o">=</span> <span class="s">&quot;{rundir}/{0}/{1}.dagman.out&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span>
+        <span class="n">dirname</span><span class="p">,</span> <span class="n">subfile</span><span class="p">,</span> <span class="n">rundir</span><span class="o">=</span><span class="n">rundir</span><span class="p">)</span>
+    <span class="n">wait_till_found</span><span class="p">(</span><span class="n">client</span><span class="p">,</span> <span class="n">checkfile</span><span class="p">)</span>
+
+    <span class="n">cmd</span> <span class="o">=</span> <span class="s">&quot;head {0}&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">checkfile</span><span class="p">)</span>
+    <span class="k">print</span><span class="p">(</span><span class="s">&quot;Remotely executing &#39;{0}&#39;&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">cmd</span><span class="p">))</span>
+    <span class="n">stdin</span><span class="p">,</span> <span class="n">stdout</span><span class="p">,</span> <span class="n">stderr</span> <span class="o">=</span> <span class="n">client</span><span class="o">.</span><span class="n">exec_command</span><span class="p">(</span><span class="n">cmd</span><span class="p">)</span>
+    <span class="n">err</span> <span class="o">=</span> <span class="n">stderr</span><span class="o">.</span><span class="n">readlines</span><span class="p">()</span>
+    <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">err</span><span class="p">)</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">:</span>
+        <span class="k">raise</span> <span class="ne">IOError</span><span class="p">(</span><span class="s">&quot; &quot;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">err</span><span class="p">))</span>
+    <span class="n">pid</span> <span class="o">=</span> <span class="n">stdout</span><span class="o">.</span><span class="n">readlines</span><span class="p">()[</span><span class="mi">1</span><span class="p">]</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s">&#39;condor_scheduniv_exec.&#39;</span><span class="p">)[</span><span class="mi">1</span><span class="p">]</span><span class="o">.</span><span class="n">split</span><span class="p">()[</span><span class="mi">0</span><span class="p">]</span>
+
+    <span class="k">return</span> <span class="n">pid</span>
+</div>
+<div class="viewcode-block" id="check_finish"><a class="viewcode-back" href="../../pyapi/condor.html#cyclopts.condor.check_finish">[docs]</a><span class="k">def</span> <span class="nf">check_finish</span><span class="p">(</span><span class="n">client</span><span class="p">,</span> <span class="n">pid</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Checks the status of a condor run on the client.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">cmd</span> <span class="o">=</span> <span class="s">&quot;condor_q {0}&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">pid</span><span class="p">)</span>
+    <span class="k">print</span><span class="p">(</span><span class="s">&quot;Remotely executing &#39;{0}&#39;&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">cmd</span><span class="p">))</span>
+    <span class="n">stdin</span><span class="p">,</span> <span class="n">stdout</span><span class="p">,</span> <span class="n">stderr</span> <span class="o">=</span> <span class="n">client</span><span class="o">.</span><span class="n">exec_command</span><span class="p">(</span><span class="n">cmd</span><span class="p">)</span>
+    <span class="n">outlines</span> <span class="o">=</span> <span class="n">stdout</span><span class="o">.</span><span class="n">readlines</span><span class="p">()</span>
+    <span class="n">done</span> <span class="o">=</span> <span class="bp">False</span> <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">outlines</span><span class="p">)</span> <span class="o">==</span> <span class="mi">0</span> <span class="k">else</span> <span class="n">outlines</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span><span class="o">.</span><span class="n">split</span><span class="p">()[</span><span class="mi">0</span><span class="p">]</span> <span class="o">==</span> <span class="s">&#39;ID&#39;</span>
+    <span class="k">return</span> <span class="n">done</span>
+</div>
+<div class="viewcode-block" id="aggregate"><a class="viewcode-back" href="../../pyapi/condor.html#cyclopts.condor.aggregate">[docs]</a><span class="k">def</span> <span class="nf">aggregate</span><span class="p">(</span><span class="n">client</span><span class="p">,</span> <span class="n">remotedir</span><span class="p">,</span> <span class="n">localdir</span><span class="p">,</span> <span class="n">outdb</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;After a DAG run has completed, brings all resulting output back to the</span>
+<span class="sd">    local machine and aggregates them into a single file.</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    client : paramiko SSHClient</span>
+<span class="sd">        the client</span>
+<span class="sd">    remotedir : str</span>
+<span class="sd">        the landing directory on the client machine</span>
+<span class="sd">    localdir : str</span>
+<span class="sd">        the landing directory on the local macine</span>
+<span class="sd">    outdb : str</span>
+<span class="sd">        the name of the aggregated output file</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">outdir</span> <span class="o">=</span> <span class="s">&#39;outfiles&#39;</span>
+    <span class="n">outtar</span> <span class="o">=</span> <span class="s">&#39;{0}.tar.gz&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">outdir</span><span class="p">)</span>
+    <span class="n">cmd</span> <span class="o">=</span> <span class="p">(</span><span class="s">&quot;cd {0}; &quot;</span>
+           <span class="s">&quot;mkdir {1}; &quot;</span>
+           <span class="s">&quot;mv *_out.h5 {1}; &quot;</span> 
+           <span class="s">&quot;tar -czf {2} {1};&quot;</span><span class="p">)</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">remotedir</span><span class="p">,</span> <span class="n">outdir</span><span class="p">,</span> <span class="n">outtar</span><span class="p">)</span>
+    <span class="k">print</span><span class="p">(</span><span class="s">&quot;Remotely executing &#39;{0}&#39;&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">cmd</span><span class="p">))</span>
+    <span class="n">stdin</span><span class="p">,</span> <span class="n">stdout</span><span class="p">,</span> <span class="n">stderr</span> <span class="o">=</span> <span class="n">client</span><span class="o">.</span><span class="n">exec_command</span><span class="p">(</span><span class="n">cmd</span><span class="p">)</span>
+
+    <span class="n">remotetar</span> <span class="o">=</span> <span class="s">&#39;{0}/{1}&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">remotedir</span><span class="p">,</span> <span class="n">outtar</span><span class="p">)</span>
+    <span class="n">localtar</span> <span class="o">=</span> <span class="s">&#39;{0}/{1}&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">localdir</span><span class="p">,</span> <span class="n">outtar</span><span class="p">)</span>
+    <span class="n">wait_till_found</span><span class="p">(</span><span class="n">client</span><span class="p">,</span> <span class="n">remotetar</span><span class="p">)</span>
+    <span class="n">ftp</span> <span class="o">=</span> <span class="n">client</span><span class="o">.</span><span class="n">open_sftp</span><span class="p">()</span>
+    <span class="k">print</span><span class="p">(</span><span class="s">&quot;Copying {0} from condor submit node to {1}.&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span>
+            <span class="n">remotetar</span><span class="p">,</span> <span class="n">localtar</span><span class="p">))</span>
+    <span class="n">ftp</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">remotetar</span><span class="p">,</span> <span class="n">localtar</span><span class="p">)</span>
+    <span class="n">ftp</span><span class="o">.</span><span class="n">close</span><span class="p">()</span>
+
+    <span class="k">with</span> <span class="n">tarfile</span><span class="o">.</span><span class="n">open</span><span class="p">(</span><span class="s">&#39;{0}/{1}&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">localdir</span><span class="p">,</span> <span class="n">outtar</span><span class="p">),</span> <span class="s">&#39;r:gz&#39;</span><span class="p">)</span> <span class="k">as</span> <span class="n">f</span><span class="p">:</span>
+        <span class="n">f</span><span class="o">.</span><span class="n">extractall</span><span class="p">(</span><span class="n">localdir</span><span class="p">)</span>
+    <span class="n">os</span><span class="o">.</span><span class="n">remove</span><span class="p">(</span><span class="s">&#39;{0}/{1}&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">localdir</span><span class="p">,</span> <span class="n">outtar</span><span class="p">))</span>
+
+    <span class="n">files</span> <span class="o">=</span> <span class="n">glob</span><span class="o">.</span><span class="n">glob</span><span class="p">(</span><span class="s">&#39;{0}/{1}/*_out.h5&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">localdir</span><span class="p">,</span> <span class="n">outdir</span><span class="p">))</span>
+    <span class="n">combine</span><span class="p">(</span><span class="n">files</span><span class="p">,</span> <span class="s">&#39;{0}/{1}&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">localdir</span><span class="p">,</span> <span class="n">outdb</span><span class="p">))</span>
+
+    <span class="n">shutil</span><span class="o">.</span><span class="n">rmtree</span><span class="p">(</span><span class="s">&#39;{0}/{1}&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">localdir</span><span class="p">,</span> <span class="n">outdir</span><span class="p">))</span>    
+</div>
+<div class="viewcode-block" id="cleanup"><a class="viewcode-back" href="../../pyapi/condor.html#cyclopts.condor.cleanup">[docs]</a><span class="k">def</span> <span class="nf">cleanup</span><span class="p">(</span><span class="n">client</span><span class="p">,</span> <span class="n">remotedir</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Removes all files in the remote directory.&quot;&quot;&quot;</span>
+    <span class="n">cmd</span> <span class="o">=</span> <span class="s">&quot;rm -rf {0}&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">remotedir</span><span class="p">)</span>
+    <span class="k">print</span><span class="p">(</span><span class="s">&quot;Remotely executing &#39;{0}&#39;&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">cmd</span><span class="p">))</span>
+    <span class="n">stdin</span><span class="p">,</span> <span class="n">stdout</span><span class="p">,</span> <span class="n">stderr</span> <span class="o">=</span> <span class="n">client</span><span class="o">.</span><span class="n">exec_command</span><span class="p">(</span><span class="n">cmd</span><span class="p">)</span>
+    </div>
+<div class="viewcode-block" id="submit_dag"><a class="viewcode-back" href="../../pyapi/condor.html#cyclopts.condor.submit_dag">[docs]</a><span class="k">def</span> <span class="nf">submit_dag</span><span class="p">(</span><span class="n">user</span><span class="p">,</span> <span class="n">host</span><span class="p">,</span> <span class="n">indb</span><span class="p">,</span> <span class="n">solvers</span><span class="p">,</span> <span class="n">dumpdir</span><span class="p">,</span> <span class="n">outdb</span><span class="p">,</span> <span class="n">clean</span><span class="p">,</span> <span class="n">auth</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Connects via SSH to a condor submit node, and executes a Cyclopts DAG</span>
+<span class="sd">    run.</span>
+<span class="sd">    </span>
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    user : str</span>
+<span class="sd">        the user on the condor submit host</span>
+<span class="sd">    host : str</span>
+<span class="sd">        the condor submit node host (e.g. submit-1.chtc.wisc.edu)</span>
+<span class="sd">    indb : str</span>
+<span class="sd">        the input database location</span>
+<span class="sd">    solvers : list</span>
+<span class="sd">        the solvers to use</span>
+<span class="sd">    dumpdir : str</span>
+<span class="sd">        the final run directory (where the input and output database files </span>
+<span class="sd">        will be located)</span>
+<span class="sd">    outdb : str</span>
+<span class="sd">        the output database location</span>
+<span class="sd">    clean : bool</span>
+<span class="sd">        if true, removes the working directory on the submit node</span>
+<span class="sd">    auth : bool</span>
+<span class="sd">        if true, query a password authentication</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">timestamp</span> <span class="o">=</span> <span class="s">&quot;_&quot;</span><span class="o">.</span><span class="n">join</span><span class="p">([</span><span class="nb">str</span><span class="p">(</span><span class="n">t</span><span class="p">)</span> <span class="k">for</span> <span class="n">t</span> <span class="ow">in</span> <span class="n">datetime</span><span class="o">.</span><span class="n">now</span><span class="p">()</span><span class="o">.</span><span class="n">timetuple</span><span class="p">()][:</span><span class="o">-</span><span class="mi">3</span><span class="p">])</span>
+    
+    <span class="n">prompt</span> <span class="o">=</span> <span class="s">&quot;Password for {0}@{1}:&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">user</span><span class="p">,</span> <span class="n">host</span><span class="p">)</span>
+    <span class="n">pw</span> <span class="o">=</span> <span class="n">getpass</span><span class="o">.</span><span class="n">getpass</span><span class="p">(</span><span class="n">prompt</span><span class="p">)</span> <span class="k">if</span> <span class="n">auth</span> <span class="k">else</span> <span class="bp">None</span>
+    <span class="n">ssh</span> <span class="o">=</span> <span class="n">pm</span><span class="o">.</span><span class="n">SSHClient</span><span class="p">()</span>
+    <span class="n">ssh</span><span class="o">.</span><span class="n">set_missing_host_key_policy</span><span class="p">(</span><span class="n">pm</span><span class="o">.</span><span class="n">AutoAddPolicy</span><span class="p">())</span>
+
+    <span class="n">run_dir</span> <span class="o">=</span> <span class="s">&quot;run_{0}&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">timestamp</span><span class="p">)</span>
+    <span class="n">sub_dir</span> <span class="o">=</span> <span class="s">&quot;/home/{0}/cyclopts-runs&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">user</span><span class="p">)</span>
+    <span class="n">remote_dir</span> <span class="o">=</span> <span class="s">&quot;{0}/{1}&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">sub_dir</span><span class="p">,</span> <span class="n">run_dir</span><span class="p">)</span>
+
+    <span class="k">if</span> <span class="ow">not</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">exists</span><span class="p">(</span><span class="n">run_dir</span><span class="p">):</span>
+        <span class="n">os</span><span class="o">.</span><span class="n">mkdir</span><span class="p">(</span><span class="n">run_dir</span><span class="p">)</span>
+    <span class="n">shutil</span><span class="o">.</span><span class="n">copy</span><span class="p">(</span><span class="n">indb</span><span class="p">,</span> <span class="n">run_dir</span><span class="p">)</span>
+
+    <span class="n">subfile</span> <span class="o">=</span> <span class="s">&quot;dag.sub&quot;</span>
+    <span class="n">gen_files</span><span class="p">(</span><span class="n">prefix</span><span class="o">=</span><span class="n">run_dir</span><span class="p">,</span> <span class="n">solvers</span><span class="o">=</span><span class="n">solvers</span><span class="p">,</span> <span class="n">db</span><span class="o">=</span><span class="n">indb</span><span class="p">,</span> <span class="n">subfile</span><span class="o">=</span><span class="n">subfile</span><span class="p">)</span>
+    <span class="n">tarname</span> <span class="o">=</span> <span class="s">&quot;{0}.tar.gz&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">run_dir</span><span class="p">)</span>
+    <span class="k">with</span> <span class="n">tarfile</span><span class="o">.</span><span class="n">open</span><span class="p">(</span><span class="n">tarname</span><span class="p">,</span> <span class="s">&#39;w:gz&#39;</span><span class="p">)</span> <span class="k">as</span> <span class="n">f</span><span class="p">:</span>
+        <span class="n">f</span><span class="o">.</span><span class="n">add</span><span class="p">(</span><span class="n">run_dir</span><span class="p">)</span>
+    <span class="n">shutil</span><span class="o">.</span><span class="n">rmtree</span><span class="p">(</span><span class="n">run_dir</span><span class="p">)</span>
+    
+    <span class="k">print</span><span class="p">(</span><span class="s">&quot;connecting to {0}@{1}&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">user</span><span class="p">,</span> <span class="n">host</span><span class="p">))</span>
+    <span class="n">ssh</span><span class="o">.</span><span class="n">connect</span><span class="p">(</span><span class="n">host</span><span class="p">,</span> <span class="n">username</span><span class="o">=</span><span class="n">user</span><span class="p">,</span> <span class="n">password</span><span class="o">=</span><span class="n">pw</span><span class="p">)</span>
+    <span class="n">pid</span> <span class="o">=</span> <span class="n">submit</span><span class="p">(</span><span class="n">ssh</span><span class="p">,</span> <span class="n">sub_dir</span><span class="p">,</span> <span class="n">tarname</span><span class="p">,</span> <span class="n">subfile</span><span class="p">)</span>
+    <span class="n">ssh</span><span class="o">.</span><span class="n">close</span><span class="p">()</span>
+
+    <span class="n">done</span> <span class="o">=</span> <span class="bp">False</span>
+    <span class="k">while</span> <span class="ow">not</span> <span class="n">done</span><span class="p">:</span>
+        <span class="k">print</span><span class="p">(</span><span class="s">&quot;Querying status of {0}&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">run_dir</span><span class="p">))</span>
+        <span class="k">print</span><span class="p">(</span><span class="s">&quot;connecting to {0}@{1}&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">user</span><span class="p">,</span> <span class="n">host</span><span class="p">))</span>
+        <span class="n">ssh</span><span class="o">.</span><span class="n">connect</span><span class="p">(</span><span class="n">host</span><span class="p">,</span> <span class="n">username</span><span class="o">=</span><span class="n">user</span><span class="p">,</span> <span class="n">password</span><span class="o">=</span><span class="n">pw</span><span class="p">)</span>
+        <span class="n">done</span> <span class="o">=</span> <span class="n">check_finish</span><span class="p">(</span><span class="n">ssh</span><span class="p">,</span> <span class="n">pid</span><span class="p">)</span>
+        <span class="n">ssh</span><span class="o">.</span><span class="n">close</span><span class="p">()</span>
+        <span class="n">time</span><span class="o">.</span><span class="n">sleep</span><span class="p">(</span><span class="mi">300</span><span class="p">)</span>
+
+    <span class="k">print</span><span class="p">(</span><span class="s">&quot;{0} has completed.&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">run_dir</span><span class="p">))</span>
+
+    <span class="c"># create dump directory with aggregate input</span>
+    <span class="n">final_in_path</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">dumpdir</span><span class="p">,</span> <span class="n">indb</span><span class="p">)</span>
+    <span class="k">if</span> <span class="ow">not</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">exists</span><span class="p">(</span><span class="n">dumpdir</span><span class="p">):</span>
+        <span class="n">os</span><span class="o">.</span><span class="n">mkdir</span><span class="p">(</span><span class="n">dumpdir</span><span class="p">)</span>
+    <span class="k">if</span> <span class="ow">not</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">exists</span><span class="p">(</span><span class="n">final_in_path</span><span class="p">):</span>
+        <span class="n">shutil</span><span class="o">.</span><span class="n">copy</span><span class="p">(</span><span class="n">indb</span><span class="p">,</span> <span class="n">dumpdir</span><span class="p">)</span>
+    <span class="k">elif</span> <span class="ow">not</span> <span class="n">shutil</span><span class="o">.</span><span class="n">_samefile</span><span class="p">(</span><span class="n">indb</span><span class="p">,</span> <span class="n">final_in_path</span><span class="p">):</span>
+        <span class="n">warnings</span><span class="o">.</span><span class="n">warn</span><span class="p">(</span><span class="s">&quot;Carefull! Overwriting file at {0} with {1}&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span>
+                <span class="n">final_in_path</span><span class="p">,</span> <span class="n">indb</span><span class="p">),</span> <span class="ne">RuntimeWarning</span><span class="p">)</span>
+        <span class="n">shutil</span><span class="o">.</span><span class="n">copy</span><span class="p">(</span><span class="n">indb</span><span class="p">,</span> <span class="n">dumpdir</span><span class="p">)</span>
+    
+    <span class="c"># aggregate and dump output</span>
+    <span class="n">ssh</span><span class="o">.</span><span class="n">connect</span><span class="p">(</span><span class="n">host</span><span class="p">,</span> <span class="n">username</span><span class="o">=</span><span class="n">user</span><span class="p">,</span> <span class="n">password</span><span class="o">=</span><span class="n">pw</span><span class="p">)</span>
+    <span class="k">print</span><span class="p">(</span><span class="s">&quot;connecting to {0}@{1}&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">user</span><span class="p">,</span> <span class="n">host</span><span class="p">))</span>
+    <span class="n">aggregate</span><span class="p">(</span><span class="n">ssh</span><span class="p">,</span> <span class="n">remote_dir</span><span class="p">,</span> <span class="n">dumpdir</span><span class="p">,</span> <span class="n">outdb</span><span class="p">)</span>
+    <span class="k">if</span> <span class="n">clean</span><span class="p">:</span>
+        <span class="n">cleanup</span><span class="p">(</span><span class="n">ssh</span><span class="p">,</span> <span class="n">remote_dir</span><span class="p">)</span>
+    <span class="n">ssh</span><span class="o">.</span><span class="n">close</span><span class="p">()</span></div>
+</pre></div>
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar">
+        <div class="sphinxsidebarwrapper">
+<div id="searchbox" style="display: none">
+  <h3>Quick search</h3>
+    <form class="search" action="../../search.html" method="get">
+      <input type="text" name="q" />
+      <input type="submit" value="Go" />
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+    <p class="searchtip" style="font-size: 90%">
+    Enter search terms or a module, class or function name.
+    </p>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="relbar-bottom">
+        
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../../genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="../../py-modindex.html" title="Python Module Index"
+             >modules</a> &nbsp; &nbsp;</li>
+    <li><a href="../../index.html">Cyclopts 0.1.0 documentation</a> &raquo;</li>
+
+          <li><a href="../index.html" >Module code</a> &raquo;</li> 
+      </ul>
+    </div>
+    </div>
+
+    <div class="footer">
+        &copy; Copyright 2014, Matthew J. Gidden.
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.2.2.
+    </div>
+    <!-- cloud_sptheme 1.4 -->
+  </body>
+</html>
