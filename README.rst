@@ -15,3 +15,10 @@ implementation. They could easily be reimplemented by either uncommenting them
 in ``index.html`` or pulling the desired blocks out of
 ``boilerplate/index.html``. Note that the original ``layout.css`` also lives in
 ``boilerplate/layout.css``.
+
+LICENSE
+=======
+
+Everything in ``index.html`` and ``blog`` are Copyright Matthew
+Gidden. Everything in ``cyclopts`` licensed as found in the `cyclopts repo
+<https://github.com/gidden/cyclopts/blob/master/license>`_.
