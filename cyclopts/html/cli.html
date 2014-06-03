@@ -1,0 +1,212 @@
+
+
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>Cyclopts Command Line Interface (CLI) &mdash; Cyclopts 0.1.0 documentation</title>
+    
+    <link rel="stylesheet" href="_static/cloud.css" type="text/css" />
+    <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+    <link rel="stylesheet" href="//fonts.googleapis.com/css?family=Noticia+Text|Open+Sans|Droid+Sans+Mono" type="text/css" />
+    
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    './',
+        VERSION:     '0.1.0',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="_static/jquery.js"></script>
+    <script type="text/javascript" src="_static/underscore.js"></script>
+    <script type="text/javascript" src="_static/doctools.js"></script>
+    <script type="text/javascript" src="_static/jquery.cookie.js"></script>
+    <script type="text/javascript" src="_static/cloud.js"></script>
+    <link rel="top" title="Cyclopts 0.1.0 documentation" href="index.html" />
+    <link rel="next" title="Cyclopts Python API" href="pyapi/main.html" />
+    <link rel="prev" title="Installing Cyclopts" href="install.html" /> 
+        <meta name="viewport" content="width=device-width, initial-scale=1">
+  </head>
+  <body>
+    <div class="relbar-top">
+        
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="py-modindex.html" title="Python Module Index"
+             >modules</a> &nbsp; &nbsp;</li>
+        <li class="right" >
+          <a href="np-modindex.html" title="Python Module Index"
+             >modules</a> &nbsp; &nbsp;</li>
+        <li class="right" >
+          <a href="pyapi/main.html" title="Cyclopts Python API"
+             accesskey="N">next</a> &nbsp; &nbsp;</li>
+        <li class="right" >
+          <a href="install.html" title="Installing Cyclopts"
+             accesskey="P">previous</a> &nbsp; &nbsp;</li>
+    <li><a href="index.html">Cyclopts 0.1.0 documentation</a> &raquo;</li>
+ 
+      </ul>
+    </div>
+    </div>
+  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body">
+            
+  <div class="section" id="cyclopts-command-line-interface-cli">
+<span id="cli"></span><h1>Cyclopts Command Line Interface (CLI)<a class="headerlink" href="#cyclopts-command-line-interface-cli" title="Permalink to this headline">¶</a></h1>
+<p>Running <tt class="docutils literal"><span class="pre">cyclopts</span> <span class="pre">-h</span></tt> results in</p>
+<div class="highlight-text"><div class="highlight"><pre>usage: Cyclopts [-h] {convert,exec,condor} ...
+
+positional arguments:
+  {convert,exec,condor}
+    convert             Convert a parameter space defined by an input run
+                        control file into an HDF5 database for a Cyclopts
+                        execution run.
+    exec                Executes a parameter sweep as defined by the input
+                        database and other command line arguments.
+    condor              Submits a job to condor, retrieves output when it has
+                        completed, and cleans up the condor user space after.
+
+optional arguments:
+  -h, --help            show this help message and exit
+</pre></div>
+</div>
+<p>Running <tt class="docutils literal"><span class="pre">cyclopts</span> <span class="pre">convert</span> <span class="pre">-h</span></tt> results in</p>
+<div class="highlight-text"><div class="highlight"><pre>usage: Cyclopts convert [-h] [-i INPUT] [-o OUTPUT]
+
+optional arguments:
+  -h, --help            show this help message and exit
+  -i INPUT, --input INPUT
+                        The run control file to use that defines a continguous
+                        parameter space.
+  -o OUTPUT, --output OUTPUT
+                        The HDF5 file to dump converted parameter space points
+                        to. This file can later be used an input to an execute
+                        run.
+</pre></div>
+</div>
+<p>Running <tt class="docutils literal"><span class="pre">cyclopts</span> <span class="pre">exec</span> <span class="pre">-h</span></tt> results in</p>
+<div class="highlight-text"><div class="highlight"><pre>usage: Cyclopts exec [-h] [-i INPUT] [-o OUTPUT]
+                     [--solvers [SOLVERS [SOLVERS ...]]] [--rc RC]
+
+optional arguments:
+  -h, --help            show this help message and exit
+  -i INPUT, --input INPUT
+                        An HDF5 file that defines points in the parameter
+                        space to be run.
+  -o OUTPUT, --output OUTPUT
+                        An HDF5 file to which output will be provided.
+  --solvers [SOLVERS [SOLVERS ...]]
+                        A list of which solvers to use..
+  --rc RC               The run control file, which allows idetification of a
+                        subset of input to run.
+</pre></div>
+</div>
+<p>Running <tt class="docutils literal"><span class="pre">cyclopts</span> <span class="pre">condor</span> <span class="pre">-h</span></tt> results in</p>
+<div class="highlight-text"><div class="highlight"><pre>usage: Cyclopts condor [-h] [-u USER] [-t HOST] [-i INDB] [-d DUMPDIR]
+                       [-o OUTDB] [--no-clean]
+                       [--solvers [SOLVERS [SOLVERS ...]]] [--no-auth]
+
+optional arguments:
+  -h, --help            show this help message and exit
+  -u USER, --user USER  The condor user name.
+  -t HOST, --host HOST  The condor submit host.
+  -i INDB, --input INDB
+                        The input database.
+  -d DUMPDIR, --dumpdir DUMPDIR
+                        The directory in which to place output.
+  -o OUTDB, --output OUTDB
+                        The output database.
+  --no-clean            Do *not* clean up the submit node after.
+  --solvers [SOLVERS [SOLVERS ...]]
+                        A list of which solvers to use on each run.
+  --no-auth             Do not ask for a password for authorization.
+</pre></div>
+</div>
+</div>
+
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar">
+        <div class="sphinxsidebarwrapper">
+  <div class="sphinxprev">
+    <h4>Previous page</h4>
+    <p class="topless"><a href="install.html"
+                          title="Previous page">&larr; Installing Cyclopts</a></p>
+  </div>
+  <div class="sphinxnext">
+    <h4>Next page</h4>
+    <p class="topless"><a href="pyapi/main.html"
+                          title="Next page">&rarr; Cyclopts Python API</a></p>
+  </div>
+  <h3>This Page</h3>
+  <ul class="this-page-menu">
+    <li><a href="_sources/cli.txt"
+           rel="nofollow">Show Source</a></li>
+  </ul>
+<div id="searchbox" style="display: none">
+  <h3>Quick search</h3>
+    <form class="search" action="search.html" method="get">
+      <input type="text" name="q" />
+      <input type="submit" value="Go" />
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+    <p class="searchtip" style="font-size: 90%">
+    Enter search terms or a module, class or function name.
+    </p>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="relbar-bottom">
+        
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="py-modindex.html" title="Python Module Index"
+             >modules</a> &nbsp; &nbsp;</li>
+        <li class="right" >
+          <a href="np-modindex.html" title="Python Module Index"
+             >modules</a> &nbsp; &nbsp;</li>
+        <li class="right" >
+          <a href="pyapi/main.html" title="Cyclopts Python API"
+             >next</a> &nbsp; &nbsp;</li>
+        <li class="right" >
+          <a href="install.html" title="Installing Cyclopts"
+             >previous</a> &nbsp; &nbsp;</li>
+    <li><a href="index.html">Cyclopts 0.1.0 documentation</a> &raquo;</li>
+ 
+      </ul>
+    </div>
+    </div>
+
+    <div class="footer">
+        &copy; Copyright 2014, Matthew J. Gidden.
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.2.2.
+    </div>
+    <!-- cloud_sptheme 1.4 -->
+  </body>
+</html>

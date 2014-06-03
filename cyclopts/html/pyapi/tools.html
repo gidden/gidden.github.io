@@ -1,0 +1,358 @@
+
+
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>Cyclopts Utility Module – cyclopts.tools &mdash; Cyclopts 0.1.0 documentation</title>
+    
+    <link rel="stylesheet" href="../_static/cloud.css" type="text/css" />
+    <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
+    <link rel="stylesheet" href="//fonts.googleapis.com/css?family=Noticia+Text|Open+Sans|Droid+Sans+Mono" type="text/css" />
+    
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    '../',
+        VERSION:     '0.1.0',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="../_static/jquery.js"></script>
+    <script type="text/javascript" src="../_static/underscore.js"></script>
+    <script type="text/javascript" src="../_static/doctools.js"></script>
+    <script type="text/javascript" src="../_static/jquery.cookie.js"></script>
+    <script type="text/javascript" src="../_static/cloud.js"></script>
+    <link rel="top" title="Cyclopts 0.1.0 documentation" href="../index.html" />
+    <link rel="up" title="Cyclopts Python API" href="main.html" />
+    <link rel="prev" title="Analysis Module – cyclopts.analysis" href="analysis.html" /> 
+        <meta name="viewport" content="width=device-width, initial-scale=1">
+  </head>
+  <body>
+    <div class="relbar-top">
+        
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="../py-modindex.html" title="Python Module Index"
+             >modules</a> &nbsp; &nbsp;</li>
+        <li class="right" >
+          <a href="../np-modindex.html" title="Python Module Index"
+             >modules</a> &nbsp; &nbsp;</li>
+        <li class="right" >
+          <a href="analysis.html" title="Analysis Module – cyclopts.analysis"
+             accesskey="P">previous</a> &nbsp; &nbsp;</li>
+    <li><a href="../index.html">Cyclopts 0.1.0 documentation</a> &raquo;</li>
+
+          <li><a href="main.html" accesskey="U">Cyclopts Python API</a> &raquo;</li> 
+      </ul>
+    </div>
+    </div>
+  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body">
+            
+  <div class="section" id="cyclopts-utility-module-cyclopts-tools">
+<span id="tools"></span><h1>Cyclopts Utility Module &#8211; <a class="reference internal" href="#module-cyclopts.tools" title="cyclopts.tools"><tt class="xref py py-mod docutils literal"><span class="pre">cyclopts.tools</span></tt></a><a class="headerlink" href="#cyclopts-utility-module-cyclopts-tools" title="Permalink to this headline">¶</a></h1>
+<p>This module provides a variety of utilities that help work with Cyclopts.</p>
+<span class="target" id="module-cyclopts.tools"></span><p>Provides some useful tools for working with Cyclopts, including reporting
+output.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">author:</th><td class="field-body">Matthew Gidden &lt;<a class="reference external" href="mailto:matthew&#46;gidden&#37;&#52;&#48;gmail&#46;com">matthew<span>&#46;</span>gidden<span>&#64;</span>gmail<span>&#46;</span>com</a>&gt;</td>
+</tr>
+</tbody>
+</table>
+<dl class="class">
+<dt id="cyclopts.tools.RunControl">
+<em class="property">class </em><tt class="descclassname">cyclopts.tools.</tt><tt class="descname">RunControl</tt><big>(</big><em>**kwargs</em><big>)</big><a class="reference internal" href="../_modules/cyclopts/tools.html#RunControl"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#cyclopts.tools.RunControl" title="Permalink to this definition">¶</a></dt>
+<dd><p>A composable configuration class for cyclopts. Unlike argparse.Namespace,
+this keeps the object dictionary (__dict__) separate from the run control
+attributes dictionary (_dict). Modified from xdress&#8217; run control in
+xdress/utils.py</p>
+</dd></dl>
+
+<dl class="class">
+<dt id="cyclopts.tools.SamplerBuilder">
+<em class="property">class </em><tt class="descclassname">cyclopts.tools.</tt><tt class="descname">SamplerBuilder</tt><a class="reference internal" href="../_modules/cyclopts/tools.html#SamplerBuilder"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#cyclopts.tools.SamplerBuilder" title="Permalink to this definition">¶</a></dt>
+<dd><p>A helper class to build configure instances of parameter samplers</p>
+<p class="rubric">Methods</p>
+<table border="1" class="longtable docutils">
+<colgroup>
+<col width="10%" />
+<col width="90%" />
+</colgroup>
+<tbody valign="top">
+<tr class="row-odd"><td><a class="reference internal" href="#cyclopts.tools.SamplerBuilder.build" title="cyclopts.tools.SamplerBuilder.build"><tt class="xref py py-obj docutils literal"><span class="pre">build</span></tt></a>(rc)</td>
+<td>Builds all permutations of samplers.</td>
+</tr>
+</tbody>
+</table>
+<dl class="method">
+<dt id="cyclopts.tools.SamplerBuilder.build">
+<tt class="descname">build</tt><big>(</big><em>rc</em><big>)</big><a class="reference internal" href="../_modules/cyclopts/tools.html#SamplerBuilder.build"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#cyclopts.tools.SamplerBuilder.build" title="Permalink to this definition">¶</a></dt>
+<dd><p>Builds all permutations of samplers.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><p class="first"><strong>rc</strong> : RunControl</p>
+<blockquote class="last">
+<div><p>A RunControl object defined by the user&#8217;s parsed rc file.</p>
+</div></blockquote>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="function">
+<dt id="cyclopts.tools.combine">
+<tt class="descclassname">cyclopts.tools.</tt><tt class="descname">combine</tt><big>(</big><em>files</em>, <em>new_file=None</em><big>)</big><a class="reference internal" href="../_modules/cyclopts/tools.html#combine"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#cyclopts.tools.combine" title="Permalink to this definition">¶</a></dt>
+<dd><p>Combines two or more databases with identical layout, writing their
+output into a new file or appending to the first in the list.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><p class="first"><strong>files</strong> : list</p>
+<blockquote>
+<div><p>A list of all databases to combine</p>
+</div></blockquote>
+<p><strong>new_file</strong> : str, optional</p>
+<blockquote class="last">
+<div><p>The new database to write to. If None, all databases are appended to the
+end of the first database in the list.</p>
+</div></blockquote>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="function">
+<dt id="cyclopts.tools.exec_file">
+<tt class="descclassname">cyclopts.tools.</tt><tt class="descname">exec_file</tt><big>(</big><em>filename</em>, <em>glb=None</em>, <em>loc=None</em><big>)</big><a class="reference internal" href="../_modules/cyclopts/tools.html#exec_file"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#cyclopts.tools.exec_file" title="Permalink to this definition">¶</a></dt>
+<dd><p>A function equivalent to the Python 2.x execfile statement.</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="cyclopts.tools.exec_from_h5">
+<tt class="descclassname">cyclopts.tools.</tt><tt class="descname">exec_from_h5</tt><big>(</big><em>fin=None</em>, <em>fout=None</em>, <em>rc=None</em>, <em>solvers=None</em><big>)</big><a class="reference internal" href="../_modules/cyclopts/tools.html#exec_from_h5"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#cyclopts.tools.exec_from_h5" title="Permalink to this definition">¶</a></dt>
+<dd><p>Runs an instance of Cyclopts.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><p class="first"><strong>fin</strong> : str, optional</p>
+<blockquote>
+<div><p>the input file name (<a href="#id1"><span class="problematic" id="id2">*</span></a>.h5)</p>
+</div></blockquote>
+<p><strong>fout</strong> : str, optional</p>
+<blockquote>
+<div><p>the output file name (<a href="#id3"><span class="problematic" id="id4">*</span></a>.h5)</p>
+</div></blockquote>
+<p><strong>rc</strong> : str, optional</p>
+<blockquote>
+<div><p>the run control file</p>
+</div></blockquote>
+<p><strong>solvers</strong> : list, optional</p>
+<blockquote class="last">
+<div><p>the solvers to use on each generated instance</p>
+</div></blockquote>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="function">
+<dt id="cyclopts.tools.from_h5">
+<tt class="descclassname">cyclopts.tools.</tt><tt class="descname">from_h5</tt><big>(</big><em>fin=None</em>, <em>subinput=None</em><big>)</big><a class="reference internal" href="../_modules/cyclopts/tools.html#from_h5"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#cyclopts.tools.from_h5" title="Permalink to this definition">¶</a></dt>
+<dd><p>Converts an input HDF5 database into a list of Sampler-type objects that
+represent discrete, individual data points in a possibly non-contiguous
+dataspace.</p>
+<p>If subinput is provided, it is read directly. If not, the entire database
+converted.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><p class="first"><strong>fin</strong> : str</p>
+<blockquote>
+<div><p>the input file name (<a href="#id5"><span class="problematic" id="id6">*</span></a>.h5)</p>
+</div></blockquote>
+<p><strong>subinput</strong> : dict</p>
+<blockquote class="last">
+<div><p>a subset of input to read int</p>
+</div></blockquote>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="function">
+<dt id="cyclopts.tools.parse_rc">
+<tt class="descclassname">cyclopts.tools.</tt><tt class="descname">parse_rc</tt><big>(</big><em>files</em><big>)</big><a class="reference internal" href="../_modules/cyclopts/tools.html#parse_rc"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#cyclopts.tools.parse_rc" title="Permalink to this definition">¶</a></dt>
+<dd><p>Parse a list of rc files.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><p class="first"><strong>files</strong> : list or str</p>
+<blockquote class="last">
+<div><p>the files to parse</p>
+</div></blockquote>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="function">
+<dt id="cyclopts.tools.report">
+<tt class="descclassname">cyclopts.tools.</tt><tt class="descname">report</tt><big>(</big><em>sampler</em>, <em>gparams</em>, <em>sparams</em>, <em>soln</em>, <em>sim_id=None</em>, <em>db_path=None</em><big>)</big><a class="reference internal" href="../_modules/cyclopts/tools.html#report"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#cyclopts.tools.report" title="Permalink to this definition">¶</a></dt>
+<dd><p>Dumps parameter and solution information to an HDF5 database.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><p class="first"><strong>sampler</strong> : ReactorRequestSampler or ReactorSupplySampler</p>
+<blockquote>
+<div><p>The sampler used to generate the exchange instance</p>
+</div></blockquote>
+<p><strong>gparams</strong> : GraphParams</p>
+<blockquote>
+<div><p>ExchangeGraph-defining parameters</p>
+</div></blockquote>
+<p><strong>sparams</strong> : SolverParams</p>
+<blockquote>
+<div><p>ExchangeSolver-defining parameters</p>
+</div></blockquote>
+<p><strong>soln</strong> : Solution</p>
+<blockquote>
+<div><p>The solved graph&#8217;s solution.</p>
+</div></blockquote>
+<p><strong>sim_id</strong> : int, optional</p>
+<blockquote>
+<div><p>The simulation id to use in the database. A UUID is generated by 
+default.</p>
+</div></blockquote>
+<p><strong>db_path</strong> : str, optional</p>
+<blockquote class="last">
+<div><p>The database to dump information to. The default is cyclopts.h5 
+file placed in the current working directory.</p>
+</div></blockquote>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="function">
+<dt id="cyclopts.tools.to_h5">
+<tt class="descclassname">cyclopts.tools.</tt><tt class="descname">to_h5</tt><big>(</big><em>fin=None</em>, <em>fout=None</em><big>)</big><a class="reference internal" href="../_modules/cyclopts/tools.html#to_h5"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#cyclopts.tools.to_h5" title="Permalink to this definition">¶</a></dt>
+<dd><p>Converts a contiguous dataspace as defined by an input run control file
+into an HDF5 database. Each discrete point, as represented by a Sampler-type
+object is converted into a row in a table of the object&#8217;s name.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><p class="first"><strong>fin</strong> : str</p>
+<blockquote>
+<div><p>the input file name (<a href="#id7"><span class="problematic" id="id8">*</span></a>.py)</p>
+</div></blockquote>
+<p><strong>fout</strong> : str</p>
+<blockquote class="last">
+<div><p>the output file name (<a href="#id9"><span class="problematic" id="id10">*</span></a>.h5)</p>
+</div></blockquote>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+</div>
+
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar">
+        <div class="sphinxsidebarwrapper">
+  <div class="sphinxprev">
+    <h4>Previous page</h4>
+    <p class="topless"><a href="analysis.html"
+                          title="Previous page">&larr; Analysis Module &#8211; <tt class="docutils literal"><span class="pre">cyclopts.analysis</span></tt></a></p>
+  </div>
+  <h3>This Page</h3>
+  <ul class="this-page-menu">
+    <li><a href="../_sources/pyapi/tools.txt"
+           rel="nofollow">Show Source</a></li>
+  </ul>
+<div id="searchbox" style="display: none">
+  <h3>Quick search</h3>
+    <form class="search" action="../search.html" method="get">
+      <input type="text" name="q" />
+      <input type="submit" value="Go" />
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+    <p class="searchtip" style="font-size: 90%">
+    Enter search terms or a module, class or function name.
+    </p>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="relbar-bottom">
+        
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="../py-modindex.html" title="Python Module Index"
+             >modules</a> &nbsp; &nbsp;</li>
+        <li class="right" >
+          <a href="../np-modindex.html" title="Python Module Index"
+             >modules</a> &nbsp; &nbsp;</li>
+        <li class="right" >
+          <a href="analysis.html" title="Analysis Module – cyclopts.analysis"
+             >previous</a> &nbsp; &nbsp;</li>
+    <li><a href="../index.html">Cyclopts 0.1.0 documentation</a> &raquo;</li>
+
+          <li><a href="main.html" >Cyclopts Python API</a> &raquo;</li> 
+      </ul>
+    </div>
+    </div>
+
+    <div class="footer">
+        &copy; Copyright 2014, Matthew J. Gidden.
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.2.2.
+    </div>
+    <!-- cloud_sptheme 1.4 -->
+  </body>
+</html>

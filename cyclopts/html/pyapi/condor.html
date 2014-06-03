@@ -1,0 +1,270 @@
+
+
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>Condor Interaction Module – cyclopts.condor &mdash; Cyclopts 0.1.0 documentation</title>
+    
+    <link rel="stylesheet" href="../_static/cloud.css" type="text/css" />
+    <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
+    <link rel="stylesheet" href="//fonts.googleapis.com/css?family=Noticia+Text|Open+Sans|Droid+Sans+Mono" type="text/css" />
+    
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    '../',
+        VERSION:     '0.1.0',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="../_static/jquery.js"></script>
+    <script type="text/javascript" src="../_static/underscore.js"></script>
+    <script type="text/javascript" src="../_static/doctools.js"></script>
+    <script type="text/javascript" src="../_static/jquery.cookie.js"></script>
+    <script type="text/javascript" src="../_static/cloud.js"></script>
+    <link rel="top" title="Cyclopts 0.1.0 documentation" href="../index.html" />
+    <link rel="up" title="Cyclopts Python API" href="main.html" />
+    <link rel="next" title="Analysis Module – cyclopts.analysis" href="analysis.html" /> 
+        <meta name="viewport" content="width=device-width, initial-scale=1">
+  </head>
+  <body>
+    <div class="relbar-top">
+        
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="../py-modindex.html" title="Python Module Index"
+             >modules</a> &nbsp; &nbsp;</li>
+        <li class="right" >
+          <a href="../np-modindex.html" title="Python Module Index"
+             >modules</a> &nbsp; &nbsp;</li>
+        <li class="right" >
+          <a href="analysis.html" title="Analysis Module – cyclopts.analysis"
+             accesskey="N">next</a> &nbsp; &nbsp;</li>
+    <li><a href="../index.html">Cyclopts 0.1.0 documentation</a> &raquo;</li>
+
+          <li><a href="main.html" accesskey="U">Cyclopts Python API</a> &raquo;</li> 
+      </ul>
+    </div>
+    </div>
+  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body">
+            
+  <div class="section" id="condor-interaction-module-cyclopts-condor">
+<span id="condor"></span><h1>Condor Interaction Module &#8211; <a class="reference internal" href="#module-cyclopts.condor" title="cyclopts.condor"><tt class="xref py py-mod docutils literal"><span class="pre">cyclopts.condor</span></tt></a><a class="headerlink" href="#condor-interaction-module-cyclopts-condor" title="Permalink to this headline">¶</a></h1>
+<p>This module provides an API to launch jobs to condor and receive related output.</p>
+<span class="target" id="module-cyclopts.condor"></span><dl class="function">
+<dt id="cyclopts.condor.aggregate">
+<tt class="descclassname">cyclopts.condor.</tt><tt class="descname">aggregate</tt><big>(</big><em>client</em>, <em>remotedir</em>, <em>localdir</em>, <em>outdb</em><big>)</big><a class="reference internal" href="../_modules/cyclopts/condor.html#aggregate"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#cyclopts.condor.aggregate" title="Permalink to this definition">¶</a></dt>
+<dd><p>After a DAG run has completed, brings all resulting output back to the
+local machine and aggregates them into a single file.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><p class="first"><strong>client</strong> : paramiko SSHClient</p>
+<blockquote>
+<div><p>the client</p>
+</div></blockquote>
+<p><strong>remotedir</strong> : str</p>
+<blockquote>
+<div><p>the landing directory on the client machine</p>
+</div></blockquote>
+<p><strong>localdir</strong> : str</p>
+<blockquote>
+<div><p>the landing directory on the local macine</p>
+</div></blockquote>
+<p><strong>outdb</strong> : str</p>
+<blockquote class="last">
+<div><p>the name of the aggregated output file</p>
+</div></blockquote>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="function">
+<dt id="cyclopts.condor.check_finish">
+<tt class="descclassname">cyclopts.condor.</tt><tt class="descname">check_finish</tt><big>(</big><em>client</em>, <em>pid</em><big>)</big><a class="reference internal" href="../_modules/cyclopts/condor.html#check_finish"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#cyclopts.condor.check_finish" title="Permalink to this definition">¶</a></dt>
+<dd><p>Checks the status of a condor run on the client.</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="cyclopts.condor.cleanup">
+<tt class="descclassname">cyclopts.condor.</tt><tt class="descname">cleanup</tt><big>(</big><em>client</em>, <em>remotedir</em><big>)</big><a class="reference internal" href="../_modules/cyclopts/condor.html#cleanup"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#cyclopts.condor.cleanup" title="Permalink to this definition">¶</a></dt>
+<dd><p>Removes all files in the remote directory.</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="cyclopts.condor.gen_files">
+<tt class="descclassname">cyclopts.condor.</tt><tt class="descname">gen_files</tt><big>(</big><em>prefix='.', db='in.h5', solvers=['cbc'], tblname='ReactorRequestSampler', subfile='dag.sub'</em><big>)</big><a class="reference internal" href="../_modules/cyclopts/condor.html#gen_files"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#cyclopts.condor.gen_files" title="Permalink to this definition">¶</a></dt>
+<dd><p>Generates all files needed to run a DAGMan instance of the given input
+database.</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="cyclopts.condor.submit">
+<tt class="descclassname">cyclopts.condor.</tt><tt class="descname">submit</tt><big>(</big><em>client</em>, <em>rundir</em>, <em>tarname</em>, <em>subfile</em><big>)</big><a class="reference internal" href="../_modules/cyclopts/condor.html#submit"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#cyclopts.condor.submit" title="Permalink to this definition">¶</a></dt>
+<dd><p>Performs a condor DAG sumbission on a client using a tarball of all
+submission-related data.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><p class="first"><strong>client</strong> : paramiko SSHClient</p>
+<blockquote>
+<div><p>the client</p>
+</div></blockquote>
+<p><strong>rundir</strong> : str</p>
+<blockquote>
+<div><p>the run directory on the client</p>
+</div></blockquote>
+<p><strong>tarname</strong> : str</p>
+<blockquote>
+<div><p>data tarball name</p>
+</div></blockquote>
+<p><strong>subfile</strong> : str</p>
+<blockquote class="last">
+<div><p>the name of the submit file</p>
+</div></blockquote>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="function">
+<dt id="cyclopts.condor.submit_dag">
+<tt class="descclassname">cyclopts.condor.</tt><tt class="descname">submit_dag</tt><big>(</big><em>user</em>, <em>host</em>, <em>indb</em>, <em>solvers</em>, <em>dumpdir</em>, <em>outdb</em>, <em>clean</em>, <em>auth</em><big>)</big><a class="reference internal" href="../_modules/cyclopts/condor.html#submit_dag"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#cyclopts.condor.submit_dag" title="Permalink to this definition">¶</a></dt>
+<dd><p>Connects via SSH to a condor submit node, and executes a Cyclopts DAG
+run.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><p class="first"><strong>user</strong> : str</p>
+<blockquote>
+<div><p>the user on the condor submit host</p>
+</div></blockquote>
+<p><strong>host</strong> : str</p>
+<blockquote>
+<div><p>the condor submit node host (e.g. submit-1.chtc.wisc.edu)</p>
+</div></blockquote>
+<p><strong>indb</strong> : str</p>
+<blockquote>
+<div><p>the input database location</p>
+</div></blockquote>
+<p><strong>solvers</strong> : list</p>
+<blockquote>
+<div><p>the solvers to use</p>
+</div></blockquote>
+<p><strong>dumpdir</strong> : str</p>
+<blockquote>
+<div><p>the final run directory (where the input and output database files 
+will be located)</p>
+</div></blockquote>
+<p><strong>outdb</strong> : str</p>
+<blockquote>
+<div><p>the output database location</p>
+</div></blockquote>
+<p><strong>clean</strong> : bool</p>
+<blockquote>
+<div><p>if true, removes the working directory on the submit node</p>
+</div></blockquote>
+<p><strong>auth</strong> : bool</p>
+<blockquote class="last">
+<div><p>if true, query a password authentication</p>
+</div></blockquote>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="function">
+<dt id="cyclopts.condor.wait_till_found">
+<tt class="descclassname">cyclopts.condor.</tt><tt class="descname">wait_till_found</tt><big>(</big><em>client</em>, <em>path</em>, <em>t_sleep=5</em><big>)</big><a class="reference internal" href="../_modules/cyclopts/condor.html#wait_till_found"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#cyclopts.condor.wait_till_found" title="Permalink to this definition">¶</a></dt>
+<dd><p>Queries a client if a an expected file exists until it does.</p>
+</dd></dl>
+
+</div>
+
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar">
+        <div class="sphinxsidebarwrapper">
+  <div class="sphinxnext">
+    <h4>Next page</h4>
+    <p class="topless"><a href="analysis.html"
+                          title="Next page">&rarr; Analysis Module &#8211; <tt class="docutils literal"><span class="pre">cyclopts.analysis</span></tt></a></p>
+  </div>
+  <h3>This Page</h3>
+  <ul class="this-page-menu">
+    <li><a href="../_sources/pyapi/condor.txt"
+           rel="nofollow">Show Source</a></li>
+  </ul>
+<div id="searchbox" style="display: none">
+  <h3>Quick search</h3>
+    <form class="search" action="../search.html" method="get">
+      <input type="text" name="q" />
+      <input type="submit" value="Go" />
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+    <p class="searchtip" style="font-size: 90%">
+    Enter search terms or a module, class or function name.
+    </p>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="relbar-bottom">
+        
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="../py-modindex.html" title="Python Module Index"
+             >modules</a> &nbsp; &nbsp;</li>
+        <li class="right" >
+          <a href="../np-modindex.html" title="Python Module Index"
+             >modules</a> &nbsp; &nbsp;</li>
+        <li class="right" >
+          <a href="analysis.html" title="Analysis Module – cyclopts.analysis"
+             >next</a> &nbsp; &nbsp;</li>
+    <li><a href="../index.html">Cyclopts 0.1.0 documentation</a> &raquo;</li>
+
+          <li><a href="main.html" >Cyclopts Python API</a> &raquo;</li> 
+      </ul>
+    </div>
+    </div>
+
+    <div class="footer">
+        &copy; Copyright 2014, Matthew J. Gidden.
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.2.2.
+    </div>
+    <!-- cloud_sptheme 1.4 -->
+  </body>
+</html>
