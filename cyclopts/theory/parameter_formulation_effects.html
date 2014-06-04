@@ -1,0 +1,253 @@
+
+
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>Formulation Effects &mdash; Cyclopts 0.1.0 documentation</title>
+    
+    <link rel="stylesheet" href="../_static/cloud.css" type="text/css" />
+    <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
+    <link rel="stylesheet" href="//fonts.googleapis.com/css?family=Noticia+Text|Open+Sans|Droid+Sans+Mono" type="text/css" />
+    
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    '../',
+        VERSION:     '0.1.0',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="../_static/jquery.js"></script>
+    <script type="text/javascript" src="../_static/underscore.js"></script>
+    <script type="text/javascript" src="../_static/doctools.js"></script>
+    <script type="text/javascript" src="../_static/jquery.cookie.js"></script>
+    <script type="text/javascript" src="../_static/cloud.js"></script>
+    <link rel="top" title="Cyclopts 0.1.0 documentation" href="../index.html" /> 
+        <meta name="viewport" content="width=device-width, initial-scale=1">
+  </head>
+  <body>
+    <div class="relbar-top">
+        
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="../py-modindex.html" title="Python Module Index"
+             >modules</a> &nbsp; &nbsp;</li>
+        <li class="right" >
+          <a href="../np-modindex.html" title="Python Module Index"
+             >modules</a> &nbsp; &nbsp;</li>
+    <li><a href="../index.html">Cyclopts 0.1.0 documentation</a> &raquo;</li>
+ 
+      </ul>
+    </div>
+    </div>
+  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body">
+            
+  <div class="section" id="formulation-effects">
+<h1>Formulation Effects<a class="headerlink" href="#formulation-effects" title="Permalink to this headline">¶</a></h1>
+<p>Each parameter has a theoretical basis in the real-life problem that is being
+modeled and an effect on the underlying formulation. This section describes the
+underlying formulation for each problem type and describes which parameters
+relate to that effect.</p>
+<p>Any given formulation is comprised of, nominally, five prime characteristics:</p>
+<ul class="simple">
+<li>the number of request nodes (unodes)</li>
+<li>the number of supply nodes (vnodes)</li>
+<li>the number of arcs</li>
+<li>the number of exclusive arcs</li>
+<li>the number of constraints</li>
+</ul>
+<div class="section" id="reactor-request">
+<h2>Reactor Request<a class="headerlink" href="#reactor-request" title="Permalink to this headline">¶</a></h2>
+<div class="section" id="number-of-request-nodes">
+<h3>Number of Request Nodes<a class="headerlink" href="#number-of-request-nodes" title="Permalink to this headline">¶</a></h3>
+<ul class="simple">
+<li>number of requesters</li>
+<li>assemblies per request</li>
+<li>multicommodity zone fraction</li>
+<li>commodities in multicommodity zone</li>
+</ul>
+</div>
+<div class="section" id="number-of-supply-nodes">
+<h3>Number of Supply Nodes<a class="headerlink" href="#number-of-supply-nodes" title="Permalink to this headline">¶</a></h3>
+<ul class="simple">
+<li>number of suppliers</li>
+<li>fraction of multi-commodities suppliers</li>
+<li>number of commodities per supplier</li>
+</ul>
+</div>
+<div class="section" id="number-of-arcs">
+<h3>Number of Arcs<a class="headerlink" href="#number-of-arcs" title="Permalink to this headline">¶</a></h3>
+<ul class="simple">
+<li>number of request nodes</li>
+<li>number of supply nodes</li>
+<li>connection probability</li>
+</ul>
+</div>
+<div class="section" id="number-of-exclusive-arcs">
+<h3>Number of Exclusive Arcs<a class="headerlink" href="#number-of-exclusive-arcs" title="Permalink to this headline">¶</a></h3>
+<ul class="simple">
+<li>exclusion probability</li>
+</ul>
+</div>
+<div class="section" id="number-of-constraints">
+<h3>Number of Constraints<a class="headerlink" href="#number-of-constraints" title="Permalink to this headline">¶</a></h3>
+<ul class="simple">
+<li>number of supply constraints</li>
+<li>number of suppliers</li>
+<li>number of demand constraints</li>
+<li>number of requesters</li>
+</ul>
+</div>
+</div>
+<div class="section" id="reactor-supply">
+<h2>Reactor Supply<a class="headerlink" href="#reactor-supply" title="Permalink to this headline">¶</a></h2>
+<div class="section" id="id1">
+<h3>Number of Request Nodes<a class="headerlink" href="#id1" title="Permalink to this headline">¶</a></h3>
+<ul class="simple">
+<li>number of requesters</li>
+<li>fraction of multicommodity requesters</li>
+<li>number of commodities per requester</li>
+</ul>
+</div>
+<div class="section" id="id2">
+<h3>Number of Supply Nodes<a class="headerlink" href="#id2" title="Permalink to this headline">¶</a></h3>
+<ul class="simple">
+<li>number of suppliers</li>
+<li>assemblies per supplier</li>
+</ul>
+</div>
+<div class="section" id="id3">
+<h3>Number of Arcs<a class="headerlink" href="#id3" title="Permalink to this headline">¶</a></h3>
+<ul class="simple">
+<li>number of request nodes</li>
+<li>number of supply nodes</li>
+<li>connection probability</li>
+</ul>
+</div>
+<div class="section" id="id4">
+<h3>Number of Exclusive Arcs<a class="headerlink" href="#id4" title="Permalink to this headline">¶</a></h3>
+<ul class="simple">
+<li>exclusion probability</li>
+</ul>
+</div>
+<div class="section" id="id5">
+<h3>Number of Constraints<a class="headerlink" href="#id5" title="Permalink to this headline">¶</a></h3>
+<ul class="simple">
+<li>number of assemblies</li>
+<li>number of requesters</li>
+<li>number of request constraints</li>
+</ul>
+</div>
+</div>
+<div class="section" id="performance">
+<h2>Performance<a class="headerlink" href="#performance" title="Permalink to this headline">¶</a></h2>
+<p>Both formulation&#8217;s performance will be functions of:</p>
+<ul class="simple">
+<li>number of commodities</li>
+<li>number of arcs</li>
+<li>number of exclusive arcs</li>
+<li>number of constraints</li>
+<li>unit capacity/demand coefficients</li>
+<li>supply constraint values</li>
+<li>demand constraint values</li>
+<li>preference coefficient values</li>
+</ul>
+</div>
+</div>
+
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar">
+        <div class="sphinxsidebarwrapper"><div class="sphinxlocaltoc">
+    <h3><a href="../index.html">Page contents</a></h3>
+    <ul>
+<li><a class="reference internal" href="#">Formulation Effects</a><ul>
+<li><a class="reference internal" href="#reactor-request">Reactor Request</a><ul>
+<li><a class="reference internal" href="#number-of-request-nodes">Number of Request Nodes</a></li>
+<li><a class="reference internal" href="#number-of-supply-nodes">Number of Supply Nodes</a></li>
+<li><a class="reference internal" href="#number-of-arcs">Number of Arcs</a></li>
+<li><a class="reference internal" href="#number-of-exclusive-arcs">Number of Exclusive Arcs</a></li>
+<li><a class="reference internal" href="#number-of-constraints">Number of Constraints</a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#reactor-supply">Reactor Supply</a><ul>
+<li><a class="reference internal" href="#id1">Number of Request Nodes</a></li>
+<li><a class="reference internal" href="#id2">Number of Supply Nodes</a></li>
+<li><a class="reference internal" href="#id3">Number of Arcs</a></li>
+<li><a class="reference internal" href="#id4">Number of Exclusive Arcs</a></li>
+<li><a class="reference internal" href="#id5">Number of Constraints</a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#performance">Performance</a></li>
+</ul>
+</li>
+</ul>
+
+  </div>
+  <h3>This Page</h3>
+  <ul class="this-page-menu">
+    <li><a href="../_sources/theory/parameter_formulation_effects.txt"
+           rel="nofollow">Show Source</a></li>
+  </ul>
+<div id="searchbox" style="display: none">
+  <h3>Quick search</h3>
+    <form class="search" action="../search.html" method="get">
+      <input type="text" name="q" />
+      <input type="submit" value="Go" />
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+    <p class="searchtip" style="font-size: 90%">
+    Enter search terms or a module, class or function name.
+    </p>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="relbar-bottom">
+        
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="../py-modindex.html" title="Python Module Index"
+             >modules</a> &nbsp; &nbsp;</li>
+        <li class="right" >
+          <a href="../np-modindex.html" title="Python Module Index"
+             >modules</a> &nbsp; &nbsp;</li>
+    <li><a href="../index.html">Cyclopts 0.1.0 documentation</a> &raquo;</li>
+ 
+      </ul>
+    </div>
+    </div>
+
+    <div class="footer">
+        &copy; Copyright 2014, Matthew J. Gidden.
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.2.2.
+    </div>
+    <!-- cloud_sptheme 1.4 -->
+  </body>
+</html>

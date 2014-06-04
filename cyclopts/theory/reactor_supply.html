@@ -1,0 +1,413 @@
+
+
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>Reactor Supply-Based Exchange &mdash; Cyclopts 0.1.0 documentation</title>
+    
+    <link rel="stylesheet" href="../_static/cloud.css" type="text/css" />
+    <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
+    <link rel="stylesheet" href="//fonts.googleapis.com/css?family=Noticia+Text|Open+Sans|Droid+Sans+Mono" type="text/css" />
+    
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    '../',
+        VERSION:     '0.1.0',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="../_static/jquery.js"></script>
+    <script type="text/javascript" src="../_static/underscore.js"></script>
+    <script type="text/javascript" src="../_static/doctools.js"></script>
+    <script type="text/javascript" src="../_static/jquery.cookie.js"></script>
+    <script type="text/javascript" src="../_static/cloud.js"></script>
+    <link rel="top" title="Cyclopts 0.1.0 documentation" href="../index.html" />
+    <link rel="up" title="Cyclopts Theory" href="main.html" />
+    <link rel="next" title="A Full (Combined) Exchange" href="full_xchange.html" />
+    <link rel="prev" title="Reactor Request-Based Exchange" href="reactor_request.html" /> 
+        <meta name="viewport" content="width=device-width, initial-scale=1">
+  </head>
+  <body>
+    <div class="relbar-top">
+        
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="../py-modindex.html" title="Python Module Index"
+             >modules</a> &nbsp; &nbsp;</li>
+        <li class="right" >
+          <a href="../np-modindex.html" title="Python Module Index"
+             >modules</a> &nbsp; &nbsp;</li>
+        <li class="right" >
+          <a href="full_xchange.html" title="A Full (Combined) Exchange"
+             accesskey="N">next</a> &nbsp; &nbsp;</li>
+        <li class="right" >
+          <a href="reactor_request.html" title="Reactor Request-Based Exchange"
+             accesskey="P">previous</a> &nbsp; &nbsp;</li>
+    <li><a href="../index.html">Cyclopts 0.1.0 documentation</a> &raquo;</li>
+
+          <li><a href="main.html" accesskey="U">Cyclopts Theory</a> &raquo;</li> 
+      </ul>
+    </div>
+    </div>
+  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body">
+            
+  <div class="section" id="reactor-supply-based-exchange">
+<h1>Reactor Supply-Based Exchange<a class="headerlink" href="#reactor-supply-based-exchange" title="Permalink to this headline">¶</a></h1>
+<p>This section describes the resource exchange generation for the case where
+reactors are supplying used fuel to supporting facilities. The primary goal is
+to discern what are the possible options that parameterize a given instance of
+such an exchange in order to test the underlying formulation under different
+scalings of these parameters.</p>
+<p>A supply group corresponds to a supply of reactor used fuel item which represent
+assembly-like objects. In general, supply groups will be generated in much the
+same way that demand groups are generated in the reactor request case, except
+that the the number and commodity of their supply nodes is known at solution
+time. Supply constraints are also simpler. Each unit coefficient is unity and
+the supply value is set to the assembly mass, however their total number is much
+larger, as there is one per assembly.</p>
+<p>A request group corresponds to a supporting facility&#8217;s request for used reactor
+fuel. Accordingly, a request group may be comprised of multiple commodity
+demands (e.g., fast/thermal reactor fuels A and B), where each commodity is
+represented by a node. Demand constraints will mirror the supply constraints of
+the reactor request exchange in that the demand constraint values are not
+necessarily related (e.g. process versus inventory constraints).</p>
+<div class="section" id="number-of-commodities">
+<h2>number of commodities<a class="headerlink" href="#number-of-commodities" title="Permalink to this headline">¶</a></h2>
+<p>The number of commodities associated with the exchange.</p>
+<div class="section" id="distribution-candidacy">
+<h3>Distribution Candidacy<a class="headerlink" href="#distribution-candidacy" title="Permalink to this headline">¶</a></h3>
+<p>None</p>
+</div>
+<div class="section" id="theoretical-basis">
+<h3>Theoretical Basis<a class="headerlink" href="#theoretical-basis" title="Permalink to this headline">¶</a></h3>
+<p>The number of commodities is a fundamental parameter for resource exchange.</p>
+</div>
+</div>
+<div class="section" id="number-of-suppliers">
+<h2>number of suppliers<a class="headerlink" href="#number-of-suppliers" title="Permalink to this headline">¶</a></h2>
+<p>The number of reactors being modeled.</p>
+<div class="section" id="id1">
+<h3>Distribution Candidacy<a class="headerlink" href="#id1" title="Permalink to this headline">¶</a></h3>
+<p>None</p>
+</div>
+<div class="section" id="id2">
+<h3>Theoretical Basis<a class="headerlink" href="#id2" title="Permalink to this headline">¶</a></h3>
+<p>The number of suppliers is a fundamental parameter for resource exchange.</p>
+</div>
+</div>
+<div class="section" id="assemblies-per-supplier">
+<h2>assemblies per supplier<a class="headerlink" href="#assemblies-per-supplier" title="Permalink to this headline">¶</a></h2>
+<p>How many items to model a supplier providing. Nominally, a small number (1, 2)
+corresponds to a ^batch^-type fueling system whereas a large number corresponds
+to an assembly-type fueling system. Each assembly corresponds to a node in the
+exchange graph. .</p>
+<p>It is likely that this parameter will be sampled bimodally &#8211; in small numbers
+(i.e., 1 - 3) to model batch-type reactors and in large numbers (40 - 65). The
+large number scaling is indicative of a range for an AP1000 operating in a
+4-batch mode (i.e., 157 / 4) to a ^Typical XL Plant^ running in 3-batch mode
+(i.e., 193 / 3) (see
+<a class="reference external" href="http://www.nrc.gov/reactors/new-reactors/design-cert/ap1000/dcd/Tier%202/Chapter%204/4-1_r14.pdf">http://www.nrc.gov/reactors/new-reactors/design-cert/ap1000/dcd/Tier%202/Chapter%204/4-1_r14.pdf</a>).</p>
+<div class="section" id="id3">
+<h3>Distribution Candidacy<a class="headerlink" href="#id3" title="Permalink to this headline">¶</a></h3>
+<p>Possibly a integral distribution around an average.</p>
+</div>
+<div class="section" id="id4">
+<h3>Theoretical Basis<a class="headerlink" href="#id4" title="Permalink to this headline">¶</a></h3>
+<p>The number of assemblies per supplier is directly proportional to the total
+number of supply nodes. Therefore, scaling all supply simultaneous simply
+results in a larger problem size. Medium-scale problem sizes are handled by
+medium-scale number of assemblies.</p>
+</div>
+</div>
+<div class="section" id="commodities-per-supplier">
+<h2>commodities per supplier<a class="headerlink" href="#commodities-per-supplier" title="Permalink to this headline">¶</a></h2>
+<p>The number of commodities in a supplier&#8217;s assembly group.</p>
+<div class="section" id="id5">
+<h3>Distribution Candidacy<a class="headerlink" href="#id5" title="Permalink to this headline">¶</a></h3>
+<p>A reasonable range is [1, 4]. Two distributions are required to assign
+commodities to suppliers:</p>
+<ul class="simple">
+<li>the number of commodities</li>
+<li>the commodities themselves</li>
+</ul>
+<p>Initial attempts for the number of commodities will use an integral value future
+attempts may use an integral distribuition centered on that value. Initial
+attempts for commodity selection will include a flat distribution and future
+attempts may include preferential distributions (e.g., for cases where UOX, MOX,
+and ThOX are possible commodities, but UOX and MOX have a higher usage
+probability than ThOX).</p>
+</div>
+<div class="section" id="id6">
+<h3>Theoretical Basis<a class="headerlink" href="#id6" title="Permalink to this headline">¶</a></h3>
+<p>Reactors may expel more than one commodity type given their input commodity
+types, and simulations will determine the variation and distribution of these
+commodity types.</p>
+</div>
+</div>
+<div class="section" id="assembly-commodity">
+<h2>assembly commodity<a class="headerlink" href="#assembly-commodity" title="Permalink to this headline">¶</a></h2>
+<p>Given that a supplier has a number of assemblies and a number of commodities,
+assemblies must be assigned commodities.</p>
+<div class="section" id="id7">
+<h3>Distribution Candidacy<a class="headerlink" href="#id7" title="Permalink to this headline">¶</a></h3>
+<p>Two primary distributions are considered, given the number and type of
+commodities of which a reactor&#8217;s assembly group is comprised. The first is a
+flat distribution, i.e., assemblies have an equal probability of being assigned
+any commodity in the pool. The second is a preferred distribution (e.g.,
+decaying exponential), which models a situation in which reactors have a
+preference over their commodity types and have achieved their preference to some
+degree of satisfaction.</p>
+</div>
+<div class="section" id="id8">
+<h3>Theoretical Basis<a class="headerlink" href="#id8" title="Permalink to this headline">¶</a></h3>
+<p>Simulations mechanics will determine the actual distribution of assembly
+commodities for an arbitrary reactor, however, the above distributions model two
+distinct use cases: cases in which reactors have no preference over their
+commodity type and the case in which they do.</p>
+</div>
+</div>
+<div class="section" id="exclusion-probability">
+<h2>exclusion probability<a class="headerlink" href="#exclusion-probability" title="Permalink to this headline">¶</a></h2>
+<p>The probability that a given supply will be exclusive (i.e., models a quantized
+assembly).</p>
+<div class="section" id="id9">
+<h3>Distribution Candidacy<a class="headerlink" href="#id9" title="Permalink to this headline">¶</a></h3>
+<p>Possibly a distribution around an average, but unlikely.</p>
+</div>
+<div class="section" id="id10">
+<h3>Theoretical Basis<a class="headerlink" href="#id10" title="Permalink to this headline">¶</a></h3>
+<p>This parameter is directly related to the assembly modeling fidelity required by
+a given reactor model. A value of 0 implies minimum fidelity, a value of 1
+implies maximum fidelity, and it is conceiveable with module mixing that this
+level of fidelity may exist on a spectrum.</p>
+</div>
+</div>
+<div class="section" id="number-of-supply-constraints">
+<h2>number of supply constraints<a class="headerlink" href="#number-of-supply-constraints" title="Permalink to this headline">¶</a></h2>
+<p>Trivially defined as the number of assemblies.</p>
+</div>
+<div class="section" id="supply-constraint-values">
+<h2>supply constraint values<a class="headerlink" href="#supply-constraint-values" title="Permalink to this headline">¶</a></h2>
+<p>Defined as the mass of the supplied assembly. The average mass for an assembly
+is normalized to unity without loss of generality.</p>
+<div class="section" id="id11">
+<h3>Distribution Candidacy<a class="headerlink" href="#id11" title="Permalink to this headline">¶</a></h3>
+<p>Either unity for all assemblies, or a distribution as a function of commodity
+and supplier around unity. The former will be analyzed first with a possible
+future investigation of the latter.</p>
+</div>
+<div class="section" id="id12">
+<h3>Theoretical Basis<a class="headerlink" href="#id12" title="Permalink to this headline">¶</a></h3>
+<p>It is not clear how modelers will choose assembly mass size. A naive approach is
+to assume all assemblies have the same size. A more sophisticated, and much more
+complicated, approach assumes that size is a function of reactor type (i.e.,
+supplier) and commodity type.</p>
+</div>
+</div>
+<div class="section" id="number-of-requesters">
+<h2>number of requesters<a class="headerlink" href="#number-of-requesters" title="Permalink to this headline">¶</a></h2>
+<p>The number of requesters. A requester may request more than one commodity. By
+definition, there must be at least one requester per commodity. If there are
+more requesters than commodities, the additional requesters are randomly
+assigned base commodities.</p>
+<div class="section" id="id13">
+<h3>Distribution Candidacy<a class="headerlink" href="#id13" title="Permalink to this headline">¶</a></h3>
+<p>None</p>
+</div>
+<div class="section" id="id14">
+<h3>Theoretical Basis<a class="headerlink" href="#id14" title="Permalink to this headline">¶</a></h3>
+<p>The number of requesters is a fundamental parameter for resource exchange.</p>
+</div>
+</div>
+<div class="section" id="fraction-of-multicommodity-requesters">
+<h2>fraction of multicommodity requesters<a class="headerlink" href="#fraction-of-multicommodity-requesters" title="Permalink to this headline">¶</a></h2>
+<p>The fraction of requesters that request more than one commodity.</p>
+<div class="section" id="id15">
+<h3>Distribution Candidacy<a class="headerlink" href="#id15" title="Permalink to this headline">¶</a></h3>
+<p>Possibly a distribution around an average.</p>
+</div>
+<div class="section" id="id16">
+<h3>Theoretical Basis<a class="headerlink" href="#id16" title="Permalink to this headline">¶</a></h3>
+<p>An example might include a fast reactor fuel requester that requests multiple
+types of fast reactor fuel defined as different commodities.</p>
+</div>
+</div>
+<div class="section" id="number-of-commodities-per-requester">
+<h2>number of commodities per requester<a class="headerlink" href="#number-of-commodities-per-requester" title="Permalink to this headline">¶</a></h2>
+<p>The average number of commodities that a multicommodity requester supplies.</p>
+<div class="section" id="id17">
+<h3>Distribution Candidacy<a class="headerlink" href="#id17" title="Permalink to this headline">¶</a></h3>
+<p>Primarily two cases of interest exist. The first assumes a relatively even
+distribution of requesters per commodity. The second assumes that the
+distribution peaks at some commodity, while some are minimally satisfied. The
+former case will be investigated first.</p>
+</div>
+<div class="section" id="id18">
+<h3>Theoretical Basis<a class="headerlink" href="#id18" title="Permalink to this headline">¶</a></h3>
+<p>A used fuel requester may request more than one commodity, e.g., a fast reactor
+fuel requester may offer two types of fast reactor fuel which are istopically
+similar but treated as separate commodities.</p>
+</div>
+</div>
+<div class="section" id="number-of-request-constraints">
+<h2>number of request constraints<a class="headerlink" href="#number-of-request-constraints" title="Permalink to this headline">¶</a></h2>
+<p>A requester may have an arbitrary number of request constraints that may or may
+not be related. A estimated reasonable range to model is [1, 4].</p>
+<div class="section" id="id19">
+<h3>Distribution Candidacy<a class="headerlink" href="#id19" title="Permalink to this headline">¶</a></h3>
+<p>Requesters can either all be modeled as having the same number of constraints or
+a distribution can be sampled around an average. In effect, both sample a
+spectrum of total requester constraints, where the former represents a few
+special cases of the latter, where the distribution is uniformly sampled around
+integral values.</p>
+</div>
+<div class="section" id="id20">
+<h3>Theoretical Basis<a class="headerlink" href="#id20" title="Permalink to this headline">¶</a></h3>
+<p>A requester may have more than one constraint on their request.</p>
+</div>
+</div>
+<div class="section" id="request-constraint-values">
+<h2>request constraint values<a class="headerlink" href="#request-constraint-values" title="Permalink to this headline">¶</a></h2>
+<p>As previously mentioned, request constraints need not be related. Classic
+examples provided so far are inventory constraints (i.e., a requester may have
+only so much room for new resources) and a processing constraint (i.e., it will
+only take as much as it can process, which may be an arbitrary function of
+resource quality).</p>
+<p>An identical approach to the reactor request supply constraints and values will
+be taken.</p>
+<div class="section" id="id21">
+<h3>Distribution Candidacy<a class="headerlink" href="#id21" title="Permalink to this headline">¶</a></h3>
+<p>See reactor request supply constraints and values.</p>
+</div>
+<div class="section" id="id22">
+<h3>Theoretical Basis<a class="headerlink" href="#id22" title="Permalink to this headline">¶</a></h3>
+<p>See reactor request supply constraints and values.</p>
+</div>
+</div>
+<div class="section" id="unit-capacity-demand-coefficient-values">
+<h2>unit capacity/demand coefficient values<a class="headerlink" href="#unit-capacity-demand-coefficient-values" title="Permalink to this headline">¶</a></h2>
+<p>An identical approach to the reactor request case will be taken.</p>
+</div>
+<div class="section" id="preference-coefficient-values">
+<h2>preference coefficient values<a class="headerlink" href="#preference-coefficient-values" title="Permalink to this headline">¶</a></h2>
+<p>An identical approach to the reactor request case will be taken.</p>
+</div>
+<div class="section" id="connection-probability">
+<h2>connection probability<a class="headerlink" href="#connection-probability" title="Permalink to this headline">¶</a></h2>
+<p>An identical approach to the reactor request case will be taken.</p>
+</div>
+</div>
+
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar">
+        <div class="sphinxsidebarwrapper"><div class="sphinxlocaltoc">
+    <h3><a href="../index.html">Page contents</a></h3>
+    <ul>
+<li><a class="reference internal" href="#">Reactor Supply-Based Exchange</a><ul>
+<li><a class="reference internal" href="#number-of-commodities">number of commodities</a></li>
+<li><a class="reference internal" href="#number-of-suppliers">number of suppliers</a></li>
+<li><a class="reference internal" href="#assemblies-per-supplier">assemblies per supplier</a></li>
+<li><a class="reference internal" href="#commodities-per-supplier">commodities per supplier</a></li>
+<li><a class="reference internal" href="#assembly-commodity">assembly commodity</a></li>
+<li><a class="reference internal" href="#exclusion-probability">exclusion probability</a></li>
+<li><a class="reference internal" href="#number-of-supply-constraints">number of supply constraints</a></li>
+<li><a class="reference internal" href="#supply-constraint-values">supply constraint values</a></li>
+<li><a class="reference internal" href="#number-of-requesters">number of requesters</a></li>
+<li><a class="reference internal" href="#fraction-of-multicommodity-requesters">fraction of multicommodity requesters</a></li>
+<li><a class="reference internal" href="#number-of-commodities-per-requester">number of commodities per requester</a></li>
+<li><a class="reference internal" href="#number-of-request-constraints">number of request constraints</a></li>
+<li><a class="reference internal" href="#request-constraint-values">request constraint values</a></li>
+<li><a class="reference internal" href="#unit-capacity-demand-coefficient-values">unit capacity/demand coefficient values</a></li>
+<li><a class="reference internal" href="#preference-coefficient-values">preference coefficient values</a></li>
+<li><a class="reference internal" href="#connection-probability">connection probability</a></li>
+</ul>
+</li>
+</ul>
+
+  </div>
+  <div class="sphinxprev">
+    <h4>Previous page</h4>
+    <p class="topless"><a href="reactor_request.html"
+                          title="Previous page">&larr; Reactor Request-Based Exchange</a></p>
+  </div>
+  <div class="sphinxnext">
+    <h4>Next page</h4>
+    <p class="topless"><a href="full_xchange.html"
+                          title="Next page">&rarr; A Full (Combined) Exchange</a></p>
+  </div>
+  <h3>This Page</h3>
+  <ul class="this-page-menu">
+    <li><a href="../_sources/theory/reactor_supply.txt"
+           rel="nofollow">Show Source</a></li>
+  </ul>
+<div id="searchbox" style="display: none">
+  <h3>Quick search</h3>
+    <form class="search" action="../search.html" method="get">
+      <input type="text" name="q" />
+      <input type="submit" value="Go" />
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+    <p class="searchtip" style="font-size: 90%">
+    Enter search terms or a module, class or function name.
+    </p>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="relbar-bottom">
+        
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="../py-modindex.html" title="Python Module Index"
+             >modules</a> &nbsp; &nbsp;</li>
+        <li class="right" >
+          <a href="../np-modindex.html" title="Python Module Index"
+             >modules</a> &nbsp; &nbsp;</li>
+        <li class="right" >
+          <a href="full_xchange.html" title="A Full (Combined) Exchange"
+             >next</a> &nbsp; &nbsp;</li>
+        <li class="right" >
+          <a href="reactor_request.html" title="Reactor Request-Based Exchange"
+             >previous</a> &nbsp; &nbsp;</li>
+    <li><a href="../index.html">Cyclopts 0.1.0 documentation</a> &raquo;</li>
+
+          <li><a href="main.html" >Cyclopts Theory</a> &raquo;</li> 
+      </ul>
+    </div>
+    </div>
+
+    <div class="footer">
+        &copy; Copyright 2014, Matthew J. Gidden.
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.2.2.
+    </div>
+    <!-- cloud_sptheme 1.4 -->
+  </body>
+</html>

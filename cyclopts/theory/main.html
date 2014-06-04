@@ -1,0 +1,301 @@
+
+
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>Cyclopts Theory &mdash; Cyclopts 0.1.0 documentation</title>
+    
+    <link rel="stylesheet" href="../_static/cloud.css" type="text/css" />
+    <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
+    <link rel="stylesheet" href="//fonts.googleapis.com/css?family=Noticia+Text|Open+Sans|Droid+Sans+Mono" type="text/css" />
+    
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    '../',
+        VERSION:     '0.1.0',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="../_static/jquery.js"></script>
+    <script type="text/javascript" src="../_static/underscore.js"></script>
+    <script type="text/javascript" src="../_static/doctools.js"></script>
+    <script type="text/javascript" src="../_static/jquery.cookie.js"></script>
+    <script type="text/javascript" src="../_static/cloud.js"></script>
+    <link rel="top" title="Cyclopts 0.1.0 documentation" href="../index.html" />
+    <link rel="next" title="Reactor Request-Based Exchange" href="reactor_request.html" /> 
+        <meta name="viewport" content="width=device-width, initial-scale=1">
+  </head>
+  <body>
+    <div class="relbar-top">
+        
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="../py-modindex.html" title="Python Module Index"
+             >modules</a> &nbsp; &nbsp;</li>
+        <li class="right" >
+          <a href="../np-modindex.html" title="Python Module Index"
+             >modules</a> &nbsp; &nbsp;</li>
+        <li class="right" >
+          <a href="reactor_request.html" title="Reactor Request-Based Exchange"
+             accesskey="N">next</a> &nbsp; &nbsp;</li>
+    <li><a href="../index.html">Cyclopts 0.1.0 documentation</a> &raquo;</li>
+ 
+      </ul>
+    </div>
+    </div>
+  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body">
+            
+  <div class="section" id="cyclopts-theory">
+<span id="theory"></span><h1>Cyclopts Theory<a class="headerlink" href="#cyclopts-theory" title="Permalink to this headline">¶</a></h1>
+<p>Cyclus is a nuclear fuel cycle simulator, and the primary consumer of fuel in
+such cycles are nuclear reactors. Used fuel eventually leaves reactors and can
+be stored or processed.</p>
+<p>The mechanism by which these decisions are made in Cyclus is called a <a class="reference external" href="http://fuelcycle.org/module/dre.html">Resource
+Exchange</a>. Actors in the exchange can
+<em>request</em> resources (e.g. fuel) and others <em>bid</em> on those requests to provide
+the given resource. Actors are also allowed to place an arbitrary number of
+custom constraints on collections of their requests and bids. For example, a
+reactor could request two types of fuel, and constrain their requests such that
+they receive only a certain quantity of fuel (i.e., any combination of fuel
+types is acceptable).</p>
+<p>Reactors are the drivers of any fuel cycle. The types and number of each type of
+reactor determine the possible resource flows. A critical property of the
+formulation used in the Cyclus resource exchange model is that it can be
+separated into two exchanges: one in which reactors request fuel and another in
+which reactors supply used fuel. This holds true in all cases <em>except</em> when</p>
+<ol class="arabic simple">
+<li>repositories and reactors actively compete for the same processed fuel source
+(e.g., if MOX is produced by a fuel production plant, and repositories and
+reactors both actively request that fuel)</li>
+<li>if a reactor has the same input and output fuel commodity and bids on its own
+requests (i.e., it is self recycling)</li>
+</ol>
+<p>In reality, neither situation occurs exactly as stated. In fuel cycle modeling
+practice, both cases can be achieved by modeling them slightly differently. The
+second example can be modeled as facility compound with a reactor, reprocessing
+facility, and fuel fabrication facility each with a high affinity for trade with
+the other. The first example can be avoided by the bidding facility delineating
+between mox fuel for reactors and byproducts for storage.</p>
+<div class="section" id="resource-exchange-generation-parameters">
+<h2>Resource Exchange Generation Parameters<a class="headerlink" href="#resource-exchange-generation-parameters" title="Permalink to this headline">¶</a></h2>
+<p>In order to generate random cases of resource exchanges, a parameter space must
+be defined. Given a full set of selected parameters, classes of resource
+exchanges that fit those parameters can be generated. The parameter space
+depends on the exchange being generated:</p>
+<div class="toctree-wrapper compound">
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="reactor_request.html">Reactor Request-Based Exchange</a></li>
+<li class="toctree-l1"><a class="reference internal" href="reactor_supply.html">Reactor Supply-Based Exchange</a></li>
+<li class="toctree-l1"><a class="reference internal" href="full_xchange.html">A Full (Combined) Exchange</a></li>
+</ul>
+</div>
+</div>
+<div class="section" id="formulation-effects">
+<h2>Formulation Effects<a class="headerlink" href="#formulation-effects" title="Permalink to this headline">¶</a></h2>
+<p>Each parameter has a theoretical basis in the real-life problem that is being
+modeled and an effect on the underlying formulation. This section describes the
+underlying formulation for each problem type and describes which parameters
+relate to that effect.</p>
+<p>Any given formulation is comprised of, nominally, five prime characteristics:</p>
+<ul class="simple">
+<li>the number of request nodes (unodes)</li>
+<li>the number of supply nodes (vnodes)</li>
+<li>the number of arcs</li>
+<li>the number of exclusive arcs</li>
+<li>the number of constraints</li>
+</ul>
+<div class="section" id="reactor-request">
+<h3>Reactor Request<a class="headerlink" href="#reactor-request" title="Permalink to this headline">¶</a></h3>
+<div class="section" id="number-of-request-nodes">
+<h4>Number of Request Nodes<a class="headerlink" href="#number-of-request-nodes" title="Permalink to this headline">¶</a></h4>
+<ul class="simple">
+<li>number of requesters</li>
+<li>assemblies per request</li>
+<li>multicommodity zone fraction</li>
+<li>commodities in multicommodity zone</li>
+</ul>
+</div>
+<div class="section" id="number-of-supply-nodes">
+<h4>Number of Supply Nodes<a class="headerlink" href="#number-of-supply-nodes" title="Permalink to this headline">¶</a></h4>
+<ul class="simple">
+<li>number of suppliers</li>
+<li>fraction of multi-commodities suppliers</li>
+<li>number of commodities per supplier</li>
+</ul>
+</div>
+<div class="section" id="number-of-arcs">
+<h4>Number of Arcs<a class="headerlink" href="#number-of-arcs" title="Permalink to this headline">¶</a></h4>
+<ul class="simple">
+<li>number of request nodes</li>
+<li>number of supply nodes</li>
+<li>connection probability</li>
+</ul>
+</div>
+<div class="section" id="number-of-exclusive-arcs">
+<h4>Number of Exclusive Arcs<a class="headerlink" href="#number-of-exclusive-arcs" title="Permalink to this headline">¶</a></h4>
+<ul class="simple">
+<li>exclusion probability</li>
+</ul>
+</div>
+<div class="section" id="number-of-constraints">
+<h4>Number of Constraints<a class="headerlink" href="#number-of-constraints" title="Permalink to this headline">¶</a></h4>
+<ul class="simple">
+<li>number of supply constraints</li>
+<li>number of suppliers</li>
+<li>number of demand constraints</li>
+<li>number of requesters</li>
+</ul>
+</div>
+</div>
+<div class="section" id="reactor-supply">
+<h3>Reactor Supply<a class="headerlink" href="#reactor-supply" title="Permalink to this headline">¶</a></h3>
+<div class="section" id="id1">
+<h4>Number of Request Nodes<a class="headerlink" href="#id1" title="Permalink to this headline">¶</a></h4>
+<ul class="simple">
+<li>number of requesters</li>
+<li>fraction of multicommodity requesters</li>
+<li>number of commodities per requester</li>
+</ul>
+</div>
+<div class="section" id="id2">
+<h4>Number of Supply Nodes<a class="headerlink" href="#id2" title="Permalink to this headline">¶</a></h4>
+<ul class="simple">
+<li>number of suppliers</li>
+<li>assemblies per supplier</li>
+</ul>
+</div>
+<div class="section" id="id3">
+<h4>Number of Arcs<a class="headerlink" href="#id3" title="Permalink to this headline">¶</a></h4>
+<ul class="simple">
+<li>number of request nodes</li>
+<li>number of supply nodes</li>
+<li>connection probability</li>
+</ul>
+</div>
+<div class="section" id="id4">
+<h4>Number of Exclusive Arcs<a class="headerlink" href="#id4" title="Permalink to this headline">¶</a></h4>
+<ul class="simple">
+<li>exclusion probability</li>
+</ul>
+</div>
+<div class="section" id="id5">
+<h4>Number of Constraints<a class="headerlink" href="#id5" title="Permalink to this headline">¶</a></h4>
+<ul class="simple">
+<li>number of assemblies</li>
+<li>number of requesters</li>
+<li>number of request constraints</li>
+</ul>
+</div>
+</div>
+<div class="section" id="performance">
+<h3>Performance<a class="headerlink" href="#performance" title="Permalink to this headline">¶</a></h3>
+<p>Both formulation&#8217;s performance will be functions of:</p>
+<ul class="simple">
+<li>number of commodities</li>
+<li>number of arcs</li>
+<li>number of exclusive arcs</li>
+<li>number of constraints</li>
+<li>unit capacity/demand coefficients</li>
+<li>supply constraint values</li>
+<li>demand constraint values</li>
+<li>preference coefficient values</li>
+</ul>
+</div>
+</div>
+</div>
+
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar">
+        <div class="sphinxsidebarwrapper"><div class="sphinxlocaltoc">
+    <h3><a href="../index.html">Page contents</a></h3>
+    <ul>
+<li><a class="reference internal" href="#">Cyclopts Theory</a><ul>
+<li><a class="reference internal" href="#resource-exchange-generation-parameters">Resource Exchange Generation Parameters</a></li>
+<li><a class="reference internal" href="#formulation-effects">Formulation Effects</a><ul>
+<li><a class="reference internal" href="#reactor-request">Reactor Request</a></li>
+<li><a class="reference internal" href="#reactor-supply">Reactor Supply</a></li>
+<li><a class="reference internal" href="#performance">Performance</a></li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+
+  </div>
+  <div class="sphinxnext">
+    <h4>Next page</h4>
+    <p class="topless"><a href="reactor_request.html"
+                          title="Next page">&rarr; Reactor Request-Based Exchange</a></p>
+  </div>
+  <h3>This Page</h3>
+  <ul class="this-page-menu">
+    <li><a href="../_sources/theory/main.txt"
+           rel="nofollow">Show Source</a></li>
+  </ul>
+<div id="searchbox" style="display: none">
+  <h3>Quick search</h3>
+    <form class="search" action="../search.html" method="get">
+      <input type="text" name="q" />
+      <input type="submit" value="Go" />
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+    <p class="searchtip" style="font-size: 90%">
+    Enter search terms or a module, class or function name.
+    </p>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="relbar-bottom">
+        
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="../py-modindex.html" title="Python Module Index"
+             >modules</a> &nbsp; &nbsp;</li>
+        <li class="right" >
+          <a href="../np-modindex.html" title="Python Module Index"
+             >modules</a> &nbsp; &nbsp;</li>
+        <li class="right" >
+          <a href="reactor_request.html" title="Reactor Request-Based Exchange"
+             >next</a> &nbsp; &nbsp;</li>
+    <li><a href="../index.html">Cyclopts 0.1.0 documentation</a> &raquo;</li>
+ 
+      </ul>
+    </div>
+    </div>
+
+    <div class="footer">
+        &copy; Copyright 2014, Matthew J. Gidden.
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.2.2.
+    </div>
+    <!-- cloud_sptheme 1.4 -->
+  </body>
+</html>

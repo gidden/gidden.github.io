@@ -186,11 +186,6 @@ div.sphinxsidebar
 }
 
 
-  div.sphinxsidebar:hover
-  {
-      overflow: visible;
-  }
-
 
 
   div.document.collapsed-sidebar div.sphinxsidebar { display: none; }
@@ -272,28 +267,6 @@ div.sphinxsidebarwrapper > div:first-child > h4:first-child
  *****************************************************/
 
 
-div.sphinxlocaltoc,
-div.sphinxglobaltoc
-{
-    display: inline-block; 
-    background: #F2F2F2;
-    border-right: 1px solid rgba(0,0,0,.12);
-    padding-right: 0.8em;
-    min-width: 100%;
-    overflow: hidden;
-    position: relative;
-    left: 1px; 
-    
-  -moz-border-radius: 0 0.7em 0.7em 0;
-  -webkit-border-radius: 0 0.7em 0.7em 0;
-  -o-border-radius: 0 0.7em 0.7em 0;
-  -ms-border-radius: 0 0.7em 0.7em 0;
-  border-radius: 0 0.7em 0.7em 0;
-
-
-
-}
-
 
 div.sphinxlocaltoc ul a,
 div.sphinxglobaltoc ul a
@@ -301,8 +274,6 @@ div.sphinxglobaltoc ul a
     display: block;
     padding: 0 .2em;
     margin: 0 -.2em;
-    
-        white-space: nowrap;
     
 }
 
