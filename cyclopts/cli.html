@@ -73,13 +73,12 @@
 
 positional arguments:
   {convert,exec,condor}
-    convert             Convert a parameter space defined by an input run
-                        control file into an HDF5 database for a Cyclopts
-                        execution run.
-    exec                Executes a parameter sweep as defined by the input
-                        database and other command line arguments.
-    condor              Submits a job to condor, retrieves output when it has
-                        completed, and cleans up the condor user space after.
+    convert             Convert a parameter space defined by an input run control file into an HDF5
+                        database for a Cyclopts execution run.
+    exec                Executes a parameter sweep as defined by the input database and other command
+                        line arguments.
+    condor              Submits a job to condor, retrieves output when it has completed, and cleans up
+                        the condor user space after.
 
 optional arguments:
   -h, --help            show this help message and exit
@@ -91,34 +90,28 @@ optional arguments:
 optional arguments:
   -h, --help            show this help message and exit
   -i INPUT, --input INPUT
-                        The run control file to use that defines a continguous
-                        parameter space.
+                        The run control file to use that defines a continguous parameter space.
   -o OUTPUT, --output OUTPUT
-                        The HDF5 file to dump converted parameter space points
-                        to. This file can later be used an input to an execute
-                        run.
+                        The HDF5 file to dump converted parameter space points to. This file can later
+                        be used an input to an execute run.
 </pre></div>
 </div>
 <p>Running <tt class="docutils literal"><span class="pre">cyclopts</span> <span class="pre">exec</span> <span class="pre">-h</span></tt> results in</p>
-<div class="highlight-text"><div class="highlight"><pre>usage: Cyclopts exec [-h] [-i INPUT] [-o OUTPUT]
-                     [--solvers [SOLVERS [SOLVERS ...]]] [--rc RC]
+<div class="highlight-text"><div class="highlight"><pre>usage: Cyclopts exec [-h] [-i INPUT] [-o OUTPUT] [--solvers [SOLVERS [SOLVERS ...]]] [--rc RC]
 
 optional arguments:
   -h, --help            show this help message and exit
   -i INPUT, --input INPUT
-                        An HDF5 file that defines points in the parameter
-                        space to be run.
+                        An HDF5 file that defines points in the parameter space to be run.
   -o OUTPUT, --output OUTPUT
                         An HDF5 file to which output will be provided.
   --solvers [SOLVERS [SOLVERS ...]]
                         A list of which solvers to use..
-  --rc RC               The run control file, which allows idetification of a
-                        subset of input to run.
+  --rc RC               The run control file, which allows idetification of a subset of input to run.
 </pre></div>
 </div>
 <p>Running <tt class="docutils literal"><span class="pre">cyclopts</span> <span class="pre">condor</span> <span class="pre">-h</span></tt> results in</p>
-<div class="highlight-text"><div class="highlight"><pre>usage: Cyclopts condor [-h] [-u USER] [-t HOST] [-i INDB] [-d DUMPDIR]
-                       [-o OUTDB] [--no-clean]
+<div class="highlight-text"><div class="highlight"><pre>usage: Cyclopts condor [-h] [-u USER] [-t HOST] [-i INDB] [-d DUMPDIR] [-o OUTDB] [--no-clean]
                        [--solvers [SOLVERS [SOLVERS ...]]] [--no-auth]
 
 optional arguments:
@@ -145,6 +138,9 @@ optional arguments:
       </div>
       <div class="sphinxsidebar">
         <div class="sphinxsidebarwrapper">
+        <p class="logo"><a href="index.html" title="index">
+          <img class="logo" src="_static/uni_logo.png" alt="Logo"/>
+        </a></p>
   <div class="sphinxprev">
     <h4>Previous page</h4>
     <p class="topless"><a href="install.html"
