@@ -31,7 +31,7 @@ www         gidden.github.io.   CNAME (Alias)
 
 On Aug. 6, 2014, I noticed that the website no longer loads. Github has a page
 discussing the `configuration of A records
-<https://help.github.com/articles/tips-for-configuring-an-a-record-with-your-dns-provider>`,
+<https://help.github.com/articles/tips-for-configuring-an-a-record-with-your-dns-provider>`_,
 suggesting that ``192.30.252.153`` and ``192.30.252.154`` should be
 used. Namecheap (with minimal searching) looks to only have one ``@`` entry. I
 changed it to ``192.30.252.153``, and now we're live again. Huzzah!
