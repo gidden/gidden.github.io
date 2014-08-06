@@ -29,21 +29,13 @@ Host Name   IP Address/URL      Record Type
 www         gidden.github.io.   CNAME (Alias)
 =========   =================   =============
 
-On Aug. 6, 2014, I noticed that the website no longer loads. I ran ``nslookup``
-with the following results.
+On Aug. 6, 2014, I noticed that the website no longer loads. Github has a page
+discussing the `configuration of A records
+<https://help.github.com/articles/tips-for-configuring-an-a-record-with-your-dns-provider>`,
+suggesting that ``192.30.252.153`` and ``192.30.252.154`` should be
+used. Namecheap (with minimal searching) looks to only have one ``@`` entry. I
+changed it to ``192.30.252.153``, and now we're live again. Huzzah!
 
-.. code-block::
-
-    $ nslookup gidden.github.io
-    Server:127.0.1.1
-    Address:127.0.1.1#53
-
-    Non-authoritative answer:
-    gidden.github.iocanonical name = github.map.fastly.net.
-    Name:github.map.fastly.net
-    Address: 23.235.40.133
-
-I am now trying to change the ``@`` record IP Address to ``23.235.40.133``.
 
 LICENSE
 =======
