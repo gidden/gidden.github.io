@@ -22,12 +22,12 @@ Github IP Address Forwarding
 Upon initially setting this site up, I registered ``mattgidden.com`` with
 namecheap and modified the host records as follows:
 
-========    =================   =============
+=========   =================   =============
 Host Name   IP Address/URL      Record Type
 ---------   -----------------   -------------
 @           199.27.74.133       A (Address)
 www         gidden.github.io.   CNAME (Alias)
-========    =================   =============
+=========   =================   =============
 
 On Aug. 6, 2014, I noticed that the website no longer loads. I ran ``nslookup``
 with the following results.
