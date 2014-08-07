@@ -1,0 +1,208 @@
+
+
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>Cyclopts Basics &mdash; Cyclopts 0.1.0 documentation</title>
+    
+    <link rel="stylesheet" href="_static/cloud.css" type="text/css" />
+    <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+    <link rel="stylesheet" href="//fonts.googleapis.com/css?family=Noticia+Text|Open+Sans|Droid+Sans+Mono" type="text/css" />
+    
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    './',
+        VERSION:     '0.1.0',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="_static/jquery.js"></script>
+    <script type="text/javascript" src="_static/underscore.js"></script>
+    <script type="text/javascript" src="_static/doctools.js"></script>
+    <script type="text/javascript" src="_static/jquery.cookie.js"></script>
+    <script type="text/javascript" src="_static/cloud.js"></script>
+    <link rel="top" title="Cyclopts 0.1.0 documentation" href="index.html" />
+    <link rel="next" title="Command Line Interface (CLI)" href="cli.html" />
+    <link rel="prev" title="Installing Cyclopts" href="install.html" /> 
+        <meta name="viewport" content="width=device-width, initial-scale=1">
+  </head>
+  <body>
+    <div class="relbar-top">
+        
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="py-modindex.html" title="Python Module Index"
+             >modules</a> &nbsp; &nbsp;</li>
+        <li class="right" >
+          <a href="np-modindex.html" title="Python Module Index"
+             >modules</a> &nbsp; &nbsp;</li>
+        <li class="right" >
+          <a href="cli.html" title="Command Line Interface (CLI)"
+             accesskey="N">next</a> &nbsp; &nbsp;</li>
+        <li class="right" >
+          <a href="install.html" title="Installing Cyclopts"
+             accesskey="P">previous</a> &nbsp; &nbsp;</li>
+    <li><a href="index.html">Cyclopts 0.1.0 documentation</a> &raquo;</li>
+ 
+      </ul>
+    </div>
+    </div>
+  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body">
+            
+  <div class="section" id="cyclopts-basics">
+<span id="basics"></span><h1>Cyclopts Basics<a class="headerlink" href="#cyclopts-basics" title="Permalink to this headline">¶</a></h1>
+<p>Cyclopts is a flexible, plugin framework for defining problem instances, solving
+those problem instances either locally or on a Condor-enabled High Throughput
+Computing (HTC) System, and persisting the results. Cyclopts interacts with HDF5
+databases.</p>
+<div class="section" id="nomenclature">
+<h2>Nomenclature<a class="headerlink" href="#nomenclature" title="Permalink to this headline">¶</a></h2>
+<p>Cyclopts uses the following nomenclature</p>
+<p>Problem Family</p>
+<blockquote>
+<div>A set of problems that share a similar structure. For example, Cyclus
+Exchange Graphs all have Nodes, Groups, Arcs, preferences, request and
+supply constraint quantities, and request and supply constraint
+coefficients. There is a 1-to-1 mapping between problem families and a
+collection of instance writing, instance reading, instance execution, and
+instance solution writing routines.</div></blockquote>
+<p>Problem Species</p>
+<blockquote>
+<div>A subset of a Problem Family that share a definition of parameter space and
+an instance generation routine that translates a point in parameter space
+into an instance of the problem with the Problem Family&#8217;s structure. An
+example of a Problem Species for the Exchange Graph problem family is the
+Fast/Thermal Reactor Request species. There is a 1-to-1 mapping between
+problem species and a collection of parameter writing and
+parameter-to-instance translation routines.</div></blockquote>
+<p>Problem Instance</p>
+<blockquote>
+<div>A realization of a Problem Species, conforming to the structure of its
+Problem Family.</div></blockquote>
+<p>Problem Results</p>
+<blockquote>
+<div>A collection of results from the execution of a Problem Instance</div></blockquote>
+</div>
+<div class="section" id="implementing-a-new-problem-family">
+<h2>Implementing a New Problem Family<a class="headerlink" href="#implementing-a-new-problem-family" title="Permalink to this headline">¶</a></h2>
+<p>A problem family class must implement the following functions:</p>
+<ul class="simple">
+<li><tt class="docutils literal"><span class="pre">record_instance</span></tt></li>
+<li><tt class="docutils literal"><span class="pre">read_instance</span></tt></li>
+<li><tt class="docutils literal"><span class="pre">exec_instance</span></tt></li>
+<li><tt class="docutils literal"><span class="pre">record_solution</span></tt></li>
+</ul>
+</div>
+<div class="section" id="implementing-a-new-problem-species">
+<h2>Implementing a New Problem Species<a class="headerlink" href="#implementing-a-new-problem-species" title="Permalink to this headline">¶</a></h2>
+<p>A problem species class must implement the following functions:</p>
+<ul class="simple">
+<li><tt class="docutils literal"><span class="pre">read_space</span></tt></li>
+<li><tt class="docutils literal"><span class="pre">record_point</span></tt></li>
+<li><tt class="docutils literal"><span class="pre">gen_instance</span></tt></li>
+</ul>
+</div>
+</div>
+
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar">
+        <div class="sphinxsidebarwrapper">
+        <p class="logo"><a href="index.html" title="index">
+          <img class="logo" src="_static/uni_logo.png" alt="Logo"/>
+        </a></p><div class="sphinxlocaltoc">
+    <h3><a href="index.html">Table of Contents</a></h3>
+    <ul>
+<li><a class="reference internal" href="#">Cyclopts Basics</a><ul>
+<li><a class="reference internal" href="#nomenclature">Nomenclature</a></li>
+<li><a class="reference internal" href="#implementing-a-new-problem-family">Implementing a New Problem Family</a></li>
+<li><a class="reference internal" href="#implementing-a-new-problem-species">Implementing a New Problem Species</a></li>
+</ul>
+</li>
+</ul>
+
+  </div>
+  <div class="sphinxprev">
+    <h4>Previous page</h4>
+    <p class="topless"><a href="install.html"
+                          title="Previous page">&larr; Installing Cyclopts</a></p>
+  </div>
+  <div class="sphinxnext">
+    <h4>Next page</h4>
+    <p class="topless"><a href="cli.html"
+                          title="Next page">&rarr; Command Line Interface (CLI)</a></p>
+  </div>
+  <h3>This Page</h3>
+  <ul class="this-page-menu">
+    <li><a href="_sources/basics.txt"
+           rel="nofollow">Show Source</a></li>
+  </ul>
+<div id="searchbox" style="display: none">
+  <h3>Quick search</h3>
+    <form class="search" action="search.html" method="get">
+      <input type="text" name="q" />
+      <input type="submit" value="Go" />
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+    <p class="searchtip" style="font-size: 90%">
+    Enter search terms or a module, class or function name.
+    </p>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="relbar-bottom">
+        
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="py-modindex.html" title="Python Module Index"
+             >modules</a> &nbsp; &nbsp;</li>
+        <li class="right" >
+          <a href="np-modindex.html" title="Python Module Index"
+             >modules</a> &nbsp; &nbsp;</li>
+        <li class="right" >
+          <a href="cli.html" title="Command Line Interface (CLI)"
+             >next</a> &nbsp; &nbsp;</li>
+        <li class="right" >
+          <a href="install.html" title="Installing Cyclopts"
+             >previous</a> &nbsp; &nbsp;</li>
+    <li><a href="index.html">Cyclopts 0.1.0 documentation</a> &raquo;</li>
+ 
+      </ul>
+    </div>
+    </div>
+
+    <div class="footer">
+        &copy; Copyright 2014, Matthew J. Gidden.
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.2.2.
+    </div>
+    <!-- cloud_sptheme 1.4 -->
+  </body>
+</html>

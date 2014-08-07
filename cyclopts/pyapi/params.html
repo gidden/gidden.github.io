@@ -87,7 +87,7 @@ separated into individual functions on the Builder&#8217;s interface.</p>
 <col class="field-name" />
 <col class="field-body" />
 <tbody valign="top">
-<tr class="field-odd field"><th class="field-name">author:</th><td class="field-body">Matthew Gidden &lt;<a class="reference external" href="mailto:matthew&#46;gidden&#37;&#52;&#48;gmail&#46;com">matthew<span>&#46;</span>gidden<span>&#64;</span>gmail<span>&#46;</span>com</a>&gt;</td>
+<tr class="field-odd field"><th class="field-name">author:</th><td class="field-body">Matthew Gidden &lt;matthew.gidden _at_ gmail.com&gt;</td>
 </tr>
 </tbody>
 </table>
@@ -179,7 +179,7 @@ separated into individual functions on the Builder&#8217;s interface.</p>
 
 <dl class="class">
 <dt id="cyclopts.params.ReactorRequestBuilder">
-<em class="property">class </em><tt class="descclassname">cyclopts.params.</tt><tt class="descname">ReactorRequestBuilder</tt><big>(</big><em>sampler</em>, <em>params=None</em>, <em>commod_offset=0</em>, <em>req_g_offset=0</em>, <em>sup_g_offset=0</em>, <em>req_n_offset=0</em>, <em>sup_n_offset=0</em>, <em>arc_offset=0</em>, <em>*args</em>, <em>**kwargs</em><big>)</big><a class="reference internal" href="../_modules/cyclopts/params.html#ReactorRequestBuilder"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#cyclopts.params.ReactorRequestBuilder" title="Permalink to this definition">¶</a></dt>
+<em class="property">class </em><tt class="descclassname">cyclopts.params.</tt><tt class="descname">ReactorRequestBuilder</tt><big>(</big><em>sampler</em>, <em>commod_offset=0</em>, <em>req_g_offset=0</em>, <em>sup_g_offset=0</em>, <em>req_n_offset=0</em>, <em>sup_n_offset=0</em>, <em>arc_offset=0</em>, <em>*args</em>, <em>**kwargs</em><big>)</big><a class="reference internal" href="../_modules/cyclopts/params.html#ReactorRequestBuilder"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#cyclopts.params.ReactorRequestBuilder" title="Permalink to this definition">¶</a></dt>
 <dd><p>A helper class to translate sampling parameters for a reactor request
 scenario into an instance of GraphParams used by the cyclopts.execute
 module.</p>
@@ -232,7 +232,8 @@ appropriate offsets.</p>
 <dl class="method">
 <dt id="cyclopts.params.ReactorRequestBuilder.build">
 <tt class="descname">build</tt><big>(</big><em>*args</em>, <em>**kwargs</em><big>)</big><a class="reference internal" href="../_modules/cyclopts/params.html#ReactorRequestBuilder.build"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#cyclopts.params.ReactorRequestBuilder.build" title="Permalink to this definition">¶</a></dt>
-<dd><p>Returns a configured cyclopts.execute.GraphParams.</p>
+<dd><p>Builds Group, Node, and Arc components of a Reactor-Request based
+Resource Exchange</p>
 </dd></dl>
 
 <dl class="method">
@@ -315,7 +316,7 @@ that condition is not met).</p>
 <col class="field-name" />
 <col class="field-body" />
 <tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Returns:</th><td class="field-body"><p class="first"><strong>bool</strong> :</p>
+<tr class="field-odd field"><th class="field-name">Returns:</th><td class="field-body"><p class="first"><strong>b</strong> : bool</p>
 <blockquote class="last">
 <div><p>whether the sampler&#8217;s parameters form a valid point in the 
 sampler&#8217;s parameter space</p>
@@ -326,11 +327,17 @@ sampler&#8217;s parameter space</p>
 </table>
 </dd></dl>
 
+<dl class="method">
+<dt id="cyclopts.params.ReactorRequestBuilder.write">
+<tt class="descname">write</tt><big>(</big><em>h5node</em><big>)</big><a class="reference internal" href="../_modules/cyclopts/params.html#ReactorRequestBuilder.write"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#cyclopts.params.ReactorRequestBuilder.write" title="Permalink to this definition">¶</a></dt>
+<dd><p>writes its current instance state to an output database</p>
+</dd></dl>
+
 </dd></dl>
 
 <dl class="class">
 <dt id="cyclopts.params.ReactorRequestSampler">
-<em class="property">class </em><tt class="descclassname">cyclopts.params.</tt><tt class="descname">ReactorRequestSampler</tt><big>(</big><em>n_commods=None</em>, <em>n_request=None</em>, <em>assem_per_req=None</em>, <em>assem_multi_commod=None</em>, <em>req_multi_commods=None</em>, <em>exclusive=None</em>, <em>n_req_constr=None</em>, <em>n_supply=None</em>, <em>sup_multi=None</em>, <em>sup_multi_commods=None</em>, <em>n_sup_constr=None</em>, <em>sup_constr_val=None</em>, <em>connection=None</em>, <em>constr_coeff=None</em>, <em>pref_coeff=None</em><big>)</big><a class="reference internal" href="../_modules/cyclopts/params.html#ReactorRequestSampler"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#cyclopts.params.ReactorRequestSampler" title="Permalink to this definition">¶</a></dt>
+<em class="property">class </em><tt class="descclassname">cyclopts.params.</tt><tt class="descname">ReactorRequestSampler</tt><big>(</big><em>n_commods=None</em>, <em>n_request=None</em>, <em>assem_per_req=None</em>, <em>req_qty=None</em>, <em>assem_multi_commod=None</em>, <em>req_multi_commods=None</em>, <em>exclusive=None</em>, <em>n_req_constr=None</em>, <em>n_supply=None</em>, <em>sup_multi=None</em>, <em>sup_multi_commods=None</em>, <em>n_sup_constr=None</em>, <em>sup_constr_val=None</em>, <em>connection=None</em>, <em>constr_coeff=None</em>, <em>pref_coeff=None</em><big>)</big><a class="reference internal" href="../_modules/cyclopts/params.html#ReactorRequestSampler"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#cyclopts.params.ReactorRequestSampler" title="Permalink to this definition">¶</a></dt>
 <dd><p>A container class for holding all sampling objects for reactor request
 scenarios.</p>
 <table class="docutils field-list" frame="void" rules="none">
@@ -348,6 +355,10 @@ scenarios.</p>
 <p><strong>assem_per_req</strong> : Param or similar, optional</p>
 <blockquote>
 <div><p>the number of assemblies in a request</p>
+</div></blockquote>
+<p><strong>req_qty</strong> : Param or similar, optional</p>
+<blockquote>
+<div><p>the quantity associated with each request</p>
 </div></blockquote>
 <p><strong>assem_multi_commod</strong> : BoolParam or similar, optional</p>
 <blockquote>
@@ -408,6 +419,13 @@ request nodes is added</p>
 <dt id="cyclopts.params.ReactorRequestSampler.describe_h5">
 <tt class="descname">describe_h5</tt><big>(</big><big>)</big><a class="reference internal" href="../_modules/cyclopts/params.html#ReactorRequestSampler.describe_h5"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#cyclopts.params.ReactorRequestSampler.describe_h5" title="Permalink to this definition">¶</a></dt>
 <dd><p>Returns a numpy dtype describing all composed objects.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="cyclopts.params.ReactorRequestSampler.inst_builder_ctor">
+<tt class="descname">inst_builder_ctor</tt><big>(</big><big>)</big><a class="reference internal" href="../_modules/cyclopts/params.html#ReactorRequestSampler.inst_builder_ctor"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#cyclopts.params.ReactorRequestSampler.inst_builder_ctor" title="Permalink to this definition">¶</a></dt>
+<dd><p>Returns a constructor to an object that builds problem instances from
+the parameter space defined by this object.</p>
 </dd></dl>
 
 <dl class="method">

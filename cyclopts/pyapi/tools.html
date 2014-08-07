@@ -77,7 +77,7 @@ output.</p>
 <col class="field-name" />
 <col class="field-body" />
 <tbody valign="top">
-<tr class="field-odd field"><th class="field-name">author:</th><td class="field-body">Matthew Gidden &lt;<a class="reference external" href="mailto:matthew&#46;gidden&#37;&#52;&#48;gmail&#46;com">matthew<span>&#46;</span>gidden<span>&#64;</span>gmail<span>&#46;</span>com</a>&gt;</td>
+<tr class="field-odd field"><th class="field-name">author:</th><td class="field-body">Matthew Gidden &lt;matthew.gidden _at_ gmail.com&gt;</td>
 </tr>
 </tbody>
 </table>
@@ -104,45 +104,37 @@ xdress/utils.py</p>
 
 <dl class="class">
 <dt id="cyclopts.tools.SamplerBuilder">
-<em class="property">class </em><tt class="descclassname">cyclopts.tools.</tt><tt class="descname">SamplerBuilder</tt><a class="reference internal" href="../_modules/cyclopts/tools.html#SamplerBuilder"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#cyclopts.tools.SamplerBuilder" title="Permalink to this definition">¶</a></dt>
+<em class="property">class </em><tt class="descclassname">cyclopts.tools.</tt><tt class="descname">SamplerBuilder</tt><big>(</big><em>rc</em><big>)</big><a class="reference internal" href="../_modules/cyclopts/tools.html#SamplerBuilder"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#cyclopts.tools.SamplerBuilder" title="Permalink to this definition">¶</a></dt>
 <dd><p>A helper class to build configure instances of parameter samplers</p>
 <dl class="method">
 <dt id="cyclopts.tools.SamplerBuilder.build">
-<tt class="descname">build</tt><big>(</big><em>rc</em><big>)</big><a class="reference internal" href="../_modules/cyclopts/tools.html#SamplerBuilder.build"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#cyclopts.tools.SamplerBuilder.build" title="Permalink to this definition">¶</a></dt>
+<tt class="descname">build</tt><big>(</big><big>)</big><a class="reference internal" href="../_modules/cyclopts/tools.html#SamplerBuilder.build"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#cyclopts.tools.SamplerBuilder.build" title="Permalink to this definition">¶</a></dt>
 <dd><p>Builds all permutations of samplers.</p>
-<table class="docutils field-list" frame="void" rules="none">
-<col class="field-name" />
-<col class="field-body" />
-<tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><p class="first"><strong>rc</strong> : RunControl</p>
-<blockquote class="last">
-<div><p>A RunControl object defined by the user&#8217;s parsed rc file.</p>
-</div></blockquote>
-</td>
-</tr>
-</tbody>
-</table>
 </dd></dl>
 
 </dd></dl>
 
 <dl class="function">
 <dt id="cyclopts.tools.combine">
-<tt class="descclassname">cyclopts.tools.</tt><tt class="descname">combine</tt><big>(</big><em>files</em>, <em>new_file=None</em><big>)</big><a class="reference internal" href="../_modules/cyclopts/tools.html#combine"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#cyclopts.tools.combine" title="Permalink to this definition">¶</a></dt>
+<tt class="descclassname">cyclopts.tools.</tt><tt class="descname">combine</tt><big>(</big><em>files</em>, <em>new_file=None</em>, <em>clean=False</em><big>)</big><a class="reference internal" href="../_modules/cyclopts/tools.html#combine"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#cyclopts.tools.combine" title="Permalink to this definition">¶</a></dt>
 <dd><p>Combines two or more databases with identical layout, writing their
 output into a new file or appending to the first in the list.</p>
 <table class="docutils field-list" frame="void" rules="none">
 <col class="field-name" />
 <col class="field-body" />
 <tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><p class="first"><strong>files</strong> : list</p>
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><p class="first"><strong>files</strong> : iterator</p>
 <blockquote>
-<div><p>A list of all databases to combine</p>
+<div><p>An iterator listing all databases to combine</p>
 </div></blockquote>
 <p><strong>new_file</strong> : str, optional</p>
-<blockquote class="last">
+<blockquote>
 <div><p>The new database to write to. If None, all databases are appended to the
 end of the first database in the list.</p>
+</div></blockquote>
+<p><strong>clean</strong> : bool, optional</p>
+<blockquote class="last">
+<div><p>Whether to remove original files after combining them</p>
 </div></blockquote>
 </td>
 </tr>
@@ -154,62 +146,6 @@ end of the first database in the list.</p>
 <dt id="cyclopts.tools.exec_file">
 <tt class="descclassname">cyclopts.tools.</tt><tt class="descname">exec_file</tt><big>(</big><em>filename</em>, <em>glb=None</em>, <em>loc=None</em><big>)</big><a class="reference internal" href="../_modules/cyclopts/tools.html#exec_file"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#cyclopts.tools.exec_file" title="Permalink to this definition">¶</a></dt>
 <dd><p>A function equivalent to the Python 2.x execfile statement.</p>
-</dd></dl>
-
-<dl class="function">
-<dt id="cyclopts.tools.exec_from_h5">
-<tt class="descclassname">cyclopts.tools.</tt><tt class="descname">exec_from_h5</tt><big>(</big><em>fin=None</em>, <em>fout=None</em>, <em>rc=None</em>, <em>solvers=None</em><big>)</big><a class="reference internal" href="../_modules/cyclopts/tools.html#exec_from_h5"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#cyclopts.tools.exec_from_h5" title="Permalink to this definition">¶</a></dt>
-<dd><p>Runs an instance of Cyclopts.</p>
-<table class="docutils field-list" frame="void" rules="none">
-<col class="field-name" />
-<col class="field-body" />
-<tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><p class="first"><strong>fin</strong> : str, optional</p>
-<blockquote>
-<div><p>the input file name (<a href="#id1"><span class="problematic" id="id2">*</span></a>.h5)</p>
-</div></blockquote>
-<p><strong>fout</strong> : str, optional</p>
-<blockquote>
-<div><p>the output file name (<a href="#id3"><span class="problematic" id="id4">*</span></a>.h5)</p>
-</div></blockquote>
-<p><strong>rc</strong> : str, optional</p>
-<blockquote>
-<div><p>the run control file</p>
-</div></blockquote>
-<p><strong>solvers</strong> : list, optional</p>
-<blockquote class="last">
-<div><p>the solvers to use on each generated instance</p>
-</div></blockquote>
-</td>
-</tr>
-</tbody>
-</table>
-</dd></dl>
-
-<dl class="function">
-<dt id="cyclopts.tools.from_h5">
-<tt class="descclassname">cyclopts.tools.</tt><tt class="descname">from_h5</tt><big>(</big><em>fin=None</em>, <em>subinput=None</em><big>)</big><a class="reference internal" href="../_modules/cyclopts/tools.html#from_h5"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#cyclopts.tools.from_h5" title="Permalink to this definition">¶</a></dt>
-<dd><p>Converts an input HDF5 database into a list of Sampler-type objects that
-represent discrete, individual data points in a possibly non-contiguous
-dataspace.</p>
-<p>If subinput is provided, it is read directly. If not, the entire database
-converted.</p>
-<table class="docutils field-list" frame="void" rules="none">
-<col class="field-name" />
-<col class="field-body" />
-<tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><p class="first"><strong>fin</strong> : str</p>
-<blockquote>
-<div><p>the input file name (<a href="#id5"><span class="problematic" id="id6">*</span></a>.h5)</p>
-</div></blockquote>
-<p><strong>subinput</strong> : dict</p>
-<blockquote class="last">
-<div><p>a subset of input to read int</p>
-</div></blockquote>
-</td>
-</tr>
-</tbody>
-</table>
 </dd></dl>
 
 <dl class="function">
@@ -231,62 +167,27 @@ converted.</p>
 </dd></dl>
 
 <dl class="function">
-<dt id="cyclopts.tools.report">
-<tt class="descclassname">cyclopts.tools.</tt><tt class="descname">report</tt><big>(</big><em>sampler</em>, <em>gparams</em>, <em>sparams</em>, <em>soln</em>, <em>sim_id=None</em>, <em>db_path=None</em><big>)</big><a class="reference internal" href="../_modules/cyclopts/tools.html#report"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#cyclopts.tools.report" title="Permalink to this definition">¶</a></dt>
-<dd><p>Dumps parameter and solution information to an HDF5 database.</p>
-<table class="docutils field-list" frame="void" rules="none">
-<col class="field-name" />
-<col class="field-body" />
-<tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><p class="first"><strong>sampler</strong> : ReactorRequestSampler or ReactorSupplySampler</p>
-<blockquote>
-<div><p>The sampler used to generate the exchange instance</p>
-</div></blockquote>
-<p><strong>gparams</strong> : GraphParams</p>
-<blockquote>
-<div><p>ExchangeGraph-defining parameters</p>
-</div></blockquote>
-<p><strong>sparams</strong> : SolverParams</p>
-<blockquote>
-<div><p>ExchangeSolver-defining parameters</p>
-</div></blockquote>
-<p><strong>soln</strong> : Solution</p>
-<blockquote>
-<div><p>The solved graph&#8217;s solution.</p>
-</div></blockquote>
-<p><strong>sim_id</strong> : int, optional</p>
-<blockquote>
-<div><p>The simulation id to use in the database. A UUID is generated by 
-default.</p>
-</div></blockquote>
-<p><strong>db_path</strong> : str, optional</p>
-<blockquote class="last">
-<div><p>The database to dump information to. The default is cyclopts.h5 
-file placed in the current working directory.</p>
-</div></blockquote>
-</td>
-</tr>
-</tbody>
-</table>
+<dt id="cyclopts.tools.run">
+<tt class="descclassname">cyclopts.tools.</tt><tt class="descname">run</tt><big>(</big><em>args</em>, <em>cwd=None</em>, <em>shell=False</em>, <em>kill_tree=True</em>, <em>timeout=-1</em>, <em>env=None</em><big>)</big><a class="reference internal" href="../_modules/cyclopts/tools.html#run"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#cyclopts.tools.run" title="Permalink to this definition">¶</a></dt>
+<dd><p>Run a command with a timeout after which it will be forcibly
+killed.</p>
 </dd></dl>
 
 <dl class="function">
-<dt id="cyclopts.tools.to_h5">
-<tt class="descclassname">cyclopts.tools.</tt><tt class="descname">to_h5</tt><big>(</big><em>fin=None</em>, <em>fout=None</em><big>)</big><a class="reference internal" href="../_modules/cyclopts/tools.html#to_h5"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#cyclopts.tools.to_h5" title="Permalink to this definition">¶</a></dt>
-<dd><p>Converts a contiguous dataspace as defined by an input run control file
-into an HDF5 database. Each discrete point, as represented by a Sampler-type
-object is converted into a row in a table of the object&#8217;s name.</p>
+<dt id="cyclopts.tools.ssh_test_connect">
+<tt class="descclassname">cyclopts.tools.</tt><tt class="descname">ssh_test_connect</tt><big>(</big><em>client</em>, <em>host</em>, <em>user</em>, <em>keyfile=None</em>, <em>auth=True</em><big>)</big><a class="reference internal" href="../_modules/cyclopts/tools.html#ssh_test_connect"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#cyclopts.tools.ssh_test_connect" title="Permalink to this definition">¶</a></dt>
+<dd><p>Tests an ssh connection and returns success or failure thereof.</p>
 <table class="docutils field-list" frame="void" rules="none">
 <col class="field-name" />
 <col class="field-body" />
 <tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><p class="first"><strong>fin</strong> : str</p>
-<blockquote>
-<div><p>the input file name (<a href="#id7"><span class="problematic" id="id8">*</span></a>.py)</p>
-</div></blockquote>
-<p><strong>fout</strong> : str</p>
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><p class="first"><strong>client</strong> : paramiko SSH client</p>
+<p><strong>host</strong> : str</p>
+<p><strong>user</strong> : str</p>
+<p><strong>keyfile</strong> : str, optional</p>
+<p><strong>auth</strong> : bool, optional</p>
 <blockquote class="last">
-<div><p>the output file name (<a href="#id9"><span class="problematic" id="id10">*</span></a>.h5)</p>
+<div><p>whether to prompt for a password authorization on failure</p>
 </div></blockquote>
 </td>
 </tr>

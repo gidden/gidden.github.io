@@ -64,7 +64,7 @@
 <span class="sd">&quot;&quot;&quot;Provides some useful tools for working with Cyclopts, including reporting</span>
 <span class="sd">output.</span>
 
-<span class="sd">:author: Matthew Gidden &lt;matthew.gidden@gmail.com&gt;</span>
+<span class="sd">:author: Matthew Gidden &lt;matthew.gidden _at_ gmail.com&gt;</span>
 <span class="sd">&quot;&quot;&quot;</span>
 <span class="kn">from</span> <span class="nn">__future__</span> <span class="kn">import</span> <span class="n">print_function</span>
 
@@ -78,11 +78,17 @@
 <span class="kn">from</span> <span class="nn">functools</span> <span class="kn">import</span> <span class="nb">reduce</span>
 <span class="kn">from</span> <span class="nn">itertools</span> <span class="kn">import</span> <span class="n">product</span>
 <span class="kn">from</span> <span class="nn">collections</span> <span class="kn">import</span> <span class="n">defaultdict</span><span class="p">,</span> <span class="n">Iterable</span>
+<span class="kn">import</span> <span class="nn">paramiko</span> <span class="kn">as</span> <span class="nn">pm</span>
+<span class="kn">from</span> <span class="nn">os</span> <span class="kn">import</span> <span class="n">kill</span>
+<span class="kn">from</span> <span class="nn">signal</span> <span class="kn">import</span> <span class="n">alarm</span><span class="p">,</span> <span class="n">signal</span><span class="p">,</span> <span class="n">SIGALRM</span><span class="p">,</span> <span class="n">SIGKILL</span>
+<span class="kn">from</span> <span class="nn">subprocess</span> <span class="kn">import</span> <span class="n">PIPE</span><span class="p">,</span> <span class="n">Popen</span>
+<span class="kn">import</span> <span class="nn">getpass</span>
 
 <span class="kn">import</span> <span class="nn">cyclopts</span>
 <span class="kn">from</span> <span class="nn">cyclopts.params</span> <span class="kn">import</span> <span class="n">CONSTR_ARGS</span><span class="p">,</span> <span class="n">Param</span><span class="p">,</span> <span class="n">BoolParam</span><span class="p">,</span> <span class="n">SupConstrParam</span><span class="p">,</span> <span class="n">CoeffParam</span><span class="p">,</span> \
     <span class="n">ReactorRequestSampler</span><span class="p">,</span> <span class="n">ReactorRequestBuilder</span> <span class="c">#, ReactorSupplySampler</span>
-<span class="kn">from</span> <span class="nn">cyclopts.execute</span> <span class="kn">import</span> <span class="n">ArcFlow</span><span class="p">,</span> <span class="n">SolverParams</span><span class="p">,</span> <span class="n">execute_exchange</span>
+
+<span class="n">cyclopts_remote_run_dir</span> <span class="o">=</span> <span class="s">&#39;cyclopts-runs&#39;</span>
 
 <span class="k">class</span> <span class="nc">NotSpecified</span><span class="p">(</span><span class="nb">object</span><span class="p">):</span>
     <span class="sd">&quot;&quot;&quot;A helper class singleton for run control meaning that a &#39;real&#39; value</span>
@@ -223,28 +229,29 @@
 <div class="viewcode-block" id="SamplerBuilder"><a class="viewcode-back" href="../../pyapi/tools.html#cyclopts.tools.SamplerBuilder">[docs]</a><span class="k">class</span> <span class="nc">SamplerBuilder</span><span class="p">(</span><span class="nb">object</span><span class="p">):</span>
     <span class="sd">&quot;&quot;&quot;A helper class to build configure instances of parameter samplers</span>
 <span class="sd">    &quot;&quot;&quot;</span>
-<div class="viewcode-block" id="SamplerBuilder.build"><a class="viewcode-back" href="../../pyapi/tools.html#cyclopts.tools.SamplerBuilder.build">[docs]</a>    <span class="k">def</span> <span class="nf">build</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">rc</span><span class="p">):</span>
+    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">rc</span><span class="p">):</span>
+        <span class="n">pdict</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_get_param_dict</span><span class="p">(</span><span class="n">rc</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">n_samplers</span> <span class="o">=</span> <span class="nb">reduce</span><span class="p">(</span><span class="n">operator</span><span class="o">.</span><span class="n">mul</span><span class="p">,</span> 
+                                 <span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">l</span><span class="p">)</span> <span class="k">for</span> <span class="n">_</span><span class="p">,</span> <span class="n">val</span> <span class="ow">in</span> <span class="n">pdict</span><span class="o">.</span><span class="n">iteritems</span><span class="p">()</span> \
+                                      <span class="k">for</span> <span class="n">l</span> <span class="ow">in</span> <span class="n">val</span><span class="p">),</span> <span class="mi">1</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">params_it</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_param_gen</span><span class="p">(</span><span class="n">pdict</span><span class="p">)</span>
+        
+<div class="viewcode-block" id="SamplerBuilder.build"><a class="viewcode-back" href="../../pyapi/tools.html#cyclopts.tools.SamplerBuilder.build">[docs]</a>    <span class="k">def</span> <span class="nf">build</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;Builds all permutations of samplers.</span>
-
-<span class="sd">        Parameters</span>
-<span class="sd">        ----------</span>
-<span class="sd">        rc : RunControl</span>
-<span class="sd">            A RunControl object defined by the user&#39;s parsed rc file.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
-        <span class="n">params_dict</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_parse</span><span class="p">(</span><span class="n">rc</span><span class="p">)</span>
-        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_build</span><span class="p">(</span><span class="n">params_dict</span><span class="p">)</span>
-    </div>
-    <span class="k">def</span> <span class="nf">_build</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">params_dict</span><span class="p">):</span>
-        <span class="n">params_list</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_constr_params</span><span class="p">(</span><span class="n">params_dict</span><span class="p">)</span>
-        <span class="n">n_samplers</span> <span class="o">=</span> <span class="nb">reduce</span><span class="p">(</span><span class="n">operator</span><span class="o">.</span><span class="n">mul</span><span class="p">,</span> <span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">l</span><span class="p">)</span> <span class="k">for</span> <span class="n">_</span><span class="p">,</span> <span class="n">l</span> <span class="ow">in</span> <span class="n">params_list</span><span class="p">),</span> <span class="mi">1</span><span class="p">)</span>
-        <span class="n">samplers</span> <span class="o">=</span> <span class="p">[</span><span class="n">ReactorRequestSampler</span><span class="p">()</span> <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">n_samplers</span><span class="p">)]</span>
         <span class="c">## for supply implementation</span>
         <span class="c"># samplers = [ReactorRequestSampler() if params_dict[&#39;request&#39;] \</span>
         <span class="c">#                 else ReactorSupplySampler() for range(n_samplers)]</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">_add_params</span><span class="p">(</span><span class="n">samplers</span><span class="p">,</span> <span class="n">params_list</span><span class="p">)</span>
-        <span class="k">return</span> <span class="p">[</span><span class="n">sampler</span> <span class="k">for</span> <span class="n">sampler</span> <span class="ow">in</span> <span class="n">samplers</span> <span class="k">if</span> <span class="n">sampler</span><span class="o">.</span><span class="n">valid</span><span class="p">()]</span>
-
-    <span class="k">def</span> <span class="nf">_parse</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">rc</span><span class="p">):</span>
+        <span class="n">s_ctor</span> <span class="o">=</span> <span class="n">ReactorRequestSampler</span>
+        <span class="n">pairings</span> <span class="o">=</span> <span class="p">[[(</span><span class="n">name</span><span class="p">,</span> <span class="n">param</span><span class="p">)</span> <span class="k">for</span> <span class="n">param</span> <span class="ow">in</span> <span class="n">params</span><span class="p">]</span> <span class="k">for</span> <span class="n">name</span><span class="p">,</span> <span class="n">params</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">params_it</span><span class="p">]</span>
+        <span class="k">for</span> <span class="n">p</span> <span class="ow">in</span> <span class="n">product</span><span class="p">(</span><span class="o">*</span><span class="n">pairings</span><span class="p">):</span>
+            <span class="n">s</span> <span class="o">=</span> <span class="n">s_ctor</span><span class="p">()</span>
+            <span class="k">for</span> <span class="n">name</span><span class="p">,</span> <span class="n">param</span> <span class="ow">in</span> <span class="n">p</span><span class="p">:</span>
+                <span class="nb">setattr</span><span class="p">(</span><span class="n">s</span><span class="p">,</span> <span class="n">name</span><span class="p">,</span> <span class="n">param</span><span class="p">)</span>
+            <span class="k">if</span> <span class="n">s</span><span class="o">.</span><span class="n">valid</span><span class="p">():</span>
+                <span class="k">yield</span> <span class="n">s</span>
+        </div>
+    <span class="k">def</span> <span class="nf">_get_param_dict</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">rc</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;Provides a dictionary of parameter names to all constructor arguments</span>
 <span class="sd">        for a resource exchange range of instances.</span>
 <span class="sd">        </span>
@@ -287,346 +294,168 @@
         <span class="c">#         if len(vals) &gt; 0:</span>
         <span class="c">#             params_dict[name] = vals</span>
         <span class="k">return</span> <span class="n">params_dict</span>
-        
-    <span class="k">def</span> <span class="nf">_constr_params</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">params_dict</span><span class="p">):</span>
+
+    <span class="k">def</span> <span class="nf">_param_gen</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">params_dict</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;Returns input for _add_subtree() given input for build()&quot;&quot;&quot;</span>
         <span class="n">params_dict</span> <span class="o">=</span> <span class="p">{</span><span class="n">k</span><span class="p">:</span> <span class="p">[</span><span class="n">i</span> <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="n">product</span><span class="p">(</span><span class="o">*</span><span class="n">v</span><span class="p">)]</span> \
                            <span class="k">for</span> <span class="n">k</span><span class="p">,</span> <span class="n">v</span> <span class="ow">in</span> <span class="n">params_dict</span><span class="o">.</span><span class="n">items</span><span class="p">()}</span>
         <span class="n">s</span> <span class="o">=</span> <span class="n">ReactorRequestSampler</span><span class="p">()</span>
-        <span class="k">return</span> <span class="p">[(</span><span class="n">k</span><span class="p">,</span> <span class="p">[</span><span class="nb">type</span><span class="p">(</span><span class="nb">getattr</span><span class="p">(</span><span class="n">s</span><span class="p">,</span> <span class="n">k</span><span class="p">))(</span><span class="o">*</span><span class="n">args</span><span class="p">)</span> <span class="k">for</span> <span class="n">args</span> <span class="ow">in</span> <span class="n">v</span><span class="p">])</span> \
-                    <span class="k">for</span> <span class="n">k</span><span class="p">,</span> <span class="n">v</span> <span class="ow">in</span> <span class="n">params_dict</span><span class="o">.</span><span class="n">items</span><span class="p">()]</span>
-
-    <span class="k">def</span> <span class="nf">_add_params</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">samplers</span><span class="p">,</span> <span class="n">params_list</span><span class="p">):</span>
-        <span class="sd">&quot;&quot;&quot;Configures samplers with all possible perturbations of parameters.&quot;&quot;&quot;</span>
-        <span class="n">pairings</span> <span class="o">=</span> <span class="p">[[(</span><span class="n">name</span><span class="p">,</span> <span class="n">param</span><span class="p">)</span> <span class="k">for</span> <span class="n">param</span> <span class="ow">in</span> <span class="n">params</span><span class="p">]</span> <span class="k">for</span> <span class="n">name</span><span class="p">,</span> <span class="n">params</span> <span class="ow">in</span> <span class="n">params_list</span><span class="p">]</span>
-        <span class="n">perturbations</span> <span class="o">=</span> <span class="p">[</span><span class="n">p</span> <span class="k">for</span> <span class="n">p</span> <span class="ow">in</span> <span class="n">product</span><span class="p">(</span><span class="o">*</span><span class="n">pairings</span><span class="p">)]</span>
-        <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">perturbations</span><span class="p">)):</span>
-            <span class="k">for</span> <span class="n">name</span><span class="p">,</span> <span class="n">param</span> <span class="ow">in</span> <span class="n">perturbations</span><span class="p">[</span><span class="n">i</span><span class="p">]:</span>
-                <span class="nb">setattr</span><span class="p">(</span><span class="n">samplers</span><span class="p">[</span><span class="n">i</span><span class="p">],</span> <span class="n">name</span><span class="p">,</span> <span class="n">param</span><span class="p">)</span>
+        <span class="k">for</span> <span class="n">k</span><span class="p">,</span> <span class="n">v</span> <span class="ow">in</span> <span class="n">params_dict</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
+            <span class="k">yield</span> <span class="n">k</span><span class="p">,</span> <span class="p">[</span><span class="nb">type</span><span class="p">(</span><span class="nb">getattr</span><span class="p">(</span><span class="n">s</span><span class="p">,</span> <span class="n">k</span><span class="p">))(</span><span class="o">*</span><span class="n">args</span><span class="p">)</span> <span class="k">for</span> <span class="n">args</span> <span class="ow">in</span> <span class="n">v</span><span class="p">]</span>
 </div>
-<span class="k">class</span> <span class="nc">SolverDesc</span><span class="p">(</span><span class="n">t</span><span class="o">.</span><span class="n">IsDescription</span><span class="p">):</span>
-    <span class="n">sim_id</span> <span class="o">=</span> <span class="n">t</span><span class="o">.</span><span class="n">StringCol</span><span class="p">(</span><span class="mi">36</span><span class="p">)</span> <span class="c"># len(str(uuid.uuid4())) == 36</span>
-    <span class="nb">type</span> <span class="o">=</span> <span class="n">t</span><span class="o">.</span><span class="n">StringCol</span><span class="p">(</span><span class="mi">12</span><span class="p">)</span>
-
-<span class="k">class</span> <span class="nc">GraphDesc</span><span class="p">(</span><span class="n">t</span><span class="o">.</span><span class="n">IsDescription</span><span class="p">):</span>
-    <span class="n">graph_id</span> <span class="o">=</span> <span class="n">t</span><span class="o">.</span><span class="n">StringCol</span><span class="p">(</span><span class="mi">36</span><span class="p">)</span>  <span class="c"># len(str(uuid.uuid4())) == 36</span>
-    <span class="n">n_supply</span> <span class="o">=</span> <span class="n">t</span><span class="o">.</span><span class="n">Int32Col</span><span class="p">()</span>
-    <span class="n">n_request</span> <span class="o">=</span> <span class="n">t</span><span class="o">.</span><span class="n">Int32Col</span><span class="p">()</span>
-    <span class="n">n_sup_nodes</span> <span class="o">=</span> <span class="n">t</span><span class="o">.</span><span class="n">Int32Col</span><span class="p">()</span>
-    <span class="n">n_req_nodes</span> <span class="o">=</span> <span class="n">t</span><span class="o">.</span><span class="n">Int32Col</span><span class="p">()</span>
-    <span class="n">n_arcs</span> <span class="o">=</span> <span class="n">t</span><span class="o">.</span><span class="n">Int32Col</span><span class="p">()</span>
-
-<span class="k">class</span> <span class="nc">RRSamplerDesc</span><span class="p">(</span><span class="n">t</span><span class="o">.</span><span class="n">IsDescription</span><span class="p">):</span>
-    <span class="n">graph_id</span> <span class="o">=</span> <span class="n">t</span><span class="o">.</span><span class="n">StringCol</span><span class="p">(</span><span class="mi">36</span><span class="p">)</span> <span class="c"># len(str(uuid.uuid4())) == 36</span>
-    <span class="n">n_commods</span> <span class="o">=</span> <span class="n">t</span><span class="o">.</span><span class="n">Int32Col</span><span class="p">()</span> 
-    <span class="n">n_request</span> <span class="o">=</span> <span class="n">t</span><span class="o">.</span><span class="n">Int32Col</span><span class="p">()</span>
-    <span class="n">assem_per_req</span> <span class="o">=</span> <span class="n">t</span><span class="o">.</span><span class="n">Int32Col</span><span class="p">()</span>
-    <span class="n">assem_multi_commod</span> <span class="o">=</span> <span class="n">t</span><span class="o">.</span><span class="n">Float32Col</span><span class="p">()</span>
-    <span class="n">req_multi_commods</span> <span class="o">=</span> <span class="n">t</span><span class="o">.</span><span class="n">Int32Col</span><span class="p">()</span>
-    <span class="n">exclusive</span> <span class="o">=</span> <span class="n">t</span><span class="o">.</span><span class="n">Float32Col</span><span class="p">()</span>
-    <span class="n">n_req_constr</span> <span class="o">=</span> <span class="n">t</span><span class="o">.</span><span class="n">Int32Col</span><span class="p">()</span>
-    <span class="n">n_supply</span> <span class="o">=</span> <span class="n">t</span><span class="o">.</span><span class="n">Int32Col</span><span class="p">()</span> 
-    <span class="n">sup_multi</span> <span class="o">=</span> <span class="n">t</span><span class="o">.</span><span class="n">Float32Col</span><span class="p">()</span>
-    <span class="n">sup_multi_commods</span> <span class="o">=</span> <span class="n">t</span><span class="o">.</span><span class="n">Int32Col</span><span class="p">()</span> 
-    <span class="n">n_sup_constr</span> <span class="o">=</span> <span class="n">t</span><span class="o">.</span><span class="n">Int32Col</span><span class="p">()</span> 
-    <span class="n">sup_constr_val</span> <span class="o">=</span> <span class="n">t</span><span class="o">.</span><span class="n">Float32Col</span><span class="p">()</span>
-    <span class="n">connection</span> <span class="o">=</span> <span class="n">t</span><span class="o">.</span><span class="n">Float32Col</span><span class="p">()</span>
-
-<span class="c"># class RSSamplerDesc(t.IsDescription):</span>
-<span class="c">#     sim_id = t.StringCol(36) # len(str(uuid.uuid4())) == 36</span>
-<span class="c">#     sol_type = t.StringCol(12)</span>
-
-<span class="k">class</span> <span class="nc">FlowDesc</span><span class="p">(</span><span class="n">t</span><span class="o">.</span><span class="n">IsDescription</span><span class="p">):</span>
-    <span class="n">sim_id</span> <span class="o">=</span> <span class="n">t</span><span class="o">.</span><span class="n">StringCol</span><span class="p">(</span><span class="mi">36</span><span class="p">)</span> <span class="c"># len(str(uuid.uuid4())) == 36</span>
-    <span class="n">arc_id</span> <span class="o">=</span> <span class="n">t</span><span class="o">.</span><span class="n">Int64Col</span><span class="p">()</span>
-    <span class="n">flow</span> <span class="o">=</span> <span class="n">t</span><span class="o">.</span><span class="n">Float64Col</span><span class="p">()</span>
-
-<span class="k">class</span> <span class="nc">SolnDesc</span><span class="p">(</span><span class="n">t</span><span class="o">.</span><span class="n">IsDescription</span><span class="p">):</span>
-    <span class="n">sim_id</span> <span class="o">=</span> <span class="n">t</span><span class="o">.</span><span class="n">StringCol</span><span class="p">(</span><span class="mi">36</span><span class="p">)</span> <span class="c"># len(str(uuid.uuid4())) == 36</span>
-    <span class="n">graph_id</span> <span class="o">=</span> <span class="n">t</span><span class="o">.</span><span class="n">StringCol</span><span class="p">(</span><span class="mi">36</span><span class="p">)</span> <span class="c"># len(str(uuid.uuid4())) == 36</span>
-    <span class="n">time</span> <span class="o">=</span> <span class="n">t</span><span class="o">.</span><span class="n">Float64Col</span><span class="p">()</span> <span class="c"># in seconds</span>
-    <span class="n">obj</span> <span class="o">=</span> <span class="n">t</span><span class="o">.</span><span class="n">Float64Col</span><span class="p">()</span> 
-    <span class="n">cyclus_version</span> <span class="o">=</span> <span class="n">t</span><span class="o">.</span><span class="n">StringCol</span><span class="p">(</span><span class="mi">12</span><span class="p">)</span>
-    <span class="n">cyclopts_version</span> <span class="o">=</span> <span class="n">t</span><span class="o">.</span><span class="n">StringCol</span><span class="p">(</span><span class="mi">12</span><span class="p">)</span>
-
-<span class="k">class</span> <span class="nc">Reporter</span><span class="p">(</span><span class="nb">object</span><span class="p">):</span>
-    
-    <span class="k">def</span> <span class="nf">report_solver</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">row</span><span class="p">,</span> <span class="n">sim_id</span><span class="p">,</span> <span class="n">graph_id</span><span class="p">,</span> <span class="n">sparams</span><span class="p">):</span>
-        <span class="n">row</span><span class="p">[</span><span class="s">&#39;sim_id&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="nb">str</span><span class="p">(</span><span class="n">sim_id</span><span class="p">)</span>
-        <span class="n">row</span><span class="p">[</span><span class="s">&#39;type&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">sparams</span><span class="o">.</span><span class="n">type</span>
-        <span class="n">row</span><span class="o">.</span><span class="n">append</span><span class="p">()</span>
-
-    <span class="k">def</span> <span class="nf">report_graph</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">row</span><span class="p">,</span> <span class="n">sim_id</span><span class="p">,</span> <span class="n">graph_id</span><span class="p">,</span> <span class="n">gparams</span><span class="p">):</span>
-        <span class="n">row</span><span class="p">[</span><span class="s">&#39;graph_id&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">graph_id</span>
-        <span class="n">row</span><span class="p">[</span><span class="s">&#39;n_supply&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">gparams</span><span class="o">.</span><span class="n">v_nodes_per_sup</span><span class="p">)</span>
-        <span class="n">row</span><span class="p">[</span><span class="s">&#39;n_request&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">gparams</span><span class="o">.</span><span class="n">u_nodes_per_req</span><span class="p">)</span>
-        <span class="n">row</span><span class="p">[</span><span class="s">&#39;n_sup_nodes&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="nb">sum</span><span class="p">([</span><span class="nb">len</span><span class="p">(</span><span class="n">vec</span><span class="p">)</span> <span class="k">for</span> <span class="n">k</span><span class="p">,</span> <span class="n">vec</span> <span class="ow">in</span> <span class="n">gparams</span><span class="o">.</span><span class="n">v_nodes_per_sup</span><span class="o">.</span><span class="n">items</span><span class="p">()])</span>
-        <span class="n">row</span><span class="p">[</span><span class="s">&#39;n_req_nodes&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="nb">sum</span><span class="p">([</span><span class="nb">len</span><span class="p">(</span><span class="n">vec</span><span class="p">)</span> <span class="k">for</span> <span class="n">k</span><span class="p">,</span> <span class="n">vec</span> <span class="ow">in</span> <span class="n">gparams</span><span class="o">.</span><span class="n">u_nodes_per_req</span><span class="o">.</span><span class="n">items</span><span class="p">()])</span>
-        <span class="n">row</span><span class="p">[</span><span class="s">&#39;n_arcs&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">gparams</span><span class="o">.</span><span class="n">arc_pref</span><span class="p">)</span>
-        <span class="n">row</span><span class="o">.</span><span class="n">append</span><span class="p">()</span>
-    
-    <span class="k">def</span> <span class="nf">report_rr_sampler</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">row</span><span class="p">,</span> <span class="n">sim_id</span><span class="p">,</span> <span class="n">graph_id</span><span class="p">,</span> <span class="n">sampler</span><span class="p">):</span>
-        <span class="n">s</span> <span class="o">=</span> <span class="n">sampler</span>
-
-        <span class="n">params</span> <span class="o">=</span> <span class="p">[</span><span class="s">&#39;sup_multi_commods&#39;</span><span class="p">,</span>
-                  <span class="s">&#39;n_sup_constr&#39;</span><span class="p">,</span>
-                  <span class="s">&#39;n_commods&#39;</span><span class="p">,</span> 
-                  <span class="s">&#39;n_request&#39;</span><span class="p">,</span>
-                  <span class="s">&#39;assem_per_req&#39;</span><span class="p">,</span>
-                  <span class="s">&#39;req_multi_commods&#39;</span><span class="p">,</span>
-                  <span class="s">&#39;n_req_constr&#39;</span><span class="p">,</span>
-                  <span class="s">&#39;n_supply&#39;</span><span class="p">,</span>
-                  <span class="p">]</span>
-
-        <span class="n">bool_params</span> <span class="o">=</span> <span class="p">[</span><span class="s">&#39;connection&#39;</span><span class="p">,</span>
-                       <span class="s">&#39;assem_multi_commod&#39;</span><span class="p">,</span>
-                       <span class="s">&#39;exclusive&#39;</span><span class="p">,</span>
-                       <span class="s">&#39;sup_multi&#39;</span>
-                       <span class="p">]</span>
-
-        <span class="n">constr_params</span> <span class="o">=</span> <span class="p">[</span><span class="s">&#39;sup_constr_val&#39;</span><span class="p">]</span>
-
-        <span class="n">row</span><span class="p">[</span><span class="s">&#39;graph_id&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">graph_id</span>
-        <span class="k">for</span> <span class="n">param</span> <span class="ow">in</span> <span class="n">params</span><span class="p">:</span>
-            <span class="k">if</span> <span class="nb">hasattr</span><span class="p">(</span><span class="n">s</span><span class="p">,</span> <span class="n">param</span><span class="p">):</span>
-                <span class="n">row</span><span class="p">[</span><span class="n">param</span><span class="p">]</span> <span class="o">=</span> <span class="nb">getattr</span><span class="p">(</span><span class="n">s</span><span class="p">,</span> <span class="n">param</span><span class="p">)</span><span class="o">.</span><span class="n">avg</span>
-        <span class="k">for</span> <span class="n">param</span> <span class="ow">in</span> <span class="n">bool_params</span><span class="p">:</span>
-            <span class="k">if</span> <span class="nb">hasattr</span><span class="p">(</span><span class="n">s</span><span class="p">,</span> <span class="n">param</span><span class="p">):</span>
-                <span class="n">row</span><span class="p">[</span><span class="n">param</span><span class="p">]</span> <span class="o">=</span> <span class="nb">getattr</span><span class="p">(</span><span class="n">s</span><span class="p">,</span> <span class="n">param</span><span class="p">)</span><span class="o">.</span><span class="n">cutoff</span>
-        <span class="k">for</span> <span class="n">param</span> <span class="ow">in</span> <span class="n">constr_params</span><span class="p">:</span>
-            <span class="k">if</span> <span class="nb">hasattr</span><span class="p">(</span><span class="n">s</span><span class="p">,</span> <span class="n">param</span><span class="p">):</span>
-                <span class="n">row</span><span class="p">[</span><span class="n">param</span><span class="p">]</span> <span class="o">=</span> <span class="nb">getattr</span><span class="p">(</span><span class="n">s</span><span class="p">,</span> <span class="n">param</span><span class="p">)</span><span class="o">.</span><span class="n">cutoff</span>
-        <span class="n">row</span><span class="o">.</span><span class="n">append</span><span class="p">()</span>
-
-    <span class="c">#</span>
-    <span class="c"># TO DO</span>
-    <span class="c">#</span>
+<span class="k">def</span> <span class="nf">merge_leaf</span><span class="p">(</span><span class="n">node</span><span class="p">,</span> <span class="n">dest_file</span><span class="p">):</span>
+    <span class="n">src</span> <span class="o">=</span> <span class="n">node</span>
+    <span class="n">dest</span> <span class="o">=</span> <span class="n">dest_file</span><span class="o">.</span><span class="n">get_node</span><span class="p">(</span><span class="n">node</span><span class="o">.</span><span class="n">_v_pathname</span><span class="p">)</span>
+    <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">node</span><span class="p">,</span> <span class="n">t</span><span class="o">.</span><span class="n">Table</span><span class="p">):</span>
+        <span class="n">dtypes</span> <span class="o">=</span> <span class="n">src</span><span class="o">.</span><span class="n">dtype</span><span class="o">.</span><span class="n">names</span>    
+        <span class="c"># this is a hack because appending rows throws an error</span>
+        <span class="c"># see http://stackoverflow.com/questions/17847587/pytables-appending-recarray</span>
+        <span class="c"># dest.append([row for row in src.iterrows()])</span>
+        <span class="k">for</span> <span class="n">src_row</span> <span class="ow">in</span> <span class="n">src</span><span class="o">.</span><span class="n">iterrows</span><span class="p">():</span>
+            <span class="n">dest_row</span> <span class="o">=</span> <span class="n">dest</span><span class="o">.</span><span class="n">row</span>
+            <span class="k">for</span> <span class="n">j</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">dtypes</span><span class="p">)):</span>
+                <span class="n">dest_row</span><span class="p">[</span><span class="n">dtypes</span><span class="p">[</span><span class="n">j</span><span class="p">]]</span> <span class="o">=</span> <span class="n">src_row</span><span class="p">[</span><span class="n">j</span><span class="p">]</span>
+            <span class="n">dest_row</span><span class="o">.</span><span class="n">append</span><span class="p">()</span>
+        <span class="n">dest</span><span class="o">.</span><span class="n">flush</span><span class="p">()</span>
         
-    <span class="c"># def report_rs_sampler(self, row, sim_id, graph_id, sampler):</span>
-    <span class="c">#     row[&#39;sim_id&#39;] = str(sim_id)</span>
-    
-    <span class="k">def</span> <span class="nf">report_flows</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">row</span><span class="p">,</span> <span class="n">sim_id</span><span class="p">,</span> <span class="n">graph_id</span><span class="p">,</span> <span class="n">flows</span><span class="p">):</span>
-        <span class="k">for</span> <span class="n">f</span> <span class="ow">in</span> <span class="n">flows</span><span class="p">:</span>
-            <span class="n">row</span><span class="p">[</span><span class="s">&#39;sim_id&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="nb">str</span><span class="p">(</span><span class="n">sim_id</span><span class="p">)</span>
-            <span class="n">row</span><span class="p">[</span><span class="s">&#39;arc_id&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">f</span><span class="o">.</span><span class="n">id</span>
-            <span class="n">row</span><span class="p">[</span><span class="s">&#39;flow&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">f</span><span class="o">.</span><span class="n">flow</span>
-            <span class="n">row</span><span class="o">.</span><span class="n">append</span><span class="p">()</span>
+<span class="k">def</span> <span class="nf">merge_node</span><span class="p">(</span><span class="n">node</span><span class="p">,</span> <span class="n">dest_file</span><span class="p">):</span>
+    <span class="k">if</span> <span class="ow">not</span> <span class="n">dest_file</span><span class="o">.</span><span class="n">__contains__</span><span class="p">(</span><span class="n">node</span><span class="o">.</span><span class="n">_v_pathname</span><span class="p">):</span>
+        <span class="n">node</span><span class="o">.</span><span class="n">_v_file</span><span class="o">.</span><span class="n">copy_node</span><span class="p">(</span>
+            <span class="n">node</span><span class="o">.</span><span class="n">_v_pathname</span><span class="p">,</span> 
+            <span class="n">newparent</span><span class="o">=</span><span class="n">dest_file</span><span class="o">.</span><span class="n">get_node</span><span class="p">(</span><span class="n">node</span><span class="o">.</span><span class="n">_v_parent</span><span class="o">.</span><span class="n">_v_pathname</span><span class="p">),</span>
+            <span class="n">recursive</span><span class="o">=</span><span class="bp">True</span><span class="p">)</span>
+        <span class="n">dest_file</span><span class="o">.</span><span class="n">flush</span><span class="p">()</span>
+        <span class="k">return</span> 
 
-    <span class="k">def</span> <span class="nf">report_solution</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">row</span><span class="p">,</span> <span class="n">sim_id</span><span class="p">,</span> <span class="n">graph_id</span><span class="p">,</span> <span class="n">soln</span><span class="p">):</span>
-        <span class="n">row</span><span class="p">[</span><span class="s">&#39;sim_id&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">sim_id</span>
-        <span class="n">row</span><span class="p">[</span><span class="s">&#39;graph_id&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">graph_id</span>
-        <span class="n">row</span><span class="p">[</span><span class="s">&#39;time&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">soln</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
-        <span class="n">row</span><span class="p">[</span><span class="s">&#39;obj&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">soln</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span>
-        <span class="n">row</span><span class="p">[</span><span class="s">&#39;cyclus_version&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">soln</span><span class="p">[</span><span class="mi">2</span><span class="p">]</span>
-        <span class="n">row</span><span class="p">[</span><span class="s">&#39;cyclopts_version&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">soln</span><span class="p">[</span><span class="mi">3</span><span class="p">]</span>
-        <span class="n">row</span><span class="o">.</span><span class="n">append</span><span class="p">()</span>
-            
-<div class="viewcode-block" id="report"><a class="viewcode-back" href="../../pyapi/tools.html#cyclopts.tools.report">[docs]</a><span class="k">def</span> <span class="nf">report</span><span class="p">(</span><span class="n">sampler</span><span class="p">,</span> <span class="n">gparams</span><span class="p">,</span> <span class="n">sparams</span><span class="p">,</span> <span class="n">soln</span><span class="p">,</span> <span class="n">sim_id</span> <span class="o">=</span> <span class="bp">None</span><span class="p">,</span> <span class="n">db_path</span> <span class="o">=</span> <span class="bp">None</span><span class="p">):</span>
-    <span class="sd">&quot;&quot;&quot;Dumps parameter and solution information to an HDF5 database.</span>
-<span class="sd">    </span>
-<span class="sd">    Parameters</span>
-<span class="sd">    ----------</span>
-<span class="sd">    sampler : ReactorRequestSampler or ReactorSupplySampler </span>
-<span class="sd">        The sampler used to generate the exchange instance</span>
-<span class="sd">    gparams : GraphParams</span>
-<span class="sd">        ExchangeGraph-defining parameters</span>
-<span class="sd">    sparams : SolverParams</span>
-<span class="sd">        ExchangeSolver-defining parameters</span>
-<span class="sd">    soln : Solution</span>
-<span class="sd">        The solved graph&#39;s solution.</span>
-<span class="sd">    sim_id : int, optional</span>
-<span class="sd">        The simulation id to use in the database. A UUID is generated by </span>
-<span class="sd">        default.</span>
-<span class="sd">    db_path : str, optional</span>
-<span class="sd">        The database to dump information to. The default is cyclopts.h5 </span>
-<span class="sd">        file placed in the current working directory.</span>
-<span class="sd">    &quot;&quot;&quot;</span>
-    <span class="n">db_path</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">getcwd</span><span class="p">(),</span> <span class="s">&#39;cyclopts.h5&#39;</span><span class="p">)</span> <span class="k">if</span> <span class="n">db_path</span> <span class="ow">is</span> <span class="bp">None</span> \
-        <span class="k">else</span> <span class="n">db_path</span>
-    <span class="n">sim_id</span> <span class="o">=</span> <span class="n">uuid</span><span class="o">.</span><span class="n">uuid4</span><span class="p">()</span><span class="o">.</span><span class="n">int</span> <span class="k">if</span> <span class="n">sim_id</span> <span class="ow">is</span> <span class="bp">None</span> <span class="k">else</span> <span class="n">sim_id</span>
-    <span class="n">graph_id</span> <span class="o">=</span> <span class="nb">str</span><span class="p">(</span><span class="n">gparams</span><span class="o">.</span><span class="n">id</span><span class="p">)</span>
-
-    <span class="n">mode</span> <span class="o">=</span> <span class="s">&quot;a&quot;</span> <span class="k">if</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">exists</span><span class="p">(</span><span class="n">db_path</span><span class="p">)</span> <span class="k">else</span> <span class="s">&quot;w&quot;</span>
-    <span class="n">filters</span> <span class="o">=</span> <span class="n">t</span><span class="o">.</span><span class="n">Filters</span><span class="p">(</span><span class="n">complevel</span><span class="o">=</span><span class="mi">4</span><span class="p">)</span>
-    <span class="n">h5file</span> <span class="o">=</span> <span class="n">t</span><span class="o">.</span><span class="n">open_file</span><span class="p">(</span><span class="n">db_path</span><span class="p">,</span> <span class="n">mode</span><span class="o">=</span><span class="n">mode</span><span class="p">,</span> <span class="n">title</span><span class="o">=</span><span class="s">&quot;Cyclopts Output&quot;</span><span class="p">,</span> <span class="n">filters</span><span class="o">=</span><span class="n">filters</span><span class="p">)</span>
-    
-    <span class="n">flows</span> <span class="o">=</span> <span class="p">[</span><span class="n">ArcFlow</span><span class="p">(</span><span class="n">soln</span><span class="o">.</span><span class="n">flows</span><span class="p">[</span><span class="n">i</span><span class="p">:])</span> <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">soln</span><span class="o">.</span><span class="n">flows</span><span class="p">))]</span>
-    <span class="c">#print(&quot;nflows:&quot;, len(flows))</span>
-    <span class="n">obj</span> <span class="o">=</span> <span class="nb">sum</span><span class="p">([</span><span class="n">f</span><span class="o">.</span><span class="n">flow</span> <span class="o">/</span> <span class="n">gparams</span><span class="o">.</span><span class="n">arc_pref</span><span class="p">[</span><span class="n">f</span><span class="o">.</span><span class="n">id</span><span class="p">]</span> <span class="k">for</span> <span class="n">f</span> <span class="ow">in</span> <span class="n">flows</span><span class="p">])</span>
-    <span class="n">solnparams</span> <span class="o">=</span> <span class="p">[</span><span class="n">soln</span><span class="o">.</span><span class="n">time</span><span class="p">,</span> <span class="n">obj</span><span class="p">,</span> <span class="n">soln</span><span class="o">.</span><span class="n">cyclus_version</span><span class="p">,</span> <span class="n">cyclopts</span><span class="o">.</span><span class="n">__version__</span><span class="p">]</span>
-
-    <span class="n">tables</span> <span class="o">=</span> <span class="p">[(</span><span class="s">&#39;solver&#39;</span><span class="p">,</span> <span class="n">SolverDesc</span><span class="p">,</span> <span class="s">&#39;Solver Params&#39;</span><span class="p">,</span> <span class="n">sparams</span><span class="p">),</span>
-              <span class="p">(</span><span class="s">&#39;flows&#39;</span><span class="p">,</span> <span class="n">FlowDesc</span><span class="p">,</span> <span class="s">&#39;Arc Flows&#39;</span><span class="p">,</span> <span class="n">flows</span><span class="p">),</span>
-              <span class="p">(</span><span class="s">&#39;solution&#39;</span><span class="p">,</span> <span class="n">SolnDesc</span><span class="p">,</span> <span class="s">&#39;Solution Params&#39;</span><span class="p">,</span> <span class="n">solnparams</span><span class="p">),</span>
-              <span class="p">(</span><span class="s">&#39;graph&#39;</span><span class="p">,</span> <span class="n">GraphDesc</span><span class="p">,</span> <span class="s">&#39;Graph Params&#39;</span><span class="p">,</span> <span class="n">gparams</span><span class="p">),</span>
-              <span class="p">]</span>
-    <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">sampler</span><span class="p">,</span> <span class="n">ReactorRequestSampler</span><span class="p">):</span>
-        <span class="n">tables</span> <span class="o">+=</span> <span class="p">[(</span><span class="s">&#39;rr_sampler&#39;</span><span class="p">,</span> <span class="n">RRSamplerDesc</span><span class="p">,</span> <span class="s">&#39;Reactor Request Sampling&#39;</span><span class="p">,</span> <span class="n">sampler</span><span class="p">)]</span>
-<span class="c"># TODO</span>
-<span class="c">#    elif isinstance(sampler, ReactorSupplySampler):</span>
-<span class="c">#        tables += [(&#39;rssample&#39;, SolnDesc, &#39;Reactor Supply Params&#39;, sampler)]</span>
+    <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">node</span><span class="p">,</span> <span class="n">t</span><span class="o">.</span><span class="n">Leaf</span><span class="p">):</span>
+        <span class="n">merge_leaf</span><span class="p">(</span><span class="n">node</span><span class="p">,</span> <span class="n">dest_file</span><span class="p">)</span>
     <span class="k">else</span><span class="p">:</span>
-        <span class="k">raise</span> <span class="ne">TypeError</span><span class="p">(</span><span class="s">&quot;Sampler is of an unknown type.&quot;</span><span class="p">)</span>
-
-    <span class="n">r</span> <span class="o">=</span> <span class="n">Reporter</span><span class="p">()</span>
-    <span class="k">for</span> <span class="n">name</span><span class="p">,</span> <span class="n">desc</span><span class="p">,</span> <span class="n">title</span><span class="p">,</span> <span class="n">data</span> <span class="ow">in</span> <span class="n">tables</span><span class="p">:</span>
-        <span class="k">if</span> <span class="ow">not</span> <span class="n">name</span> <span class="ow">in</span> <span class="n">h5file</span><span class="o">.</span><span class="n">root</span><span class="o">.</span><span class="n">_v_children</span><span class="p">:</span>
-            <span class="n">h5file</span><span class="o">.</span><span class="n">create_table</span><span class="p">(</span><span class="s">&quot;/&quot;</span><span class="p">,</span> <span class="n">name</span><span class="p">,</span> <span class="n">desc</span><span class="p">,</span> <span class="n">title</span><span class="p">,</span> <span class="n">filters</span><span class="o">=</span><span class="n">filters</span><span class="p">)</span>
-        <span class="k">if</span> <span class="nb">hasattr</span><span class="p">(</span><span class="n">r</span><span class="p">,</span> <span class="s">&#39;report_&#39;</span> <span class="o">+</span> <span class="n">name</span><span class="p">):</span>
-            <span class="n">row</span> <span class="o">=</span> <span class="n">h5file</span><span class="o">.</span><span class="n">get_node</span><span class="p">(</span><span class="s">&#39;/&#39;</span> <span class="o">+</span> <span class="n">name</span><span class="p">)</span><span class="o">.</span><span class="n">row</span>
-            <span class="n">meth</span> <span class="o">=</span> <span class="nb">getattr</span><span class="p">(</span><span class="n">r</span><span class="p">,</span> <span class="s">&#39;report_&#39;</span> <span class="o">+</span> <span class="n">name</span><span class="p">)</span>
-            <span class="n">meth</span><span class="p">(</span><span class="n">row</span><span class="p">,</span> <span class="n">sim_id</span><span class="p">,</span> <span class="n">graph_id</span><span class="p">,</span> <span class="n">data</span><span class="p">)</span>
-        
-    <span class="n">h5file</span><span class="o">.</span><span class="n">close</span><span class="p">()</span>
-            </div>
-<div class="viewcode-block" id="combine"><a class="viewcode-back" href="../../pyapi/tools.html#cyclopts.tools.combine">[docs]</a><span class="k">def</span> <span class="nf">combine</span><span class="p">(</span><span class="n">files</span><span class="p">,</span> <span class="n">new_file</span> <span class="o">=</span> <span class="bp">None</span><span class="p">):</span>
+        <span class="k">for</span> <span class="n">child</span> <span class="ow">in</span> <span class="n">node</span><span class="o">.</span><span class="n">_v_children</span><span class="p">:</span>
+            <span class="n">merge_node</span><span class="p">(</span><span class="n">node</span><span class="o">.</span><span class="n">_v_file</span><span class="o">.</span><span class="n">get_node</span><span class="p">(</span><span class="n">node</span><span class="o">.</span><span class="n">_v_pathname</span> <span class="o">+</span> <span class="s">&#39;/&#39;</span> <span class="o">+</span> <span class="n">child</span><span class="p">),</span> 
+                       <span class="n">dest_file</span><span class="p">)</span>
+            
+<div class="viewcode-block" id="combine"><a class="viewcode-back" href="../../pyapi/tools.html#cyclopts.tools.combine">[docs]</a><span class="k">def</span> <span class="nf">combine</span><span class="p">(</span><span class="n">files</span><span class="p">,</span> <span class="n">new_file</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span> <span class="n">clean</span><span class="o">=</span><span class="bp">False</span><span class="p">):</span>
     <span class="sd">&quot;&quot;&quot;Combines two or more databases with identical layout, writing their</span>
 <span class="sd">    output into a new file or appending to the first in the list.</span>
 <span class="sd">    </span>
 <span class="sd">    Parameters</span>
 <span class="sd">    ----------</span>
-<span class="sd">    files : list</span>
-<span class="sd">        A list of all databases to combine</span>
+<span class="sd">    files : iterator</span>
+<span class="sd">        An iterator listing all databases to combine</span>
 <span class="sd">    new_file : str, optional</span>
 <span class="sd">        The new database to write to. If None, all databases are appended to the</span>
 <span class="sd">        end of the first database in the list.</span>
+<span class="sd">    clean : bool, optional</span>
+<span class="sd">        Whether to remove original files after combining them</span>
 <span class="sd">    &quot;&quot;&quot;</span> 
-    <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">files</span><span class="p">)</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
-        <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s">&quot;Must have at least one file to combine.&quot;</span><span class="p">)</span>
-
     <span class="k">if</span> <span class="n">new_file</span> <span class="ow">is</span> <span class="ow">not</span> <span class="bp">None</span> <span class="ow">and</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">exists</span><span class="p">(</span><span class="n">new_file</span><span class="p">):</span>
         <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s">&#39;Cannot write combined hdf5 files to an existing location.&#39;</span><span class="p">)</span>
 
+    <span class="n">first</span> <span class="o">=</span> <span class="n">files</span><span class="o">.</span><span class="n">next</span><span class="p">()</span>
     <span class="k">if</span> <span class="n">new_file</span> <span class="ow">is</span> <span class="ow">not</span> <span class="bp">None</span><span class="p">:</span>
-        <span class="n">shutil</span><span class="o">.</span><span class="n">copyfile</span><span class="p">(</span><span class="n">files</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="n">new_file</span><span class="p">)</span>
+        <span class="n">shutil</span><span class="o">.</span><span class="n">copyfile</span><span class="p">(</span><span class="n">first</span><span class="p">,</span> <span class="n">new_file</span><span class="p">)</span>
+        <span class="n">fname</span> <span class="o">=</span> <span class="n">new_file</span>
+        <span class="k">if</span> <span class="n">clean</span><span class="p">:</span>
+            <span class="n">os</span><span class="o">.</span><span class="n">remove</span><span class="p">(</span><span class="n">first</span><span class="p">)</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="n">fname</span> <span class="o">=</span> <span class="n">first</span>
 
-    <span class="n">fname</span> <span class="o">=</span> <span class="n">files</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="k">if</span> <span class="n">new_file</span> <span class="ow">is</span> <span class="bp">None</span> <span class="k">else</span> <span class="n">new_file</span>
-
-    <span class="n">f</span> <span class="o">=</span> <span class="n">t</span><span class="o">.</span><span class="n">open_file</span><span class="p">(</span><span class="n">fname</span><span class="p">,</span> <span class="s">&#39;a&#39;</span><span class="p">)</span>
-    <span class="n">dbs</span> <span class="o">=</span> <span class="p">[</span><span class="n">t</span><span class="o">.</span><span class="n">open_file</span><span class="p">(</span><span class="n">files</span><span class="p">[</span><span class="n">i</span><span class="p">],</span> <span class="s">&#39;r&#39;</span><span class="p">)</span> <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="nb">len</span><span class="p">(</span><span class="n">files</span><span class="p">))]</span>
-    <span class="k">for</span> <span class="n">db</span> <span class="ow">in</span> <span class="n">dbs</span><span class="p">:</span>
-        <span class="n">tbls</span> <span class="o">=</span> <span class="p">[</span><span class="n">node</span><span class="o">.</span><span class="n">_v_name</span> <span class="k">for</span> <span class="n">node</span> <span class="ow">in</span> <span class="n">db</span><span class="o">.</span><span class="n">iter_nodes</span><span class="p">(</span><span class="s">&#39;/&#39;</span><span class="p">,</span> <span class="n">classname</span><span class="o">=</span><span class="s">&#39;Table&#39;</span><span class="p">)]</span>
-        <span class="k">for</span> <span class="n">tbl</span> <span class="ow">in</span> <span class="n">tbls</span><span class="p">:</span>
-            <span class="n">src</span> <span class="o">=</span> <span class="n">db</span><span class="o">.</span><span class="n">get_node</span><span class="p">(</span><span class="s">&#39;/&#39;</span><span class="p">,</span> <span class="n">name</span><span class="o">=</span><span class="n">tbl</span><span class="p">,</span> <span class="n">classname</span><span class="o">=</span><span class="s">&#39;Table&#39;</span><span class="p">)</span>
-            <span class="n">dest</span> <span class="o">=</span> <span class="n">f</span><span class="o">.</span><span class="n">get_node</span><span class="p">(</span><span class="s">&#39;/&#39;</span><span class="p">,</span> <span class="n">name</span><span class="o">=</span><span class="n">tbl</span><span class="p">,</span> <span class="n">classname</span><span class="o">=</span><span class="s">&#39;Table&#39;</span><span class="p">)</span>
-            <span class="n">dtypes</span> <span class="o">=</span> <span class="n">src</span><span class="o">.</span><span class="n">dtype</span><span class="o">.</span><span class="n">names</span>
-            
-            <span class="c"># this is a hack because appending rows throws an error</span>
-            <span class="c"># see http://stackoverflow.com/questions/17847587/pytables-appending-recarray</span>
-            <span class="c"># dest.append([row for row in src.iterrows()])</span>
-            <span class="k">for</span> <span class="n">src_row</span> <span class="ow">in</span> <span class="n">src</span><span class="o">.</span><span class="n">iterrows</span><span class="p">():</span>
-                <span class="n">dest_row</span> <span class="o">=</span> <span class="n">dest</span><span class="o">.</span><span class="n">row</span>
-                <span class="k">for</span> <span class="n">j</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">dtypes</span><span class="p">)):</span>
-                    <span class="n">dest_row</span><span class="p">[</span><span class="n">dtypes</span><span class="p">[</span><span class="n">j</span><span class="p">]]</span> <span class="o">=</span> <span class="n">src_row</span><span class="p">[</span><span class="n">j</span><span class="p">]</span>
-                <span class="n">dest_row</span><span class="o">.</span><span class="n">append</span><span class="p">()</span>
+    <span class="n">aggdb</span> <span class="o">=</span> <span class="n">t</span><span class="o">.</span><span class="n">open_file</span><span class="p">(</span><span class="n">fname</span><span class="p">,</span> <span class="s">&#39;a&#39;</span><span class="p">)</span>
+    <span class="k">for</span> <span class="n">f</span> <span class="ow">in</span> <span class="n">files</span><span class="p">:</span>
+        <span class="n">db</span> <span class="o">=</span> <span class="n">t</span><span class="o">.</span><span class="n">open_file</span><span class="p">(</span><span class="n">f</span><span class="p">,</span> <span class="s">&#39;r&#39;</span><span class="p">)</span>
+        <span class="n">merge_node</span><span class="p">(</span><span class="n">db</span><span class="o">.</span><span class="n">root</span><span class="p">,</span> <span class="n">aggdb</span><span class="p">)</span>
+        <span class="n">aggdb</span><span class="o">.</span><span class="n">flush</span><span class="p">()</span>
         <span class="n">db</span><span class="o">.</span><span class="n">close</span><span class="p">()</span>
-    <span class="n">f</span><span class="o">.</span><span class="n">close</span><span class="p">()</span>
-    </div>
-<div class="viewcode-block" id="from_h5"><a class="viewcode-back" href="../../pyapi/tools.html#cyclopts.tools.from_h5">[docs]</a><span class="k">def</span> <span class="nf">from_h5</span><span class="p">(</span><span class="n">fin</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span> <span class="n">subinput</span><span class="o">=</span><span class="bp">None</span><span class="p">):</span>
-    <span class="sd">&quot;&quot;&quot;Converts an input HDF5 database into a list of Sampler-type objects that</span>
-<span class="sd">    represent discrete, individual data points in a possibly non-contiguous</span>
-<span class="sd">    dataspace.</span>
+        <span class="k">if</span> <span class="n">clean</span><span class="p">:</span>
+            <span class="n">os</span><span class="o">.</span><span class="n">remove</span><span class="p">(</span><span class="n">f</span><span class="p">)</span>
+    <span class="n">aggdb</span><span class="o">.</span><span class="n">close</span><span class="p">()</span>
+</div>
+<div class="viewcode-block" id="run"><a class="viewcode-back" href="../../pyapi/tools.html#cyclopts.tools.run">[docs]</a><span class="k">def</span> <span class="nf">run</span><span class="p">(</span><span class="n">args</span><span class="p">,</span> <span class="n">cwd</span> <span class="o">=</span> <span class="bp">None</span><span class="p">,</span> <span class="n">shell</span> <span class="o">=</span> <span class="bp">False</span><span class="p">,</span> <span class="n">kill_tree</span> <span class="o">=</span> <span class="bp">True</span><span class="p">,</span> <span class="n">timeout</span> <span class="o">=</span> <span class="o">-</span><span class="mi">1</span><span class="p">,</span> <span class="n">env</span> <span class="o">=</span> <span class="bp">None</span><span class="p">):</span>
+    <span class="sd">&#39;&#39;&#39;</span>
+<span class="sd">    Run a command with a timeout after which it will be forcibly</span>
+<span class="sd">    killed.</span>
+<span class="sd">    &#39;&#39;&#39;</span>
+    <span class="k">class</span> <span class="nc">Alarm</span><span class="p">(</span><span class="ne">Exception</span><span class="p">):</span>
+        <span class="k">pass</span>
+    <span class="k">def</span> <span class="nf">alarm_handler</span><span class="p">(</span><span class="n">signum</span><span class="p">,</span> <span class="n">frame</span><span class="p">):</span>
+        <span class="k">raise</span> <span class="n">Alarm</span>
+    <span class="n">p</span> <span class="o">=</span> <span class="n">Popen</span><span class="p">(</span><span class="n">args</span><span class="p">,</span> <span class="n">shell</span> <span class="o">=</span> <span class="n">shell</span><span class="p">,</span> <span class="n">cwd</span> <span class="o">=</span> <span class="n">cwd</span><span class="p">,</span> <span class="n">stdout</span> <span class="o">=</span> <span class="n">PIPE</span><span class="p">,</span> <span class="n">stderr</span> <span class="o">=</span> <span class="n">PIPE</span><span class="p">,</span> <span class="n">env</span> <span class="o">=</span> <span class="n">env</span><span class="p">)</span>
+    <span class="k">if</span> <span class="n">timeout</span> <span class="o">!=</span> <span class="o">-</span><span class="mi">1</span><span class="p">:</span>
+        <span class="n">signal</span><span class="p">(</span><span class="n">SIGALRM</span><span class="p">,</span> <span class="n">alarm_handler</span><span class="p">)</span>
+        <span class="n">alarm</span><span class="p">(</span><span class="n">timeout</span><span class="p">)</span>
+    <span class="k">try</span><span class="p">:</span>
+        <span class="n">stdout</span><span class="p">,</span> <span class="n">stderr</span> <span class="o">=</span> <span class="n">p</span><span class="o">.</span><span class="n">communicate</span><span class="p">()</span>
+        <span class="k">if</span> <span class="n">timeout</span> <span class="o">!=</span> <span class="o">-</span><span class="mi">1</span><span class="p">:</span>
+            <span class="n">alarm</span><span class="p">(</span><span class="mi">0</span><span class="p">)</span>
+    <span class="k">except</span> <span class="n">Alarm</span><span class="p">:</span>
+        <span class="n">pids</span> <span class="o">=</span> <span class="p">[</span><span class="n">p</span><span class="o">.</span><span class="n">pid</span><span class="p">]</span>
+        <span class="k">if</span> <span class="n">kill_tree</span><span class="p">:</span>
+            <span class="n">pids</span><span class="o">.</span><span class="n">extend</span><span class="p">(</span><span class="n">get_process_children</span><span class="p">(</span><span class="n">p</span><span class="o">.</span><span class="n">pid</span><span class="p">))</span>
+        <span class="k">for</span> <span class="n">pid</span> <span class="ow">in</span> <span class="n">pids</span><span class="p">:</span>
+            <span class="c"># process might have died before getting to this line</span>
+            <span class="c"># so wrap to avoid OSError: no such process</span>
+            <span class="k">try</span><span class="p">:</span> 
+                <span class="n">kill</span><span class="p">(</span><span class="n">pid</span><span class="p">,</span> <span class="n">SIGKILL</span><span class="p">)</span>
+            <span class="k">except</span> <span class="ne">OSError</span><span class="p">:</span>
+                <span class="k">pass</span>
+        <span class="k">return</span> <span class="o">-</span><span class="mi">9</span><span class="p">,</span> <span class="s">&#39;&#39;</span><span class="p">,</span> <span class="s">&#39;&#39;</span>
+    <span class="k">return</span> <span class="n">p</span><span class="o">.</span><span class="n">returncode</span><span class="p">,</span> <span class="n">stdout</span><span class="p">,</span> <span class="n">stderr</span>
+</div>
+<span class="k">def</span> <span class="nf">get_process_children</span><span class="p">(</span><span class="n">pid</span><span class="p">):</span>
+    <span class="n">p</span> <span class="o">=</span> <span class="n">Popen</span><span class="p">(</span><span class="s">&#39;ps --no-headers -o pid --ppid </span><span class="si">%d</span><span class="s">&#39;</span> <span class="o">%</span> <span class="n">pid</span><span class="p">,</span> <span class="n">shell</span> <span class="o">=</span> <span class="bp">True</span><span class="p">,</span>
+              <span class="n">stdout</span> <span class="o">=</span> <span class="n">PIPE</span><span class="p">,</span> <span class="n">stderr</span> <span class="o">=</span> <span class="n">PIPE</span><span class="p">)</span>
+    <span class="n">stdout</span><span class="p">,</span> <span class="n">stderr</span> <span class="o">=</span> <span class="n">p</span><span class="o">.</span><span class="n">communicate</span><span class="p">()</span>
+    <span class="k">return</span> <span class="p">[</span><span class="nb">int</span><span class="p">(</span><span class="n">p</span><span class="p">)</span> <span class="k">for</span> <span class="n">p</span> <span class="ow">in</span> <span class="n">stdout</span><span class="o">.</span><span class="n">split</span><span class="p">()]</span>
 
-<span class="sd">    If subinput is provided, it is read directly. If not, the entire database</span>
-<span class="sd">    converted.</span>
+<div class="viewcode-block" id="ssh_test_connect"><a class="viewcode-back" href="../../pyapi/tools.html#cyclopts.tools.ssh_test_connect">[docs]</a><span class="k">def</span> <span class="nf">ssh_test_connect</span><span class="p">(</span><span class="n">client</span><span class="p">,</span> <span class="n">host</span><span class="p">,</span> <span class="n">user</span><span class="p">,</span> <span class="n">keyfile</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span> <span class="n">auth</span><span class="o">=</span><span class="bp">True</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Tests an ssh connection and returns success or failure thereof.</span>
 <span class="sd">    </span>
 <span class="sd">    Parameters</span>
 <span class="sd">    ----------</span>
-<span class="sd">    fin : str</span>
-<span class="sd">        the input file name (*.h5)</span>
-<span class="sd">    subinput : dict</span>
-<span class="sd">        a subset of input to read int</span>
+<span class="sd">    client : paramiko SSH client</span>
+<span class="sd">    host : str</span>
+<span class="sd">    user : str</span>
+<span class="sd">    keyfile : str, optional</span>
+<span class="sd">    auth : bool, optional</span>
+<span class="sd">        whether to prompt for a password authorization on failure</span>
 <span class="sd">    &quot;&quot;&quot;</span>
-    <span class="n">fin</span> <span class="o">=</span> <span class="s">&quot;in.h5&quot;</span> <span class="k">if</span> <span class="n">fin</span> <span class="ow">is</span> <span class="bp">None</span> <span class="k">else</span> <span class="n">fin</span>
-    <span class="n">samplers</span> <span class="o">=</span> <span class="p">[]</span>
-    <span class="n">fin</span> <span class="o">=</span> <span class="n">t</span><span class="o">.</span><span class="n">open_file</span><span class="p">(</span><span class="n">fin</span><span class="p">,</span> <span class="n">mode</span><span class="o">=</span><span class="s">&#39;r&#39;</span><span class="p">)</span>
-    <span class="n">tbls</span> <span class="o">=</span> <span class="n">fin</span><span class="o">.</span><span class="n">root</span><span class="o">.</span><span class="n">_f_list_nodes</span><span class="p">(</span><span class="n">classname</span><span class="o">=</span><span class="s">&quot;Table&quot;</span><span class="p">)</span> \
-        <span class="k">if</span> <span class="n">subinput</span> <span class="ow">is</span> <span class="bp">None</span> <span class="k">else</span> \
-        <span class="p">[</span><span class="n">fin</span><span class="o">.</span><span class="n">root</span><span class="o">.</span><span class="n">_f_get_child</span><span class="p">(</span><span class="n">k</span><span class="p">)</span> <span class="k">for</span> <span class="n">k</span> <span class="ow">in</span> <span class="n">subinput</span><span class="o">.</span><span class="n">keys</span><span class="p">()]</span>
-    
-    <span class="k">for</span> <span class="n">tbl</span> <span class="ow">in</span> <span class="n">tbls</span><span class="p">:</span>
-        <span class="n">tblname</span> <span class="o">=</span> <span class="n">tbl</span><span class="o">.</span><span class="n">_v_name</span>
-        <span class="k">print</span><span class="p">(</span><span class="s">&quot;adding&quot;</span><span class="p">,</span> <span class="n">tblname</span><span class="p">)</span>
-        <span class="k">if</span> <span class="ow">not</span> <span class="nb">hasattr</span><span class="p">(</span><span class="n">cyclopts</span><span class="o">.</span><span class="n">params</span><span class="p">,</span> <span class="n">tblname</span><span class="p">):</span>
-            <span class="k">continue</span>
-        <span class="n">start</span> <span class="o">=</span> <span class="n">subinput</span><span class="p">[</span><span class="n">tblname</span><span class="p">][</span><span class="mi">0</span><span class="p">]</span> <span class="k">if</span> <span class="n">subinput</span> <span class="ow">is</span> <span class="ow">not</span> <span class="bp">None</span> <span class="k">else</span> <span class="mi">0</span>
-        <span class="n">stop</span> <span class="o">=</span> <span class="n">subinput</span><span class="p">[</span><span class="n">tblname</span><span class="p">][</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span> <span class="o">+</span> <span class="mi">1</span> <span class="k">if</span> <span class="n">subinput</span> <span class="ow">is</span> <span class="ow">not</span> <span class="bp">None</span> <span class="k">else</span> <span class="n">tbl</span><span class="o">.</span><span class="n">nrows</span>
-        <span class="k">for</span> <span class="n">row</span> <span class="ow">in</span> <span class="n">tbl</span><span class="o">.</span><span class="n">iterrows</span><span class="p">(</span><span class="n">start</span><span class="o">=</span><span class="n">start</span><span class="p">,</span> <span class="n">stop</span><span class="o">=</span><span class="n">stop</span><span class="p">):</span>
-            <span class="n">inst</span> <span class="o">=</span> <span class="nb">getattr</span><span class="p">(</span><span class="n">cyclopts</span><span class="o">.</span><span class="n">params</span><span class="p">,</span> <span class="n">tblname</span><span class="p">)()</span>
-            <span class="n">inst</span><span class="o">.</span><span class="n">import_h5</span><span class="p">(</span><span class="n">row</span><span class="p">)</span>
-            <span class="n">samplers</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">inst</span><span class="p">)</span>
-    <span class="n">fin</span><span class="o">.</span><span class="n">close</span><span class="p">()</span>
-    <span class="k">return</span> <span class="n">samplers</span>
-</div>
-<div class="viewcode-block" id="to_h5"><a class="viewcode-back" href="../../pyapi/tools.html#cyclopts.tools.to_h5">[docs]</a><span class="k">def</span> <span class="nf">to_h5</span><span class="p">(</span><span class="n">fin</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span> <span class="n">fout</span><span class="o">=</span><span class="bp">None</span><span class="p">):</span>
-    <span class="sd">&quot;&quot;&quot;Converts a contiguous dataspace as defined by an input run control file</span>
-<span class="sd">    into an HDF5 database. Each discrete point, as represented by a Sampler-type</span>
-<span class="sd">    object is converted into a row in a table of the object&#39;s name.</span>
-<span class="sd">    </span>
-<span class="sd">    Parameters</span>
-<span class="sd">    ----------</span>
-<span class="sd">    fin : str</span>
-<span class="sd">        the input file name (*.py)</span>
-<span class="sd">    fout : str</span>
-<span class="sd">        the output file name (*.h5)</span>
-<span class="sd">    &quot;&quot;&quot;</span>
-    <span class="n">fin</span> <span class="o">=</span> <span class="s">&quot;cycloptsrc.py&quot;</span> <span class="k">if</span> <span class="n">fin</span> <span class="ow">is</span> <span class="bp">None</span> <span class="k">else</span> <span class="n">fin</span>
-    <span class="n">fout</span> <span class="o">=</span> <span class="s">&quot;in.h5&quot;</span> <span class="k">if</span> <span class="n">fout</span> <span class="ow">is</span> <span class="bp">None</span> <span class="k">else</span> <span class="n">fout</span>
-    <span class="n">samplers</span> <span class="o">=</span> <span class="n">SamplerBuilder</span><span class="p">()</span><span class="o">.</span><span class="n">build</span><span class="p">(</span><span class="n">parse_rc</span><span class="p">(</span><span class="n">fin</span><span class="p">))</span>
-    <span class="n">filters</span> <span class="o">=</span> <span class="n">t</span><span class="o">.</span><span class="n">Filters</span><span class="p">(</span><span class="n">complevel</span><span class="o">=</span><span class="mi">4</span><span class="p">)</span>
-    <span class="n">fout</span> <span class="o">=</span> <span class="n">t</span><span class="o">.</span><span class="n">open_file</span><span class="p">(</span><span class="n">fout</span><span class="p">,</span> <span class="n">mode</span><span class="o">=</span><span class="s">&#39;a&#39;</span><span class="p">,</span> <span class="n">filters</span><span class="o">=</span><span class="n">filters</span><span class="p">)</span>
+    <span class="n">keyfile</span> <span class="o">=</span> <span class="n">keyfile</span> <span class="k">if</span> <span class="n">keyfile</span> <span class="ow">is</span> <span class="ow">not</span> <span class="bp">None</span> <span class="k">else</span> \
+        <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">environ</span><span class="p">[</span><span class="s">&#39;HOME&#39;</span><span class="p">],</span> <span class="s">&#39;.ssh&#39;</span><span class="p">,</span><span class="s">&#39;id_rsa.pub&#39;</span><span class="p">)</span> 
 
-    <span class="n">d</span> <span class="o">=</span> <span class="n">defaultdict</span><span class="p">(</span><span class="nb">list</span><span class="p">)</span>
-    <span class="k">for</span> <span class="n">s</span> <span class="ow">in</span> <span class="n">samplers</span><span class="p">:</span>
-        <span class="n">d</span><span class="p">[</span><span class="n">s</span><span class="o">.</span><span class="n">__class__</span><span class="o">.</span><span class="n">__name__</span><span class="p">]</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">s</span><span class="p">)</span>
-    <span class="k">for</span> <span class="n">name</span> <span class="ow">in</span> <span class="n">d</span><span class="o">.</span><span class="n">keys</span><span class="p">():</span>
-        <span class="k">if</span> <span class="n">name</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">fout</span><span class="o">.</span><span class="n">root</span><span class="o">.</span><span class="n">_f_list_nodes</span><span class="p">(</span><span class="n">classname</span><span class="o">=</span><span class="s">&quot;Table&quot;</span><span class="p">):</span>
-            <span class="k">print</span><span class="p">(</span><span class="s">&quot;creating table {0}&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">name</span><span class="p">))</span>
-            <span class="n">fout</span><span class="o">.</span><span class="n">create_table</span><span class="p">(</span><span class="n">fout</span><span class="o">.</span><span class="n">root</span><span class="p">,</span> <span class="n">name</span><span class="p">,</span> 
-                              <span class="n">d</span><span class="p">[</span><span class="n">name</span><span class="p">][</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">describe_h5</span><span class="p">(),</span> <span class="n">name</span> <span class="o">+</span> <span class="s">&quot; Table&quot;</span><span class="p">,</span> 
-                              <span class="n">filters</span><span class="o">=</span><span class="n">filters</span><span class="p">)</span>
-        <span class="n">tbl</span> <span class="o">=</span> <span class="n">fout</span><span class="o">.</span><span class="n">root</span><span class="o">.</span><span class="n">_f_get_child</span><span class="p">(</span><span class="n">name</span><span class="p">)</span>
-        <span class="n">row</span> <span class="o">=</span> <span class="n">tbl</span><span class="o">.</span><span class="n">row</span>
-        <span class="k">for</span> <span class="n">s</span> <span class="ow">in</span> <span class="n">d</span><span class="p">[</span><span class="n">name</span><span class="p">]:</span>
-            <span class="n">s</span><span class="o">.</span><span class="n">export_h5</span><span class="p">(</span><span class="n">row</span><span class="p">)</span>
-            <span class="n">row</span><span class="o">.</span><span class="n">append</span><span class="p">()</span>    
-        <span class="n">tbl</span><span class="o">.</span><span class="n">flush</span><span class="p">()</span>
-    <span class="n">fout</span><span class="o">.</span><span class="n">close</span><span class="p">()</span>
+    <span class="k">try</span><span class="p">:</span>
+        <span class="n">client</span><span class="o">.</span><span class="n">connect</span><span class="p">(</span><span class="n">host</span><span class="p">,</span> <span class="n">username</span><span class="o">=</span><span class="n">user</span><span class="p">,</span> <span class="n">key_filename</span><span class="o">=</span><span class="n">keyfile</span><span class="p">)</span>
+        <span class="n">client</span><span class="o">.</span><span class="n">close</span><span class="p">()</span>
+        <span class="n">can_connect</span> <span class="o">=</span> <span class="bp">True</span>
+    <span class="k">except</span> <span class="n">pm</span><span class="o">.</span><span class="n">AuthenticationException</span><span class="p">:</span>
+            <span class="n">can_connect</span> <span class="o">=</span> <span class="bp">False</span>
+    <span class="k">except</span> <span class="n">pm</span><span class="o">.</span><span class="n">BadHostKeyException</span><span class="p">:</span>
+            <span class="kn">import</span> <span class="nn">pdb</span><span class="p">;</span> <span class="n">pdb</span><span class="o">.</span><span class="n">set_trace</span><span class="p">()</span>
+            <span class="n">can_connect</span> <span class="o">=</span> <span class="bp">False</span>
+    <span class="n">password</span> <span class="o">=</span> <span class="bp">None</span>
+    <span class="k">if</span> <span class="ow">not</span> <span class="n">can_connect</span> <span class="ow">and</span> <span class="n">auth</span><span class="p">:</span>
+        <span class="n">password</span> <span class="o">=</span> <span class="bp">False</span>
+        <span class="k">while</span> <span class="ow">not</span> <span class="n">password</span><span class="p">:</span>
+            <span class="n">password</span> <span class="o">=</span> <span class="n">getpass</span><span class="o">.</span><span class="n">getpass</span><span class="p">(</span><span class="s">&quot;{0}@{1} password: &quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">user</span><span class="p">,</span> <span class="n">host</span><span class="p">))</span>
+            <span class="c"># pub = pm.ssh_pub_key(keyfile)</span>
+            <span class="c"># cmds = [&quot;mkdir -p ~/.ssh&quot;,</span>
+            <span class="c">#         &#39;echo &quot;{0}&quot; &gt;&gt; ~/.ssh/authorized_keys&#39;.format(pub),</span>
+            <span class="c">#         &#39;chmod og-rw ~/.ssh/authorized_keys&#39;,</span>
+            <span class="c">#         &#39;chmod a-x ~/.ssh/authorized_keys&#39;,</span>
+            <span class="c">#         &#39;chmod 700 ~/.ssh&#39;,</span>
+            <span class="c">#         ]</span>
+            <span class="n">client</span><span class="o">.</span><span class="n">connect</span><span class="p">(</span><span class="n">host</span><span class="p">,</span> <span class="n">username</span><span class="o">=</span><span class="n">user</span><span class="p">,</span> <span class="n">password</span><span class="o">=</span><span class="n">password</span><span class="p">)</span>
+            <span class="c"># for cmd in cmds:</span>
+            <span class="c">#     stdin, stdout, stderr = client.exec_command(cmd)</span>
+            <span class="c"># client.close()</span>
+            <span class="c"># # verify thatthis key works</span>
+            <span class="c"># client.connect(host, username=user, key_filename=keyfile)</span>
+            <span class="c"># client.close()</span>
+            <span class="n">can_connect</span> <span class="o">=</span> <span class="bp">True</span>
+            <span class="k">print</span><span class="p">(</span><span class="s">&quot;finished connecting&quot;</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">can_connect</span><span class="p">,</span> <span class="n">keyfile</span><span class="p">,</span> <span class="n">password</span>
 </div>
-<div class="viewcode-block" id="exec_from_h5"><a class="viewcode-back" href="../../pyapi/tools.html#cyclopts.tools.exec_from_h5">[docs]</a><span class="k">def</span> <span class="nf">exec_from_h5</span><span class="p">(</span><span class="n">fin</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span> <span class="n">fout</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span> <span class="n">rc</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span> <span class="n">solvers</span><span class="o">=</span><span class="bp">None</span><span class="p">):</span>
-    <span class="sd">&quot;&quot;&quot;Runs an instance of Cyclopts.</span>
-<span class="sd">    </span>
-<span class="sd">    Parameters</span>
-<span class="sd">    ----------</span>
-<span class="sd">    fin : str, optional</span>
-<span class="sd">        the input file name (*.h5)</span>
-<span class="sd">    fout : str, optional</span>
-<span class="sd">        the output file name (*.h5)</span>
-<span class="sd">    rc : str, optional</span>
-<span class="sd">        the run control file</span>
-<span class="sd">    solvers : list, optional</span>
-<span class="sd">        the solvers to use on each generated instance</span>
-<span class="sd">    &quot;&quot;&quot;</span>
-    <span class="n">fin</span> <span class="o">=</span> <span class="s">&quot;in.h5&quot;</span> <span class="k">if</span> <span class="n">fin</span> <span class="ow">is</span> <span class="bp">None</span> <span class="k">else</span> <span class="n">fin</span>
-    <span class="n">fout</span> <span class="o">=</span> <span class="s">&quot;out.h5&quot;</span> <span class="k">if</span> <span class="n">fout</span> <span class="ow">is</span> <span class="bp">None</span> <span class="k">else</span> <span class="n">fout</span>
-    <span class="n">solvers</span> <span class="o">=</span> <span class="p">[</span><span class="s">&quot;cbc&quot;</span><span class="p">]</span> <span class="k">if</span> <span class="n">solvers</span> <span class="ow">is</span> <span class="bp">None</span> <span class="k">else</span> <span class="n">solvers</span>
-    
-    <span class="n">subinput</span> <span class="o">=</span> <span class="bp">None</span>
-    <span class="k">if</span> <span class="n">rc</span> <span class="ow">is</span> <span class="ow">not</span> <span class="bp">None</span><span class="p">:</span>
-        <span class="n">rcdict</span> <span class="o">=</span> <span class="n">parse_rc</span><span class="p">(</span><span class="n">rc</span><span class="p">)</span>
-        <span class="n">subinput</span> <span class="o">=</span> <span class="p">{</span><span class="n">rcdict</span><span class="o">.</span><span class="n">path</span><span class="p">:</span> <span class="n">rcdict</span><span class="o">.</span><span class="n">rows</span><span class="p">}</span>
-        
-    <span class="n">samplers</span> <span class="o">=</span> <span class="n">from_h5</span><span class="p">(</span><span class="n">fin</span><span class="p">,</span> <span class="n">subinput</span><span class="p">)</span>
-    <span class="n">execute_cyclopts</span><span class="p">(</span><span class="n">samplers</span><span class="p">,</span> <span class="n">solvers</span><span class="p">,</span> <span class="n">fout</span><span class="p">)</span>
-</div>
-<span class="k">def</span> <span class="nf">execute_cyclopts</span><span class="p">(</span><span class="n">samplers</span><span class="p">,</span> <span class="n">solvers</span><span class="p">,</span> <span class="n">db_path</span><span class="p">):</span> 
-    <span class="k">for</span> <span class="n">sampler</span> <span class="ow">in</span> <span class="n">samplers</span><span class="p">:</span>
-        <span class="k">for</span> <span class="n">solver</span> <span class="ow">in</span> <span class="n">solvers</span><span class="p">:</span>
-            <span class="n">rrb</span> <span class="o">=</span> <span class="n">ReactorRequestBuilder</span><span class="p">(</span><span class="n">sampler</span><span class="p">)</span>
-            <span class="n">gparams</span> <span class="o">=</span> <span class="n">rrb</span><span class="o">.</span><span class="n">build</span><span class="p">()</span>
-            <span class="n">sparams</span> <span class="o">=</span> <span class="n">SolverParams</span><span class="p">(</span><span class="n">solver</span><span class="p">)</span>
-            <span class="n">soln</span> <span class="o">=</span> <span class="n">execute_exchange</span><span class="p">(</span><span class="n">gparams</span><span class="p">,</span> <span class="n">sparams</span><span class="p">)</span>
-            <span class="n">report</span><span class="p">(</span><span class="n">sampler</span><span class="p">,</span> <span class="n">gparams</span><span class="p">,</span> <span class="n">sparams</span><span class="p">,</span> <span class="n">soln</span><span class="p">,</span> <span class="n">db_path</span><span class="o">=</span><span class="n">db_path</span><span class="p">)</span>
+<span class="k">def</span> <span class="nf">uuidhex</span><span class="p">(</span><span class="nb">bytes</span><span class="o">=</span><span class="nb">bytes</span><span class="p">):</span>
+    <span class="k">return</span> <span class="n">uuid</span><span class="o">.</span><span class="n">UUID</span><span class="p">(</span><span class="nb">bytes</span><span class="o">=</span><span class="nb">bytes</span><span class="p">)</span><span class="o">.</span><span class="n">hex</span>
 </pre></div>
 
           </div>
