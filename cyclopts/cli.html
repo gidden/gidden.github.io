@@ -29,7 +29,7 @@
     <script type="text/javascript" src="_static/jquery.cookie.js"></script>
     <script type="text/javascript" src="_static/cloud.js"></script>
     <link rel="top" title="Cyclopts 0.1.0 documentation" href="index.html" />
-    <link rel="next" title="Python API" href="pyapi/main.html" />
+    <link rel="next" title="Configuring a Condor Submit Node" href="submit_node.html" />
     <link rel="prev" title="Cyclopts Basics" href="basics.html" /> 
         <meta name="viewport" content="width=device-width, initial-scale=1">
   </head>
@@ -49,7 +49,7 @@
           <a href="np-modindex.html" title="Python Module Index"
              >modules</a> &nbsp; &nbsp;</li>
         <li class="right" >
-          <a href="pyapi/main.html" title="Python API"
+          <a href="submit_node.html" title="Configuring a Condor Submit Node"
              accesskey="N">next</a> &nbsp; &nbsp;</li>
         <li class="right" >
           <a href="basics.html" title="Cyclopts Basics"
@@ -68,68 +68,217 @@
             
   <div class="section" id="command-line-interface-cli">
 <span id="cli"></span><h1>Command Line Interface (CLI)<a class="headerlink" href="#command-line-interface-cli" title="Permalink to this headline">¶</a></h1>
-<p>Running <tt class="docutils literal"><span class="pre">cyclopts</span> <span class="pre">-h</span></tt> results in</p>
-<div class="highlight-text"><div class="highlight"><pre>usage: Cyclopts [-h] {convert,exec,condor} ...
+<p>Cyclopts has the following CLI options</p>
+<p><tt class="docutils literal"><span class="pre">cyclopts</span> <span class="pre">-h</span></tt></p>
+<div class="highlight-text"><div class="highlight"><pre>usage: Cyclopts [-h]
+                {convert,exec,condor-submit,condor-collect,condor-rm,cde,combine,dump}
+                ...
 
 positional arguments:
-  {convert,exec,condor}
-    convert             Convert a parameter space defined by an input run control file into an HDF5
-                        database for a Cyclopts execution run.
-    exec                Executes a parameter sweep as defined by the input database and other command
-                        line arguments.
-    condor              Submits a job to condor, retrieves output when it has completed, and cleans up
-                        the condor user space after.
+  {convert,exec,condor-submit,condor-collect,condor-rm,cde,combine,dump}
+    convert             Convert a parameter space defined by an input run control file
+                        into an HDF5 database for a Cyclopts execution run.
+    exec                Executes a parameter sweep as defined by the input database and
+                        other command line arguments.
+    condor-submit       Submits a job to condor, retrieves output when it has
+                        completed, and cleans up the condor user space after.
+    condor-collect      Collects a condor submission&#39;s output.
+    condor-rm           Removes processes on condor for a user.
+    cde                 Updates the Cyclopts CDE tarfile on a Condor submit node.
+    combine             Combines a collection of databases, merging their content.
+    dump                Dumps information about an instance database.
 
 optional arguments:
   -h, --help            show this help message and exit
 </pre></div>
 </div>
-<p>Running <tt class="docutils literal"><span class="pre">cyclopts</span> <span class="pre">convert</span> <span class="pre">-h</span></tt> results in</p>
-<div class="highlight-text"><div class="highlight"><pre>usage: Cyclopts convert [-h] [-i INPUT] [-o OUTPUT]
+<ul>
+<li><p class="first"><tt class="docutils literal"><span class="pre">cyclopts</span> <span class="pre">convert</span> <span class="pre">-h</span></tt></p>
+<div class="highlight-text"><div class="highlight"><pre>usage: Cyclopts convert [-h] [--cycrc CYCRC] [--species_module SPECIES_MODULE]
+                        [--species_class SPECIES_CLASS] [--rc RC] [--db DB] [-n NINST]
+                        [--count] [-v] [--debug] [-u UPDATE_FREQ]
 
 optional arguments:
   -h, --help            show this help message and exit
-  -i INPUT, --input INPUT
-                        The run control file to use that defines a continguous parameter space.
-  -o OUTPUT, --output OUTPUT
-                        The HDF5 file to dump converted parameter space points to. This file can later
-                        be used an input to an execute run.
+  --cycrc CYCRC         A global run control file, defaults to $HOME/.cyclopts.rc
+                        useful for declaring global family/species information.
+  --species_module SPECIES_MODULE
+                        The module for the problem species
+  --species_class SPECIES_CLASS
+                        The problem species class
+  --rc RC               The run control file to use that defines a continguous
+                        parameter space.
+  --db DB               The HDF5 file to dump converted parameter space points to. This
+                        file can later be used an input to an execute run.
+  -n NINST, --ninstances NINST
+                        The number of problem instances to generate per point in
+                        parameter space.
+  --count               Only read in the run control file and count the number of
+                        possible samplers that will be created.
+  -v, --verbose         Print verbose output during the conversion process.
+  --debug               Use objgraph and pdb to debug the conversion process.
+  -u UPDATE_FREQ, --update-freq UPDATE_FREQ
+                        The instance frequency with which to update stdout.
 </pre></div>
 </div>
-<p>Running <tt class="docutils literal"><span class="pre">cyclopts</span> <span class="pre">exec</span> <span class="pre">-h</span></tt> results in</p>
-<div class="highlight-text"><div class="highlight"><pre>usage: Cyclopts exec [-h] [-i INPUT] [-o OUTPUT] [--solvers [SOLVERS [SOLVERS ...]]] [--rc RC]
+</li>
+<li><p class="first"><tt class="docutils literal"><span class="pre">cyclopts</span> <span class="pre">exec</span> <span class="pre">-h</span></tt></p>
+<div class="highlight-text"><div class="highlight"><pre>usage: Cyclopts exec [-h] [--cycrc CYCRC] [--family_module FAMILY_MODULE]
+                     [--family_class FAMILY_CLASS] [--db DB]
+                     [--solvers [SOLVERS [SOLVERS ...]]]
+                     [--instids [INSTIDS [INSTIDS ...]]] [--rc RC] [--outdb OUTDB]
+                     [--conds CONDS] [-v]
 
 optional arguments:
   -h, --help            show this help message and exit
-  -i INPUT, --input INPUT
-                        An HDF5 file that defines points in the parameter space to be run.
-  -o OUTPUT, --output OUTPUT
-                        An HDF5 file to which output will be provided.
+  --cycrc CYCRC         A global run control file, defaults to $HOME/.cyclopts.rc
+                        useful for declaring global family/species information.
+  --family_module FAMILY_MODULE
+                        The module for the problem family
+  --family_class FAMILY_CLASS
+                        The problem family class
+  --db DB               An HDF5 Cyclopts database (e.g., the result of &#39;cyclopts
+                        convert&#39;).
   --solvers [SOLVERS [SOLVERS ...]]
-                        A list of which solvers to use..
-  --rc RC               The run control file, which allows idetification of a subset of input to run.
+                        A list of which solvers to use.
+  --instids [INSTIDS [INSTIDS ...]]
+                        A list of instids (as UUID hex strings) to run.
+  --rc RC               The run control file, which allows idetification of a subset of
+                        input to run.
+  --outdb OUTDB         An optional database to write results to. By default, the
+                        database given by the --db flag is use.
+  --conds CONDS         A dictionary representation of execution conditions. This CLI
+                        argument can be used instead of placing them in an RC file.
+  -v, --verbose         Print verbose output during execution.
 </pre></div>
 </div>
-<p>Running <tt class="docutils literal"><span class="pre">cyclopts</span> <span class="pre">condor</span> <span class="pre">-h</span></tt> results in</p>
-<div class="highlight-text"><div class="highlight"><pre>usage: Cyclopts condor [-h] [-u USER] [-t HOST] [-i INDB] [-d DUMPDIR] [-o OUTDB] [--no-clean]
-                       [--solvers [SOLVERS [SOLVERS ...]]] [--no-auth]
+</li>
+<li><p class="first"><tt class="docutils literal"><span class="pre">cyclopts</span> <span class="pre">condor-submit</span> <span class="pre">-h</span></tt></p>
+<div class="highlight-text"><div class="highlight"><pre>usage: Cyclopts condor-submit [-h] [--cycrc CYCRC] [--family_module FAMILY_MODULE]
+                              [--family_class FAMILY_CLASS] [--rc RC] [--db DB]
+                              [--instids [INSTIDS [INSTIDS ...]]]
+                              [--solvers [SOLVERS [SOLVERS ...]]] [-u USER] [-t HOST]
+                              [--keyfile KEYFILE] [-d REMOTEDIR] [-k {dag,queue}]
+                              [-p PORT] [--nodes [NODES [NODES ...]]] [-v]
+
+optional arguments:
+  -h, --help            show this help message and exit
+  --cycrc CYCRC         A global run control file, defaults to $HOME/.cyclopts.rc
+                        useful for declaring global family/species information.
+  --family_module FAMILY_MODULE
+                        The module for the problem family
+  --family_class FAMILY_CLASS
+                        The problem family class
+  --rc RC               The run control file, which allows idetification of a subset of
+                        input to run.
+  --db DB               An HDF5 Cyclopts database (e.g., the result of &#39;cyclopts
+                        convert&#39;).
+  --instids [INSTIDS [INSTIDS ...]]
+                        A list of instids (as UUID hex strings) to run.
+  --solvers [SOLVERS [SOLVERS ...]]
+                        A list of which solvers to use.
+  -u USER, --user USER  The condor user name.
+  -t HOST, --host HOST  The remote condor submit host.
+  --keyfile KEYFILE     An ssh public key file.
+  -d REMOTEDIR, --remotedir REMOTEDIR
+                        The remote directory (relative to ~/cyclopts-runs) on the
+                        submit node in which to run cyclopts jobs.
+  -k {dag,queue}, --kind {dag,queue}
+                        The kind of condor submission to use.
+  -p PORT, --port PORT  The port to use for a condor queue submission.
+  --nodes [NODES [NODES ...]]
+                        The execute nodes to target.
+  -v, --verbose         Print output during the submisison process.
+</pre></div>
+</div>
+</li>
+<li><p class="first"><tt class="docutils literal"><span class="pre">cyclopts</span> <span class="pre">condor-collect</span> <span class="pre">-h</span></tt></p>
+<div class="highlight-text"><div class="highlight"><pre>usage: Cyclopts condor-collect [-h] [--outdb OUTDB] [-u USER] [-t HOST]
+                               [--keyfile KEYFILE] [-l LOCALDIR] [-d REMOTEDIR]
+                               [--clean]
+
+optional arguments:
+  -h, --help            show this help message and exit
+  --outdb OUTDB         An optional database to write results to. By default, the
+                        database given by the --db flag is use.
+  -u USER, --user USER  The condor user name.
+  -t HOST, --host HOST  The remote condor submit host.
+  --keyfile KEYFILE     An ssh public key file.
+  -l LOCALDIR, --localdir LOCALDIR
+                        The local directory in which to place resulting files.
+  -d REMOTEDIR, --remotedir REMOTEDIR
+                        The remote directory (relative to the user&#39;s home directory) in
+                        which output files from a run are located.
+  --clean               Clean up the submit node after.
+</pre></div>
+</div>
+</li>
+<li><p class="first"><tt class="docutils literal"><span class="pre">cyclopts</span> <span class="pre">condor-rm</span> <span class="pre">-h</span></tt></p>
+<div class="highlight-text"><div class="highlight"><pre>usage: Cyclopts condor-rm [-h] [-u USER] [-t HOST] [--keyfile KEYFILE]
+                          [-k {all,workers}]
 
 optional arguments:
   -h, --help            show this help message and exit
   -u USER, --user USER  The condor user name.
-  -t HOST, --host HOST  The condor submit host.
-  -i INDB, --input INDB
-                        The input database.
-  -d DUMPDIR, --dumpdir DUMPDIR
-                        The directory in which to place output.
-  -o OUTDB, --output OUTDB
-                        The output database.
-  --no-clean            Do *not* clean up the submit node after.
-  --solvers [SOLVERS [SOLVERS ...]]
-                        A list of which solvers to use on each run.
-  --no-auth             Do not ask for a password for authorization.
+  -t HOST, --host HOST  The remote condor submit host.
+  --keyfile KEYFILE     An ssh public key file.
+  -k {all,workers}, --kind {all,workers}
+                        The kind of job to remove.
 </pre></div>
 </div>
+</li>
+<li><p class="first"><tt class="docutils literal"><span class="pre">cyclopts</span> <span class="pre">cde</span> <span class="pre">-h</span></tt></p>
+<div class="highlight-text"><div class="highlight"><pre>usage: Cyclopts cde [-h] [--cycrc CYCRC] [--family_module FAMILY_MODULE]
+                    [--family_class FAMILY_CLASS] [--source-path PREFIX] [-u USER]
+                    [-t HOST] [--no-clean] [--keyfile KEYFILE]
+
+optional arguments:
+  -h, --help            show this help message and exit
+  --cycrc CYCRC         A global run control file, defaults to $HOME/.cyclopts.rc
+                        useful for declaring global family/species information.
+  --family_module FAMILY_MODULE
+                        The module for the problem family
+  --family_class FAMILY_CLASS
+                        The problem family class
+  --source-path PREFIX  The path to cyclopts source.
+  -u USER, --user USER  The cde user name.
+  -t HOST, --host HOST  The remote cde submit host.
+  --no-clean            Do not clean up files.
+  --keyfile KEYFILE     An ssh public key file.
+</pre></div>
+</div>
+</li>
+<li><p class="first"><tt class="docutils literal"><span class="pre">cyclopts</span> <span class="pre">combine</span> <span class="pre">-h</span></tt></p>
+<div class="highlight-text"><div class="highlight"><pre>usage: Cyclopts combine [-h] [--files FILES [FILES ...]] [-o OUTDB] [--clean]
+
+optional arguments:
+  -h, --help            show this help message and exit
+  --files FILES [FILES ...]
+                        All files to combine.
+  -o OUTDB, --outdb OUTDB
+                        An output database, containing the combined content.
+  --clean               Clean up (remove) the original files.
+</pre></div>
+</div>
+</li>
+<li><p class="first"><tt class="docutils literal"><span class="pre">cyclopts</span> <span class="pre">dump</span> <span class="pre">-h</span></tt></p>
+<div class="highlight-text"><div class="highlight"><pre>usage: Cyclopts dump [-h] [--cycrc CYCRC] [--family_module FAMILY_MODULE]
+                     [--family_class FAMILY_CLASS] [--db DB]
+
+optional arguments:
+  -h, --help            show this help message and exit
+  --cycrc CYCRC         A global run control file, defaults to $HOME/.cyclopts.rc
+                        useful for declaring global family/species information.
+  --family_module FAMILY_MODULE
+                        The module for the problem family
+  --family_class FAMILY_CLASS
+                        The problem family class
+  --db DB               An HDF5 Cyclopts database (e.g., the result of &#39;cyclopts
+                        convert&#39;).
+</pre></div>
+</div>
+</li>
+</ul>
 </div>
 
 
@@ -148,8 +297,8 @@ optional arguments:
   </div>
   <div class="sphinxnext">
     <h4>Next page</h4>
-    <p class="topless"><a href="pyapi/main.html"
-                          title="Next page">&rarr; Python API</a></p>
+    <p class="topless"><a href="submit_node.html"
+                          title="Next page">&rarr; Configuring a Condor Submit Node</a></p>
   </div>
   <h3>This Page</h3>
   <ul class="this-page-menu">
@@ -188,7 +337,7 @@ optional arguments:
           <a href="np-modindex.html" title="Python Module Index"
              >modules</a> &nbsp; &nbsp;</li>
         <li class="right" >
-          <a href="pyapi/main.html" title="Python API"
+          <a href="submit_node.html" title="Configuring a Condor Submit Node"
              >next</a> &nbsp; &nbsp;</li>
         <li class="right" >
           <a href="basics.html" title="Cyclopts Basics"

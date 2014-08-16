@@ -1,0 +1,349 @@
+
+
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>Exchange Family Module – cyclopts.exchange_family &mdash; Cyclopts 0.1.0 documentation</title>
+    
+    <link rel="stylesheet" href="../_static/cloud.css" type="text/css" />
+    <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
+    <link rel="stylesheet" href="//fonts.googleapis.com/css?family=Noticia+Text|Open+Sans|Droid+Sans+Mono" type="text/css" />
+    
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    '../',
+        VERSION:     '0.1.0',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="../_static/jquery.js"></script>
+    <script type="text/javascript" src="../_static/underscore.js"></script>
+    <script type="text/javascript" src="../_static/doctools.js"></script>
+    <script type="text/javascript" src="../_static/jquery.cookie.js"></script>
+    <script type="text/javascript" src="../_static/cloud.js"></script>
+    <link rel="top" title="Cyclopts 0.1.0 documentation" href="../index.html" />
+    <link rel="up" title="Python API" href="main.html" />
+    <link rel="next" title="Random Request Species Module – cyclopts.random_request_species" href="random_request_species.html" />
+    <link rel="prev" title="Condor Interaction Modules" href="condor.html" /> 
+        <meta name="viewport" content="width=device-width, initial-scale=1">
+  </head>
+  <body>
+    <div class="relbar-top">
+        
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="../py-modindex.html" title="Python Module Index"
+             >modules</a> &nbsp; &nbsp;</li>
+        <li class="right" >
+          <a href="../np-modindex.html" title="Python Module Index"
+             >modules</a> &nbsp; &nbsp;</li>
+        <li class="right" >
+          <a href="random_request_species.html" title="Random Request Species Module – cyclopts.random_request_species"
+             accesskey="N">next</a> &nbsp; &nbsp;</li>
+        <li class="right" >
+          <a href="condor.html" title="Condor Interaction Modules"
+             accesskey="P">previous</a> &nbsp; &nbsp;</li>
+    <li><a href="../index.html">Cyclopts 0.1.0 documentation</a> &raquo;</li>
+
+          <li><a href="main.html" accesskey="U">Python API</a> &raquo;</li> 
+      </ul>
+    </div>
+    </div>
+  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body">
+            
+  <div class="section" id="module-cyclopts.exchange_family">
+<span id="exchange-family-module-cyclopts-exchange-family"></span><span id="exchange-family"></span><h1>Exchange Family Module &#8211; <a class="reference internal" href="#module-cyclopts.exchange_family" title="cyclopts.exchange_family"><tt class="xref py py-mod docutils literal"><span class="pre">cyclopts.exchange_family</span></tt></a><a class="headerlink" href="#module-cyclopts.exchange_family" title="Permalink to this headline">¶</a></h1>
+<p>This module defines a ProblemFamily subclass for Cyclus Resource Exchanges.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">author:</th><td class="field-body">Matthew Gidden &lt;matthew.gidden _at_ gmail.com&gt;</td>
+</tr>
+</tbody>
+</table>
+<dl class="class">
+<dt id="cyclopts.exchange_family.ResourceExchange">
+<em class="property">class </em><tt class="descclassname">cyclopts.exchange_family.</tt><tt class="descname">ResourceExchange</tt><a class="reference internal" href="../_modules/cyclopts/exchange_family.html#ResourceExchange"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#cyclopts.exchange_family.ResourceExchange" title="Permalink to this definition">¶</a></dt>
+<dd><p>A class representing families of resource exchange problems.</p>
+<dl class="method">
+<dt id="cyclopts.exchange_family.ResourceExchange.read_inst">
+<tt class="descname">read_inst</tt><big>(</big><em>uuid</em>, <em>tables</em><big>)</big><a class="reference internal" href="../_modules/cyclopts/exchange_family.html#ResourceExchange.read_inst"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#cyclopts.exchange_family.ResourceExchange.read_inst" title="Permalink to this definition">¶</a></dt>
+<dd><table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><p class="first"><strong>uuid</strong> : uuid</p>
+<blockquote>
+<div><p>The uuid of the instance to read</p>
+</div></blockquote>
+<p><strong>tables</strong> : list of cyclopts_io.Table</p>
+<blockquote>
+<div><p>The tables that can be written to</p>
+</div></blockquote>
+</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first"><strong>inst</strong> : tuple of lists of ExGroups, ExNodes, and ExArgs</p>
+<blockquote class="last">
+<div><p>A representation of a problem instance</p>
+</div></blockquote>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="cyclopts.exchange_family.ResourceExchange.record_inst">
+<tt class="descname">record_inst</tt><big>(</big><em>inst</em>, <em>inst_uuid</em>, <em>param_uuid</em>, <em>species</em>, <em>tables</em><big>)</big><a class="reference internal" href="../_modules/cyclopts/exchange_family.html#ResourceExchange.record_inst"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#cyclopts.exchange_family.ResourceExchange.record_inst" title="Permalink to this definition">¶</a></dt>
+<dd><table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><p class="first"><strong>inst</strong> : tuple of lists of ExGroups, ExNodes, and ExArgs</p>
+<blockquote>
+<div><p>A representation of a problem instance</p>
+</div></blockquote>
+<p><strong>inst_uuid</strong> : uuid</p>
+<blockquote>
+<div><p>The uuid of the instance</p>
+</div></blockquote>
+<p><strong>param_uuid</strong> : uuid</p>
+<blockquote>
+<div><p>The uuid of the point in parameter space</p>
+</div></blockquote>
+<p><strong>species</strong> : str</p>
+<blockquote>
+<div><p>The name of the species that generated this instance</p>
+</div></blockquote>
+<p><strong>tables</strong> : list of cyclopts_io.Table</p>
+<blockquote class="last">
+<div><p>The tables that can be written to</p>
+</div></blockquote>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="cyclopts.exchange_family.ResourceExchange.record_soln">
+<tt class="descname">record_soln</tt><big>(</big><em>soln</em>, <em>soln_uuid</em>, <em>inst</em>, <em>inst_uuid</em>, <em>tables</em><big>)</big><a class="reference internal" href="../_modules/cyclopts/exchange_family.html#ResourceExchange.record_soln"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#cyclopts.exchange_family.ResourceExchange.record_soln" title="Permalink to this definition">¶</a></dt>
+<dd><table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><p class="first"><strong>soln</strong> : ExSolution</p>
+<blockquote>
+<div><p>A representation of a problem solution</p>
+</div></blockquote>
+<p><strong>soln_uuid</strong> : uuid</p>
+<blockquote>
+<div><p>The uuid of the solution</p>
+</div></blockquote>
+<p><strong>inst</strong> : tuple of lists of ExGroups, ExNodes, and ExArgs</p>
+<blockquote>
+<div><p>A representation of a problem instance</p>
+</div></blockquote>
+<p><strong>inst_uuid</strong> : uuid</p>
+<blockquote>
+<div><p>The uuid of the instance</p>
+</div></blockquote>
+<p><strong>tables</strong> : list of cyclopts_io.Table</p>
+<blockquote class="last">
+<div><p>The tables that can be written to</p>
+</div></blockquote>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="cyclopts.exchange_family.ResourceExchange.register_tables">
+<tt class="descname">register_tables</tt><big>(</big><em>h5file</em>, <em>prefix</em><big>)</big><a class="reference internal" href="../_modules/cyclopts/exchange_family.html#ResourceExchange.register_tables"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#cyclopts.exchange_family.ResourceExchange.register_tables" title="Permalink to this definition">¶</a></dt>
+<dd><table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><p class="first"><strong>h5file</strong> : PyTables File</p>
+<blockquote>
+<div><p>the hdf5 file</p>
+</div></blockquote>
+<p><strong>prefix</strong> : string</p>
+<blockquote>
+<div><p>the absolute path to the group for tables of this family</p>
+</div></blockquote>
+</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first"><strong>tables</strong> : list of cyclopts_io.Tables</p>
+<blockquote class="last">
+<div><p>All tables that could be written to by this species.</p>
+</div></blockquote>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="cyclopts.exchange_family.ResourceExchange.run_inst">
+<tt class="descname">run_inst</tt><big>(</big><em>inst</em>, <em>solver</em>, <em>verbose=False</em><big>)</big><a class="reference internal" href="../_modules/cyclopts/exchange_family.html#ResourceExchange.run_inst"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#cyclopts.exchange_family.ResourceExchange.run_inst" title="Permalink to this definition">¶</a></dt>
+<dd><table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><p class="first"><strong>inst</strong> : tuple of lists of ExGroups, ExNodes, and ExArgs</p>
+<blockquote>
+<div><p>A representation of a problem instance</p>
+</div></blockquote>
+<p><strong>solver</strong> : ProbSolver or similar</p>
+<blockquote>
+<div><p>A representation of a problem solver</p>
+</div></blockquote>
+<p><strong>verbose</strong> : bool</p>
+<blockquote>
+<div><p>A verbosity flag</p>
+</div></blockquote>
+</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first"><strong>soln</strong> : ExSolution</p>
+<blockquote class="last">
+<div><p>A representation of a problem solution</p>
+</div></blockquote>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="cyclopts.exchange_family.ResourceExchange.name">
+<tt class="descname">name</tt><a class="reference internal" href="../_modules/cyclopts/exchange_family.html#ResourceExchange.name"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#cyclopts.exchange_family.ResourceExchange.name" title="Permalink to this definition">¶</a></dt>
+<dd><table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Returns:</th><td class="field-body"><p class="first"><strong>name</strong> : string</p>
+<blockquote class="last">
+<div><p>The name of this species</p>
+</div></blockquote>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="cyclopts.exchange_family.ResourceExchange.property_table_name">
+<tt class="descname">property_table_name</tt><a class="reference internal" href="../_modules/cyclopts/exchange_family.html#ResourceExchange.property_table_name"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#cyclopts.exchange_family.ResourceExchange.property_table_name" title="Permalink to this definition">¶</a></dt>
+<dd><table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Returns:</th><td class="field-body"><p class="first"><strong>name</strong> : string</p>
+<blockquote class="last">
+<div><p>The name of this family&#8217;s instance property table</p>
+</div></blockquote>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+</dd></dl>
+
+</div>
+
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar">
+        <div class="sphinxsidebarwrapper">
+        <p class="logo"><a href="../index.html" title="index">
+          <img class="logo" src="../_static/uni_logo.png" alt="Logo"/>
+        </a></p>
+  <div class="sphinxprev">
+    <h4>Previous page</h4>
+    <p class="topless"><a href="condor.html"
+                          title="Previous page">&larr; Condor Interaction Modules</a></p>
+  </div>
+  <div class="sphinxnext">
+    <h4>Next page</h4>
+    <p class="topless"><a href="random_request_species.html"
+                          title="Next page">&rarr; Random Request Species Module &#8211; <tt class="docutils literal"><span class="pre">cyclopts.random_request_species</span></tt></a></p>
+  </div>
+  <h3>This Page</h3>
+  <ul class="this-page-menu">
+    <li><a href="../_sources/pyapi/exchange_family.txt"
+           rel="nofollow">Show Source</a></li>
+  </ul>
+<div id="searchbox" style="display: none">
+  <h3>Quick search</h3>
+    <form class="search" action="../search.html" method="get">
+      <input type="text" name="q" />
+      <input type="submit" value="Go" />
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+    <p class="searchtip" style="font-size: 90%">
+    Enter search terms or a module, class or function name.
+    </p>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="relbar-bottom">
+        
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="../py-modindex.html" title="Python Module Index"
+             >modules</a> &nbsp; &nbsp;</li>
+        <li class="right" >
+          <a href="../np-modindex.html" title="Python Module Index"
+             >modules</a> &nbsp; &nbsp;</li>
+        <li class="right" >
+          <a href="random_request_species.html" title="Random Request Species Module – cyclopts.random_request_species"
+             >next</a> &nbsp; &nbsp;</li>
+        <li class="right" >
+          <a href="condor.html" title="Condor Interaction Modules"
+             >previous</a> &nbsp; &nbsp;</li>
+    <li><a href="../index.html">Cyclopts 0.1.0 documentation</a> &raquo;</li>
+
+          <li><a href="main.html" >Python API</a> &raquo;</li> 
+      </ul>
+    </div>
+    </div>
+
+    <div class="footer">
+        &copy; Copyright 2014, Matthew J. Gidden.
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.2.2.
+    </div>
+    <!-- cloud_sptheme 1.4 -->
+  </body>
+</html>

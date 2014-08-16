@@ -8,7 +8,7 @@
   <head>
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
     
-    <title>Parameter Definition Module – cyclopts.params &mdash; Cyclopts 0.1.0 documentation</title>
+    <title>Parameter Module – cyclopts.params &mdash; Cyclopts 0.1.0 documentation</title>
     
     <link rel="stylesheet" href="../_static/cloud.css" type="text/css" />
     <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
@@ -30,7 +30,7 @@
     <script type="text/javascript" src="../_static/cloud.js"></script>
     <link rel="top" title="Cyclopts 0.1.0 documentation" href="../index.html" />
     <link rel="up" title="Python API" href="main.html" />
-    <link rel="next" title="Condor Interaction Module – cyclopts.condor" href="condor.html" />
+    <link rel="next" title="Problem Definition Module – cyclopts.problems" href="problems.html" />
     <link rel="prev" title="Python API" href="main.html" /> 
         <meta name="viewport" content="width=device-width, initial-scale=1">
   </head>
@@ -50,7 +50,7 @@
           <a href="../np-modindex.html" title="Python Module Index"
              >modules</a> &nbsp; &nbsp;</li>
         <li class="right" >
-          <a href="condor.html" title="Condor Interaction Module – cyclopts.condor"
+          <a href="problems.html" title="Problem Definition Module – cyclopts.problems"
              accesskey="N">next</a> &nbsp; &nbsp;</li>
         <li class="right" >
           <a href="main.html" title="Python API"
@@ -68,21 +68,10 @@
         <div class="bodywrapper">
           <div class="body">
             
-  <div class="section" id="parameter-definition-module-cyclopts-params">
-<span id="params"></span><h1>Parameter Definition Module &#8211; <a class="reference internal" href="#module-cyclopts.params" title="cyclopts.params"><tt class="xref py py-mod docutils literal"><span class="pre">cyclopts.params</span></tt></a><a class="headerlink" href="#parameter-definition-module-cyclopts-params" title="Permalink to this headline">¶</a></h1>
-<p>This module provides an API to define a parameter in a parameter space.</p>
-<span class="target" id="module-cyclopts.params"></span><p>Implements a robust interface for translating scaling parameters into a full
-parameter definition of a resource exchange graph in Cyclus.</p>
-<p>This module&#8217;s core objects are the ReactorRequestBuilder and
-ReactorSupplyBuilder, which provide functionality to build instances of resource
-exchanges parameters that can be used to execute exchanges in Cyclus via the
-execute module.</p>
-<p>The Builders are provided sampling parameters via Sampler container objects,
-which are populated with Param (or similar) objects. The Builders sample
-required values through their Sampler in order to build the exchange parameter
-instance.</p>
-<p>Key modeling assumptions regarding how exchange instances are built are
-separated into individual functions on the Builder&#8217;s interface.</p>
+  <div class="section" id="module-cyclopts.params">
+<span id="parameter-module-cyclopts-params"></span><span id="params"></span><h1>Parameter Module &#8211; <a class="reference internal" href="#module-cyclopts.params" title="cyclopts.params"><tt class="xref py py-mod docutils literal"><span class="pre">cyclopts.params</span></tt></a><a class="headerlink" href="#module-cyclopts.params" title="Permalink to this headline">¶</a></h1>
+<p>This module defines a series of objects that represent entities that can be
+composed into a representation of a parameter space.</p>
 <table class="docutils field-list" frame="void" rules="none">
 <col class="field-name" />
 <col class="field-body" />
@@ -148,305 +137,29 @@ separated into individual functions on the Builder&#8217;s interface.</p>
 </dd></dl>
 
 <dl class="class">
-<dt id="cyclopts.params.Incrementer">
-<em class="property">class </em><tt class="descclassname">cyclopts.params.</tt><tt class="descname">Incrementer</tt><big>(</big><em>start=0</em><big>)</big><a class="reference internal" href="../_modules/cyclopts/params.html#Incrementer"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#cyclopts.params.Incrementer" title="Permalink to this definition">¶</a></dt>
-<dd><p>A simple helper class to increment a value</p>
-<table class="docutils field-list" frame="void" rules="none">
-<col class="field-name" />
-<col class="field-body" />
-<tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><p class="first"><strong>start</strong> : int, optional</p>
-<blockquote class="last">
-<div><p>an initial value</p>
-</div></blockquote>
-</td>
-</tr>
-</tbody>
-</table>
-<dl class="method">
-<dt id="cyclopts.params.Incrementer.next">
-<tt class="descname">next</tt><big>(</big><big>)</big><a class="reference internal" href="../_modules/cyclopts/params.html#Incrementer.next"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#cyclopts.params.Incrementer.next" title="Permalink to this definition">¶</a></dt>
-<dd><p>Returns an incremented value</p>
-</dd></dl>
-
-</dd></dl>
-
-<dl class="class">
 <dt id="cyclopts.params.Param">
 <em class="property">class </em><tt class="descclassname">cyclopts.params.</tt><tt class="descname">Param</tt><big>(</big><em>avg</em>, <em>dist=None</em><big>)</big><a class="reference internal" href="../_modules/cyclopts/params.html#Param"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#cyclopts.params.Param" title="Permalink to this definition">¶</a></dt>
-<dd><p>A base class for sampled parameters.</p>
-</dd></dl>
-
-<dl class="class">
-<dt id="cyclopts.params.ReactorRequestBuilder">
-<em class="property">class </em><tt class="descclassname">cyclopts.params.</tt><tt class="descname">ReactorRequestBuilder</tt><big>(</big><em>sampler</em>, <em>commod_offset=0</em>, <em>req_g_offset=0</em>, <em>sup_g_offset=0</em>, <em>req_n_offset=0</em>, <em>sup_n_offset=0</em>, <em>arc_offset=0</em>, <em>*args</em>, <em>**kwargs</em><big>)</big><a class="reference internal" href="../_modules/cyclopts/params.html#ReactorRequestBuilder"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#cyclopts.params.ReactorRequestBuilder" title="Permalink to this definition">¶</a></dt>
-<dd><p>A helper class to translate sampling parameters for a reactor request
-scenario into an instance of GraphParams used by the cyclopts.execute
-module.</p>
-<p>The params member can be populated in a single step by the populate() member
-function, or the various supply/request parameters can be generated by the
-<a href="#id1"><span class="problematic" id="id2">generate_</span></a> member functions and then the params member can be populated with
-the appropriate arguments to the populate_params member function.</p>
-<p>This builder can be incorporated with other builders by providing the
-appropriate offsets.</p>
+<dd><p>A class to sample events.</p>
 <table class="docutils field-list" frame="void" rules="none">
 <col class="field-name" />
 <col class="field-body" />
 <tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><p class="first"><strong>sampler</strong> : ReactorRequestSampler</p>
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><p class="first"><strong>avg</strong> : float</p>
 <blockquote>
-<div><p>a parameter sampling container</p>
+<div><p>average value</p>
 </div></blockquote>
-<p><strong>params</strong> : GraphParams, optional</p>
-<blockquote>
-<div><p>a pre-populated ExecParam object to populate</p>
-</div></blockquote>
-<p><strong>commod_offset</strong> : int, optional</p>
-<blockquote>
-<div><p>an offset for commodity ids</p>
-</div></blockquote>
-<p><strong>req_g_offset</strong> : int, optional</p>
-<blockquote>
-<div><p>an offset for request group ids</p>
-</div></blockquote>
-<p><strong>sup_g_offset</strong> : int, optional</p>
-<blockquote>
-<div><p>an offset for supply group ids</p>
-</div></blockquote>
-<p><strong>req_n_offset</strong> : int, optional</p>
-<blockquote>
-<div><p>an offset for request node ids</p>
-</div></blockquote>
-<p><strong>sup_n_offset</strong> : int, optional</p>
-<blockquote>
-<div><p>an offset for supply node ids</p>
-</div></blockquote>
-<p><strong>arc_offset</strong> : int, optional</p>
+<p><strong>dist</strong> : str</p>
 <blockquote class="last">
-<div><p>an offset for arc ids</p>
+<div><p>string representation of a distribution</p>
 </div></blockquote>
 </td>
 </tr>
 </tbody>
 </table>
 <dl class="method">
-<dt id="cyclopts.params.ReactorRequestBuilder.build">
-<tt class="descname">build</tt><big>(</big><em>*args</em>, <em>**kwargs</em><big>)</big><a class="reference internal" href="../_modules/cyclopts/params.html#ReactorRequestBuilder.build"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#cyclopts.params.ReactorRequestBuilder.build" title="Permalink to this definition">¶</a></dt>
-<dd><p>Builds Group, Node, and Arc components of a Reactor-Request based
-Resource Exchange</p>
-</dd></dl>
-
-<dl class="method">
-<dt id="cyclopts.params.ReactorRequestBuilder.generate_request">
-<tt class="descname">generate_request</tt><big>(</big><em>commods</em>, <em>requesters</em>, <em>*args</em>, <em>**kwargs</em><big>)</big><a class="reference internal" href="../_modules/cyclopts/params.html#ReactorRequestBuilder.generate_request"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#cyclopts.params.ReactorRequestBuilder.generate_request" title="Permalink to this definition">¶</a></dt>
-<dd><p>Returns all requests as a dictionary of requester ids to a list of
-assembly requests, where each assembly request is a list of id-commodity
-two-tuples that can satisfy such a request.</p>
-<table class="docutils field-list" frame="void" rules="none">
-<col class="field-name" />
-<col class="field-body" />
-<tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><p class="first"><strong>commods</strong> : set</p>
-<blockquote>
-<div><p>the commodities</p>
-</div></blockquote>
-<p><strong>requesters</strong> : list</p>
-<blockquote class="last">
-<div><p>the requesters</p>
-</div></blockquote>
-</td>
-</tr>
-</tbody>
-</table>
-</dd></dl>
-
-<dl class="method">
-<dt id="cyclopts.params.ReactorRequestBuilder.generate_supply">
-<tt class="descname">generate_supply</tt><big>(</big><em>commods</em>, <em>suppliers</em>, <em>*args</em>, <em>**kwargs</em><big>)</big><a class="reference internal" href="../_modules/cyclopts/params.html#ReactorRequestBuilder.generate_supply"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#cyclopts.params.ReactorRequestBuilder.generate_supply" title="Permalink to this definition">¶</a></dt>
-<dd><p>Returns a mapping from supplier to a list of 2-tuples of supply node
-id and request node id and a mapping from supply group id to a list of
-commodities supplied by the supplier.</p>
-<table class="docutils field-list" frame="void" rules="none">
-<col class="field-name" />
-<col class="field-body" />
-<tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><p class="first"><strong>commods</strong> : set</p>
-<blockquote>
-<div><p>the commodities</p>
-</div></blockquote>
-<p><strong>suppliers</strong> : list</p>
-<blockquote class="last">
-<div><p>the suppliers</p>
-</div></blockquote>
-</td>
-</tr>
-</tbody>
-</table>
-</dd></dl>
-
-<dl class="method">
-<dt id="cyclopts.params.ReactorRequestBuilder.populate_params">
-<tt class="descname">populate_params</tt><big>(</big><em>request</em>, <em>supply</em>, <em>supplier_commods</em><big>)</big><a class="reference internal" href="../_modules/cyclopts/params.html#ReactorRequestBuilder.populate_params"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#cyclopts.params.ReactorRequestBuilder.populate_params" title="Permalink to this definition">¶</a></dt>
-<dd><p>Populates params (the GraphParams structure) given known supply and
-request</p>
-<table class="docutils field-list" frame="void" rules="none">
-<col class="field-name" />
-<col class="field-body" />
-<tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><p class="first"><strong>request</strong> : as returned by generate_request</p>
-<p><strong>supply</strong> : as returned by generate_supply</p>
-<p><strong>supplier_commods</strong> : commods supplied by suppliers, as returned by</p>
-<blockquote class="last">
-<div><p>generate_supply</p>
-</div></blockquote>
-</td>
-</tr>
-</tbody>
-</table>
-</dd></dl>
-
-<dl class="method">
-<dt id="cyclopts.params.ReactorRequestBuilder.valid">
-<tt class="descname">valid</tt><big>(</big><big>)</big><a class="reference internal" href="../_modules/cyclopts/params.html#ReactorRequestBuilder.valid"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#cyclopts.params.ReactorRequestBuilder.valid" title="Permalink to this definition">¶</a></dt>
-<dd><p>Screens the provided sampler to determine if it provides a valid
-point in solution space (e.g., if parameter C requires that the sum of
-parameters A and B be less than some value, valid() will return false if
-that condition is not met).</p>
-<table class="docutils field-list" frame="void" rules="none">
-<col class="field-name" />
-<col class="field-body" />
-<tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Returns:</th><td class="field-body"><p class="first"><strong>b</strong> : bool</p>
-<blockquote class="last">
-<div><p>whether the sampler&#8217;s parameters form a valid point in the 
-sampler&#8217;s parameter space</p>
-</div></blockquote>
-</td>
-</tr>
-</tbody>
-</table>
-</dd></dl>
-
-<dl class="method">
-<dt id="cyclopts.params.ReactorRequestBuilder.write">
-<tt class="descname">write</tt><big>(</big><em>h5node</em><big>)</big><a class="reference internal" href="../_modules/cyclopts/params.html#ReactorRequestBuilder.write"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#cyclopts.params.ReactorRequestBuilder.write" title="Permalink to this definition">¶</a></dt>
-<dd><p>writes its current instance state to an output database</p>
-</dd></dl>
-
-</dd></dl>
-
-<dl class="class">
-<dt id="cyclopts.params.ReactorRequestSampler">
-<em class="property">class </em><tt class="descclassname">cyclopts.params.</tt><tt class="descname">ReactorRequestSampler</tt><big>(</big><em>n_commods=None</em>, <em>n_request=None</em>, <em>assem_per_req=None</em>, <em>req_qty=None</em>, <em>assem_multi_commod=None</em>, <em>req_multi_commods=None</em>, <em>exclusive=None</em>, <em>n_req_constr=None</em>, <em>n_supply=None</em>, <em>sup_multi=None</em>, <em>sup_multi_commods=None</em>, <em>n_sup_constr=None</em>, <em>sup_constr_val=None</em>, <em>connection=None</em>, <em>constr_coeff=None</em>, <em>pref_coeff=None</em><big>)</big><a class="reference internal" href="../_modules/cyclopts/params.html#ReactorRequestSampler"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#cyclopts.params.ReactorRequestSampler" title="Permalink to this definition">¶</a></dt>
-<dd><p>A container class for holding all sampling objects for reactor request
-scenarios.</p>
-<table class="docutils field-list" frame="void" rules="none">
-<col class="field-name" />
-<col class="field-body" />
-<tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><p class="first"><strong>n_commods</strong> : Param or similar, optional</p>
-<blockquote>
-<div><p>the number of commodities</p>
-</div></blockquote>
-<p><strong>n_request</strong> : Param or similar, optional</p>
-<blockquote>
-<div><p>the number of requesters (i.e., RequestGroups)</p>
-</div></blockquote>
-<p><strong>assem_per_req</strong> : Param or similar, optional</p>
-<blockquote>
-<div><p>the number of assemblies in a request</p>
-</div></blockquote>
-<p><strong>req_qty</strong> : Param or similar, optional</p>
-<blockquote>
-<div><p>the quantity associated with each request</p>
-</div></blockquote>
-<p><strong>assem_multi_commod</strong> : BoolParam or similar, optional</p>
-<blockquote>
-<div><p>whether an assembly request can be satisfied by multiple 
-commodities</p>
-</div></blockquote>
-<p><strong>req_multi_commods</strong> : Param or similar, optional</p>
-<blockquote>
-<div><p>the number of commodities in a multicommodity zone</p>
-</div></blockquote>
-<p><strong>exclusive</strong> : BoolParam or similar, optional</p>
-<blockquote>
-<div><p>the probability that a reactor assembly request is exclusive</p>
-</div></blockquote>
-<p><strong>n_req_constr</strong> : Param or similar, optional</p>
-<blockquote>
-<div><p>the number of constraints associated with a given request group</p>
-</div></blockquote>
-<p><strong>n_supply</strong> : Param or similar, optional</p>
-<blockquote>
-<div><p>the number of suppliers (i.e., supply ExchangeNodeGroups)</p>
-</div></blockquote>
-<p><strong>sup_multi</strong> : BoolParam or similar, optional</p>
-<blockquote>
-<div><p>whether a supplier supplies more than one commodity</p>
-</div></blockquote>
-<p><strong>sup_multi_commods</strong> : Param or similar, optional</p>
-<blockquote>
-<div><p>the number of commodities a multicommodity supplier supplies</p>
-</div></blockquote>
-<p><strong>n_sup_constr</strong> : Param or similar, optional</p>
-<blockquote>
-<div><p>the number of constraints associated with a given supply group</p>
-</div></blockquote>
-<p><strong>sup_constr_val</strong> : SupConstrParam or similar, optional</p>
-<blockquote>
-<div><p>the supply constraint rhs value (as a fraction of the total request 
-amount for a commodity)</p>
-</div></blockquote>
-<p><strong>connection</strong> : BoolParam or similar, optional</p>
-<blockquote>
-<div><p>the probability that a possible connection between supply and 
-request nodes is added</p>
-</div></blockquote>
-<p><strong>constr_coeff</strong> : CoeffParam or similar, optional</p>
-<blockquote>
-<div><p>constraint coefficients</p>
-</div></blockquote>
-<p><strong>pref_coeff</strong> : CoeffParam or similar, optional</p>
-<blockquote class="last">
-<div><p>preference coefficients</p>
-</div></blockquote>
-</td>
-</tr>
-</tbody>
-</table>
-<dl class="method">
-<dt id="cyclopts.params.ReactorRequestSampler.describe_h5">
-<tt class="descname">describe_h5</tt><big>(</big><big>)</big><a class="reference internal" href="../_modules/cyclopts/params.html#ReactorRequestSampler.describe_h5"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#cyclopts.params.ReactorRequestSampler.describe_h5" title="Permalink to this definition">¶</a></dt>
-<dd><p>Returns a numpy dtype describing all composed objects.</p>
-</dd></dl>
-
-<dl class="method">
-<dt id="cyclopts.params.ReactorRequestSampler.inst_builder_ctor">
-<tt class="descname">inst_builder_ctor</tt><big>(</big><big>)</big><a class="reference internal" href="../_modules/cyclopts/params.html#ReactorRequestSampler.inst_builder_ctor"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#cyclopts.params.ReactorRequestSampler.inst_builder_ctor" title="Permalink to this definition">¶</a></dt>
-<dd><p>Returns a constructor to an object that builds problem instances from
-the parameter space defined by this object.</p>
-</dd></dl>
-
-<dl class="method">
-<dt id="cyclopts.params.ReactorRequestSampler.valid">
-<tt class="descname">valid</tt><big>(</big><big>)</big><a class="reference internal" href="../_modules/cyclopts/params.html#ReactorRequestSampler.valid"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#cyclopts.params.ReactorRequestSampler.valid" title="Permalink to this definition">¶</a></dt>
-<dd><p>Provides a best-guess estimate as to whether or not a given data
-point, as represented by this Sampler, is valid in the domain-defined
-parameter space.</p>
-<table class="docutils field-list" frame="void" rules="none">
-<col class="field-name" />
-<col class="field-body" />
-<tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Returns:</th><td class="field-body"><p class="first"><strong>bool</strong> :</p>
-<blockquote class="last">
-<div><p>whether the sampler&#8217;s parameters form a valid point in the 
-sampler&#8217;s parameter space</p>
-</div></blockquote>
-</td>
-</tr>
-</tbody>
-</table>
+<dt id="cyclopts.params.Param.sample">
+<tt class="descname">sample</tt><big>(</big><big>)</big><a class="reference internal" href="../_modules/cyclopts/params.html#Param.sample"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#cyclopts.params.Param.sample" title="Permalink to this definition">¶</a></dt>
+<dd><p>Return a value sampled from the distribution</p>
 </dd></dl>
 
 </dd></dl>
@@ -504,8 +217,8 @@ supply constraint value could take; default is [0.25, 0.5, 0.75, 1]</p>
   </div>
   <div class="sphinxnext">
     <h4>Next page</h4>
-    <p class="topless"><a href="condor.html"
-                          title="Next page">&rarr; Condor Interaction Module &#8211; <tt class="docutils literal"><span class="pre">cyclopts.condor</span></tt></a></p>
+    <p class="topless"><a href="problems.html"
+                          title="Next page">&rarr; Problem Definition Module &#8211; <tt class="docutils literal"><span class="pre">cyclopts.problems</span></tt></a></p>
   </div>
   <h3>This Page</h3>
   <ul class="this-page-menu">
@@ -544,7 +257,7 @@ supply constraint value could take; default is [0.25, 0.5, 0.75, 1]</p>
           <a href="../np-modindex.html" title="Python Module Index"
              >modules</a> &nbsp; &nbsp;</li>
         <li class="right" >
-          <a href="condor.html" title="Condor Interaction Module – cyclopts.condor"
+          <a href="problems.html" title="Problem Definition Module – cyclopts.problems"
              >next</a> &nbsp; &nbsp;</li>
         <li class="right" >
           <a href="main.html" title="Python API"

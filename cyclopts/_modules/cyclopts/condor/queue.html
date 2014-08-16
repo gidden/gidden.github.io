@@ -1,0 +1,344 @@
+
+
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>cyclopts.condor.queue &mdash; Cyclopts 0.1.0 documentation</title>
+    
+    <link rel="stylesheet" href="../../../_static/cloud.css" type="text/css" />
+    <link rel="stylesheet" href="../../../_static/pygments.css" type="text/css" />
+    <link rel="stylesheet" href="//fonts.googleapis.com/css?family=Noticia+Text|Open+Sans|Droid+Sans+Mono" type="text/css" />
+    
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    '../../../',
+        VERSION:     '0.1.0',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="../../../_static/jquery.js"></script>
+    <script type="text/javascript" src="../../../_static/underscore.js"></script>
+    <script type="text/javascript" src="../../../_static/doctools.js"></script>
+    <script type="text/javascript" src="../../../_static/jquery.cookie.js"></script>
+    <script type="text/javascript" src="../../../_static/cloud.js"></script>
+    <link rel="top" title="Cyclopts 0.1.0 documentation" href="../../../index.html" />
+    <link rel="up" title="Module code" href="../../index.html" /> 
+        <meta name="viewport" content="width=device-width, initial-scale=1">
+  </head>
+  <body>
+    <div class="relbar-top">
+        
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../../../genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="../../../py-modindex.html" title="Python Module Index"
+             >modules</a> &nbsp; &nbsp;</li>
+        <li class="right" >
+          <a href="../../../np-modindex.html" title="Python Module Index"
+             >modules</a> &nbsp; &nbsp;</li>
+    <li><a href="../../../index.html">Cyclopts 0.1.0 documentation</a> &raquo;</li>
+
+          <li><a href="../../index.html" accesskey="U">Module code</a> &raquo;</li> 
+      </ul>
+    </div>
+    </div>
+  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body">
+            
+  <h1>Source code for cyclopts.condor.queue</h1><div class="highlight"><pre>
+<span class="sd">&quot;&quot;&quot;This module defines methods to lauch Worker Queue Cyclopts jobs.</span>
+
+<span class="sd">:author: Matthew Gidden &lt;matthew.gidden _at_ gmail.com&gt;</span>
+<span class="sd">&quot;&quot;&quot;</span>
+<span class="kn">from</span> <span class="nn">__future__</span> <span class="kn">import</span> <span class="n">print_function</span>
+
+<span class="kn">import</span> <span class="nn">paramiko</span> <span class="kn">as</span> <span class="nn">pm</span>
+<span class="kn">import</span> <span class="nn">os</span>
+<span class="kn">import</span> <span class="nn">io</span>
+<span class="kn">import</span> <span class="nn">tarfile</span> 
+<span class="kn">import</span> <span class="nn">shutil</span> 
+<span class="kn">import</span> <span class="nn">stat</span>
+
+<span class="kn">from</span> <span class="nn">cyclopts</span> <span class="kn">import</span> <span class="n">tools</span>
+<span class="kn">from</span> <span class="nn">cyclopts.condor.utils</span> <span class="kn">import</span> <span class="n">exec_remote_cmd</span><span class="p">,</span> <span class="n">batlab_base_dir_template</span>
+
+<span class="n">run_lines</span> <span class="o">=</span> <span class="s">u&quot;&quot;&quot;#!/bin/bash</span>
+<span class="s">pwd=$PWD</span>
+<span class="s">outdb=$1</span>
+<span class="s">instids=$2</span>
+<span class="s"># work queue puts workers down two directories</span>
+<span class="s">indb_rel=../../$3</span>
+<span class="s">indb_abs=`readlink -f $indb_rel`</span>
+<span class="s">indb_dir=`dirname $indb_abs`</span>
+<span class="s">indb=`basename $indb_abs`</span>
+
+<span class="s">echo &quot;pwd: $PWD&quot;</span>
+<span class="s">echo &quot;indb_rel : $indb_rel&quot;</span>
+<span class="s">echo &quot;indb dir: $indb_dir&quot;</span>
+<span class="s">echo &quot;indb dir listing&quot;</span>
+<span class="s">ls -l $indb_dir</span>
+
+<span class="s">echo &quot;indb_abs: $indb_abs&quot;</span>
+<span class="s">if [ ! -f $indb_abs ]; then</span>
+<span class="s">    echo &quot;expected input file $indb_abs does not exist&quot;</span>
+<span class="s">    exit 1</span>
+<span class="s">fi</span>
+
+<span class="s">echo &quot;pwd pre-tar:&quot;</span>
+<span class="s">ls -l</span>
+<span class="s">tar -xf CDE.tar.gz</span>
+<span class="s">tar -xf cde-cyclopts.tar.gz</span>
+<span class="s">export PATH=$pwd/CDE/:$PATH</span>
+<span class="s">echo &quot;pwd post-tar:&quot;</span>
+<span class="s">ls -l</span>
+
+<span class="s">cde_root=&#39;cde-package/cde-root&#39;</span>
+<span class="s">ln $indb_abs $cde_root/$indb</span>
+<span class="s">cd $cde_root</span>
+<span class="s">sed -i &#39;s/..\/cde-exec/cde-exec/g&#39; ../cyclopts.cde</span>
+
+<span class="s">echo &quot;confirming $indb exists:&quot;</span>
+<span class="s">if [ ! -f $indb ]; then</span>
+<span class="s">    echo &quot;expected input file $indb does not exist&quot;</span>
+<span class="s">    exit 1</span>
+<span class="s">fi</span>
+
+<span class="s">echo &quot;execute dir pre-execute&quot;</span>
+<span class="s">ls -l</span>
+
+<span class="s">echo &quot;Executing ../cyclopts.cde exec --db $indb --outdb $outdb --instids $instids&quot;</span>
+<span class="s">../cyclopts.cde exec --db $indb --outdb $outdb --instids $instids </span><span class="se">\</span>
+<span class="s">--solvers {solvers} --family_module {module} --family_class {cname}</span>
+<span class="s">echo &quot;execute dir post-execute&quot;</span>
+<span class="s">ls -l</span>
+
+<span class="s">mv $outdb $pwd</span>
+<span class="s">cd $pwd</span>
+<span class="s">echo &quot;pwd dir post-execute&quot;</span>
+<span class="s">ls -l</span>
+<span class="s">&quot;&quot;&quot;</span>
+
+<span class="k">def</span> <span class="nf">gen_tar</span><span class="p">(</span><span class="n">remotedir</span><span class="p">,</span> <span class="n">db</span><span class="p">,</span> <span class="n">instids</span><span class="p">,</span> <span class="n">module</span><span class="p">,</span> <span class="n">cname</span><span class="p">,</span> <span class="n">solvers</span><span class="p">,</span> 
+            <span class="n">user</span><span class="o">=</span><span class="s">&quot;gidden&quot;</span><span class="p">,</span> <span class="n">verbose</span><span class="o">=</span><span class="bp">False</span><span class="p">):</span>
+    <span class="n">prepdir</span> <span class="o">=</span> <span class="s">&#39;.tmp_{0}&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">remotedir</span><span class="p">)</span>
+    <span class="k">if</span> <span class="ow">not</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">exists</span><span class="p">(</span><span class="n">prepdir</span><span class="p">):</span>
+        <span class="n">os</span><span class="o">.</span><span class="n">makedirs</span><span class="p">(</span><span class="n">prepdir</span><span class="p">)</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="k">raise</span> <span class="ne">IOError</span><span class="p">(</span><span class="s">&quot;File preparation directory {0} already exists&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span>
+                <span class="n">prepdir</span><span class="p">))</span>
+    <span class="n">remotehome</span> <span class="o">=</span> <span class="n">batlab_base_dir_template</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">user</span><span class="o">=</span><span class="n">user</span><span class="p">)</span>
+    
+    <span class="n">nfiles</span> <span class="o">=</span> <span class="mi">0</span>
+    <span class="n">runlines</span> <span class="o">=</span> <span class="n">run_lines</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">solvers</span><span class="o">=</span><span class="s">&quot; &quot;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">solvers</span><span class="p">),</span> <span class="n">module</span><span class="o">=</span><span class="n">module</span><span class="p">,</span> 
+                                <span class="n">cname</span><span class="o">=</span><span class="n">cname</span><span class="p">)</span>
+    <span class="n">runfile</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">prepdir</span><span class="p">,</span> <span class="s">&#39;run.sh&#39;</span><span class="p">)</span>
+    <span class="k">with</span> <span class="n">io</span><span class="o">.</span><span class="n">open</span><span class="p">(</span><span class="n">runfile</span><span class="p">,</span> <span class="n">mode</span><span class="o">=</span><span class="s">&#39;w&#39;</span><span class="p">)</span> <span class="k">as</span> <span class="n">f</span><span class="p">:</span>
+        <span class="n">f</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="n">runlines</span><span class="p">)</span>
+    <span class="c"># chmod 775</span>
+    <span class="n">os</span><span class="o">.</span><span class="n">chmod</span><span class="p">(</span><span class="n">runfile</span><span class="p">,</span> <span class="n">stat</span><span class="o">.</span><span class="n">S_IRWXG</span> <span class="o">|</span> <span class="n">stat</span><span class="o">.</span><span class="n">S_IRWXU</span> <span class="o">|</span> <span class="n">stat</span><span class="o">.</span><span class="n">S_IXOTH</span> <span class="o">|</span> <span class="n">stat</span><span class="o">.</span><span class="n">S_IROTH</span><span class="p">)</span>
+    <span class="n">nfiles</span> <span class="o">+=</span> <span class="mi">1</span>
+    <span class="n">idfile</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">prepdir</span><span class="p">,</span> <span class="s">&#39;uuids&#39;</span><span class="p">)</span>
+    <span class="k">with</span> <span class="n">io</span><span class="o">.</span><span class="n">open</span><span class="p">(</span><span class="n">idfile</span><span class="p">,</span> <span class="n">mode</span><span class="o">=</span><span class="s">&#39;w&#39;</span><span class="p">)</span> <span class="k">as</span> <span class="n">f</span><span class="p">:</span>
+        <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="n">instids</span><span class="p">:</span>
+            <span class="n">f</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="s">u&#39;{0}</span><span class="se">\n</span><span class="s">&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">i</span><span class="p">))</span>
+    <span class="n">nfiles</span> <span class="o">+=</span> <span class="mi">1</span>
+    <span class="n">base</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">dirname</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">abspath</span><span class="p">(</span><span class="n">__file__</span><span class="p">))</span>
+    <span class="n">mastername</span> <span class="o">=</span> <span class="s">&#39;launch_master.py&#39;</span>
+    <span class="n">masterfile</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">base</span><span class="p">,</span> <span class="n">mastername</span><span class="p">)</span>
+    <span class="n">nfiles</span> <span class="o">+=</span> <span class="mi">1</span>
+    <span class="n">nfiles</span> <span class="o">+=</span> <span class="mi">1</span> <span class="c"># add db</span>
+    <span class="k">if</span> <span class="n">verbose</span><span class="p">:</span>
+        <span class="k">print</span><span class="p">(</span><span class="s">&quot;tarring {0} files&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">nfiles</span><span class="p">))</span>
+    <span class="n">tarname</span> <span class="o">=</span> <span class="s">&quot;{0}.tar.gz&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">remotedir</span><span class="p">)</span>
+    <span class="k">with</span> <span class="n">tarfile</span><span class="o">.</span><span class="n">open</span><span class="p">(</span><span class="n">tarname</span><span class="p">,</span> <span class="s">&#39;w:gz&#39;</span><span class="p">)</span> <span class="k">as</span> <span class="n">tar</span><span class="p">:</span>
+        <span class="n">tar</span><span class="o">.</span><span class="n">add</span><span class="p">(</span><span class="n">db</span><span class="p">,</span> <span class="n">arcname</span><span class="o">=</span><span class="s">&quot;{0}/{1}&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">remotedir</span><span class="p">,</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">basename</span><span class="p">(</span><span class="n">db</span><span class="p">)))</span>
+        <span class="n">tar</span><span class="o">.</span><span class="n">add</span><span class="p">(</span><span class="n">runfile</span><span class="p">,</span> <span class="n">arcname</span><span class="o">=</span><span class="s">&quot;{0}/{1}&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">remotedir</span><span class="p">,</span> 
+                                                  <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">basename</span><span class="p">(</span><span class="n">runfile</span><span class="p">)))</span>
+        <span class="n">tar</span><span class="o">.</span><span class="n">add</span><span class="p">(</span><span class="n">idfile</span><span class="p">,</span> <span class="n">arcname</span><span class="o">=</span><span class="s">&quot;{0}/{1}&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">remotedir</span><span class="p">,</span> 
+                                                  <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">basename</span><span class="p">(</span><span class="n">idfile</span><span class="p">)))</span>
+        <span class="n">tar</span><span class="o">.</span><span class="n">add</span><span class="p">(</span><span class="n">masterfile</span><span class="p">,</span> <span class="n">arcname</span><span class="o">=</span><span class="s">&quot;{0}/{1}&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">remotedir</span><span class="p">,</span> 
+                                                     <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">basename</span><span class="p">(</span><span class="n">masterfile</span><span class="p">)))</span>
+    <span class="n">shutil</span><span class="o">.</span><span class="n">rmtree</span><span class="p">(</span><span class="n">prepdir</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">tarname</span>
+
+<span class="n">submit_cmd</span> <span class="o">=</span> <span class="s">&quot;&quot;&quot;</span>
+<span class="s">mkdir -p {remotedir} &amp;&amp; cd {remotedir} &amp;&amp;</span>
+<span class="s">tar -xf {tarfile} &amp;&amp; rm {tarfile} &amp;&amp; cd {cddir} &amp;&amp; </span>
+<span class="s">nohup python -u launch_master.py port={port} user={user} nids={nids} indb={indb} nodes={nodes} &amp;&gt; launch_master.out &amp;</span>
+<span class="s">&quot;&quot;&quot;</span>
+
+<span class="k">def</span> <span class="nf">_submit</span><span class="p">(</span><span class="n">client</span><span class="p">,</span> <span class="n">remotedir</span><span class="p">,</span> <span class="n">tarname</span><span class="p">,</span> <span class="n">nids</span><span class="p">,</span> <span class="n">indb</span><span class="p">,</span>
+            <span class="n">port</span><span class="o">=</span><span class="s">&#39;5422&#39;</span><span class="p">,</span> <span class="n">user</span><span class="o">=</span><span class="s">&#39;gidden&#39;</span><span class="p">,</span> <span class="n">nodes</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span> <span class="n">verbose</span><span class="o">=</span><span class="bp">False</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Performs a condor Work Queue sumbission on a client using a tarball of all</span>
+<span class="sd">    submission-related data.</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    client : paramiko SSHClient</span>
+<span class="sd">        the client</span>
+<span class="sd">    remotedir : str</span>
+<span class="sd">        the run directory on the client</span>
+<span class="sd">    tarname : str</span>
+<span class="sd">        the name of the tarfile</span>
+<span class="sd">    nids : int</span>
+<span class="sd">        the number of ids being run</span>
+<span class="sd">    port : str, optional</span>
+<span class="sd">        the port for the workers and master to communicate on</span>
+<span class="sd">    user : str, optional</span>
+<span class="sd">        the user to run the jobs on</span>
+<span class="sd">    nodes : list, optional</span>
+<span class="sd">        a list of execute nodes prefixes (e.g., e121.chtc.wisc.edu -&gt; e121)</span>
+<span class="sd">    verbose : bool, optional</span>
+<span class="sd">        whether to print information regarding the submission process    </span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">ffrom</span> <span class="o">=</span> <span class="n">tarname</span>
+    <span class="n">tarname</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">basename</span><span class="p">(</span><span class="n">tarname</span><span class="p">)</span>
+    <span class="n">fto</span> <span class="o">=</span> <span class="s">&#39;{0}/{1}&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">remotedir</span><span class="p">,</span> <span class="n">tarname</span><span class="p">)</span>
+    <span class="n">nodes</span> <span class="o">=</span> <span class="p">[</span><span class="s">&#39;e121&#39;</span><span class="p">,</span> <span class="s">&#39;e122&#39;</span><span class="p">,</span> <span class="s">&#39;e123&#39;</span><span class="p">,</span> <span class="s">&#39;e124&#39;</span><span class="p">,</span> <span class="s">&#39;e125&#39;</span><span class="p">,</span> <span class="s">&#39;e126&#39;</span><span class="p">]</span> <span class="k">if</span> <span class="n">nodes</span> <span class="ow">is</span> <span class="bp">None</span> <span class="k">else</span> <span class="n">nodes</span>
+    <span class="k">if</span> <span class="n">verbose</span><span class="p">:</span>
+        <span class="k">print</span><span class="p">(</span><span class="s">&quot;Copying from {0} to {1} on the condor submit node.&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span>
+                <span class="n">ffrom</span><span class="p">,</span> <span class="n">fto</span><span class="p">))</span>
+    <span class="k">try</span><span class="p">:</span>
+        <span class="n">ftp</span> <span class="o">=</span> <span class="n">client</span><span class="o">.</span><span class="n">open_sftp</span><span class="p">()</span>
+        <span class="n">ftp</span><span class="o">.</span><span class="n">put</span><span class="p">(</span><span class="n">ffrom</span><span class="p">,</span> <span class="n">fto</span><span class="p">)</span>
+        <span class="n">ftp</span><span class="o">.</span><span class="n">close</span><span class="p">()</span>
+    <span class="k">except</span> <span class="ne">IOError</span><span class="p">:</span>
+        <span class="k">raise</span> <span class="ne">IOError</span><span class="p">(</span>
+            <span class="s">&#39;Could not find {0} on the submit node.&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">remotedir</span><span class="p">))</span>
+    
+    <span class="n">cddir</span> <span class="o">=</span> <span class="n">tarname</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s">&quot;.tar.gz&quot;</span><span class="p">)[</span><span class="mi">0</span><span class="p">]</span>
+    
+
+    <span class="n">cmd</span> <span class="o">=</span> <span class="n">submit_cmd</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">tarfile</span><span class="o">=</span><span class="n">tarname</span><span class="p">,</span> <span class="n">cddir</span><span class="o">=</span><span class="n">cddir</span><span class="p">,</span> 
+                            <span class="n">remotedir</span><span class="o">=</span><span class="n">remotedir</span><span class="p">,</span> <span class="n">port</span><span class="o">=</span><span class="n">port</span><span class="p">,</span> <span class="n">user</span><span class="o">=</span><span class="n">user</span><span class="p">,</span> 
+                            <span class="n">nids</span><span class="o">=</span><span class="n">nids</span><span class="p">,</span> <span class="n">indb</span><span class="o">=</span><span class="n">indb</span><span class="p">,</span> <span class="n">nodes</span><span class="o">=</span><span class="s">&quot;,&quot;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">nodes</span><span class="p">))</span>    
+    <span class="k">print</span><span class="p">(</span><span class="s">&quot;Remotely executing &#39;{0}&#39;&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">cmd</span><span class="p">))</span>
+    <span class="n">stdin</span><span class="p">,</span> <span class="n">stdout</span><span class="p">,</span> <span class="n">stderr</span> <span class="o">=</span> <span class="n">client</span><span class="o">.</span><span class="n">exec_command</span><span class="p">(</span><span class="n">cmd</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">stdout</span><span class="o">.</span><span class="n">channel</span><span class="o">.</span><span class="n">recv_exit_status</span><span class="p">()</span>
+
+<div class="viewcode-block" id="submit"><a class="viewcode-back" href="../../../pyapi/condor.html#cyclopts.condor.queue.submit">[docs]</a><span class="k">def</span> <span class="nf">submit</span><span class="p">(</span><span class="n">user</span><span class="p">,</span> <span class="n">db</span><span class="p">,</span> <span class="n">instids</span><span class="p">,</span> <span class="n">module</span><span class="p">,</span> <span class="n">cname</span><span class="p">,</span> <span class="n">solvers</span><span class="p">,</span> <span class="n">remotedir</span><span class="p">,</span> 
+           <span class="n">host</span><span class="o">=</span><span class="s">&quot;submit-3.chtc.wisc.edu&quot;</span><span class="p">,</span> <span class="n">keyfile</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span> 
+           <span class="n">nodes</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span>
+           <span class="n">port</span><span class="o">=</span><span class="s">&#39;5422&#39;</span><span class="p">,</span> <span class="n">verbose</span><span class="o">=</span><span class="bp">False</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Connects via SSH to a condor submit node, and executes a Cyclopts Work</span>
+<span class="sd">    Queue run.</span>
+<span class="sd">    </span>
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    user : str</span>
+<span class="sd">        the user on the condor submit host</span>
+<span class="sd">    db : str</span>
+<span class="sd">        the problem instance database</span>
+<span class="sd">    instids : set</span>
+<span class="sd">        the set of instances to run</span>
+<span class="sd">    module : str</span>
+<span class="sd">        the ProblemFamily module</span>
+<span class="sd">    cname : str</span>
+<span class="sd">        the ProblemFamily cname</span>
+<span class="sd">    solvers : list</span>
+<span class="sd">        the solvers to use</span>
+<span class="sd">    remotedir : str</span>
+<span class="sd">        the base run directory on the condor submit node, relative to </span>
+<span class="sd">        ~/cyclopts-runs</span>
+<span class="sd">    host : str, optional</span>
+<span class="sd">        the condor submit host</span>
+<span class="sd">    keyfile : str, optional</span>
+<span class="sd">        the public key file</span>
+<span class="sd">    nodes : list, optional</span>
+<span class="sd">        a list of execute nodes prefixes (e.g., e121.chtc.wisc.edu -&gt; e121)</span>
+<span class="sd">    port : str, optional</span>
+<span class="sd">        the port to use for master/worker communication    </span>
+<span class="sd">    verbose : bool, optional</span>
+<span class="sd">        whether to print information regarding the submission process    </span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">client</span> <span class="o">=</span> <span class="n">pm</span><span class="o">.</span><span class="n">SSHClient</span><span class="p">()</span>
+    <span class="n">client</span><span class="o">.</span><span class="n">set_missing_host_key_policy</span><span class="p">(</span><span class="n">pm</span><span class="o">.</span><span class="n">AutoAddPolicy</span><span class="p">())</span>
+    <span class="n">_</span><span class="p">,</span> <span class="n">keyfile</span><span class="p">,</span> <span class="n">pw</span> <span class="o">=</span> <span class="n">tools</span><span class="o">.</span><span class="n">ssh_test_connect</span><span class="p">(</span><span class="n">client</span><span class="p">,</span> <span class="n">host</span><span class="p">,</span> <span class="n">user</span><span class="p">,</span> <span class="n">keyfile</span><span class="p">,</span> <span class="n">auth</span><span class="o">=</span><span class="bp">True</span><span class="p">)</span>
+    
+    <span class="n">localtar</span> <span class="o">=</span> <span class="n">gen_tar</span><span class="p">(</span><span class="n">remotedir</span><span class="p">,</span> <span class="n">db</span><span class="p">,</span> <span class="n">instids</span><span class="p">,</span> <span class="n">module</span><span class="p">,</span> <span class="n">cname</span><span class="p">,</span> <span class="n">solvers</span><span class="p">,</span> <span class="n">user</span><span class="p">,</span> 
+                       <span class="n">verbose</span><span class="o">=</span><span class="n">verbose</span><span class="p">)</span>
+
+    <span class="k">if</span> <span class="n">verbose</span><span class="p">:</span>
+        <span class="k">print</span><span class="p">(</span><span class="s">&quot;connecting to {0}@{1}&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">user</span><span class="p">,</span> <span class="n">host</span><span class="p">))</span>
+    <span class="n">client</span><span class="o">.</span><span class="n">connect</span><span class="p">(</span><span class="n">host</span><span class="p">,</span> <span class="n">username</span><span class="o">=</span><span class="n">user</span><span class="p">,</span> <span class="n">key_filename</span><span class="o">=</span><span class="n">keyfile</span><span class="p">,</span> <span class="n">password</span><span class="o">=</span><span class="n">pw</span><span class="p">)</span>
+    
+    <span class="n">rtn</span> <span class="o">=</span> <span class="n">_submit</span><span class="p">(</span><span class="n">client</span><span class="p">,</span> <span class="n">tools</span><span class="o">.</span><span class="n">cyclopts_remote_run_dir</span><span class="p">,</span> <span class="n">localtar</span><span class="p">,</span> 
+                  <span class="nb">len</span><span class="p">(</span><span class="n">instids</span><span class="p">),</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">basename</span><span class="p">(</span><span class="n">db</span><span class="p">),</span> <span class="n">nodes</span><span class="o">=</span><span class="n">nodes</span><span class="p">,</span>
+                  <span class="n">port</span><span class="o">=</span><span class="n">port</span><span class="p">,</span> <span class="n">verbose</span><span class="o">=</span><span class="n">verbose</span><span class="p">)</span>
+    <span class="n">client</span><span class="o">.</span><span class="n">close</span><span class="p">()</span>
+    <span class="k">if</span> <span class="n">verbose</span><span class="p">:</span>
+        <span class="k">print</span><span class="p">(</span><span class="s">&quot;Submitted job in {0}@{1}:~/cyclopts-runs/{2} with exit &quot;</span>
+              <span class="s">&quot;code: {rtn}&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span>
+                <span class="n">user</span><span class="p">,</span> <span class="n">host</span><span class="p">,</span> <span class="n">remotedir</span><span class="p">,</span> <span class="n">rtn</span><span class="o">=</span><span class="n">rtn</span><span class="p">))</span> 
+
+    <span class="n">os</span><span class="o">.</span><span class="n">remove</span><span class="p">(</span><span class="n">localtar</span><span class="p">)</span>
+</pre></div></div>
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar">
+        <div class="sphinxsidebarwrapper">
+        <p class="logo"><a href="../../../index.html" title="index">
+          <img class="logo" src="../../../_static/uni_logo.png" alt="Logo"/>
+        </a></p>
+<div id="searchbox" style="display: none">
+  <h3>Quick search</h3>
+    <form class="search" action="../../../search.html" method="get">
+      <input type="text" name="q" />
+      <input type="submit" value="Go" />
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+    <p class="searchtip" style="font-size: 90%">
+    Enter search terms or a module, class or function name.
+    </p>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="relbar-bottom">
+        
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../../../genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="../../../py-modindex.html" title="Python Module Index"
+             >modules</a> &nbsp; &nbsp;</li>
+        <li class="right" >
+          <a href="../../../np-modindex.html" title="Python Module Index"
+             >modules</a> &nbsp; &nbsp;</li>
+    <li><a href="../../../index.html">Cyclopts 0.1.0 documentation</a> &raquo;</li>
+
+          <li><a href="../../index.html" >Module code</a> &raquo;</li> 
+      </ul>
+    </div>
+    </div>
+
+    <div class="footer">
+        &copy; Copyright 2014, Matthew J. Gidden.
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.2.2.
+    </div>
+    <!-- cloud_sptheme 1.4 -->
+  </body>
+</html>

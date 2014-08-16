@@ -1,0 +1,273 @@
+
+
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>I/O Module – cyclopts.cyclopts_io &mdash; Cyclopts 0.1.0 documentation</title>
+    
+    <link rel="stylesheet" href="../_static/cloud.css" type="text/css" />
+    <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
+    <link rel="stylesheet" href="//fonts.googleapis.com/css?family=Noticia+Text|Open+Sans|Droid+Sans+Mono" type="text/css" />
+    
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    '../',
+        VERSION:     '0.1.0',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="../_static/jquery.js"></script>
+    <script type="text/javascript" src="../_static/underscore.js"></script>
+    <script type="text/javascript" src="../_static/doctools.js"></script>
+    <script type="text/javascript" src="../_static/jquery.cookie.js"></script>
+    <script type="text/javascript" src="../_static/cloud.js"></script>
+    <link rel="top" title="Cyclopts 0.1.0 documentation" href="../index.html" />
+    <link rel="up" title="Python API" href="main.html" />
+    <link rel="next" title="Cyclopts Tools Module – cyclopts.tools" href="tools.html" />
+    <link rel="prev" title="Problem Definition Module – cyclopts.problems" href="problems.html" /> 
+        <meta name="viewport" content="width=device-width, initial-scale=1">
+  </head>
+  <body>
+    <div class="relbar-top">
+        
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="../py-modindex.html" title="Python Module Index"
+             >modules</a> &nbsp; &nbsp;</li>
+        <li class="right" >
+          <a href="../np-modindex.html" title="Python Module Index"
+             >modules</a> &nbsp; &nbsp;</li>
+        <li class="right" >
+          <a href="tools.html" title="Cyclopts Tools Module – cyclopts.tools"
+             accesskey="N">next</a> &nbsp; &nbsp;</li>
+        <li class="right" >
+          <a href="problems.html" title="Problem Definition Module – cyclopts.problems"
+             accesskey="P">previous</a> &nbsp; &nbsp;</li>
+    <li><a href="../index.html">Cyclopts 0.1.0 documentation</a> &raquo;</li>
+
+          <li><a href="main.html" accesskey="U">Python API</a> &raquo;</li> 
+      </ul>
+    </div>
+    </div>
+  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body">
+            
+  <div class="section" id="module-cyclopts.cyclopts_io">
+<span id="i-o-module-cyclopts-cyclopts-io"></span><span id="io"></span><h1>I/O Module &#8211; <a class="reference internal" href="#module-cyclopts.cyclopts_io" title="cyclopts.cyclopts_io"><tt class="xref py py-mod docutils literal"><span class="pre">cyclopts.cyclopts_io</span></tt></a><a class="headerlink" href="#module-cyclopts.cyclopts_io" title="Permalink to this headline">¶</a></h1>
+<p>This module provides I/O classes and routines for Cyclopts-related functionality.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">author:</th><td class="field-body">Matthew Gidden &lt;matthew.gidden _at_ gmail.com&gt;</td>
+</tr>
+</tbody>
+</table>
+<dl class="class">
+<dt id="cyclopts.cyclopts_io.ResultTable">
+<em class="property">class </em><tt class="descclassname">cyclopts.cyclopts_io.</tt><tt class="descname">ResultTable</tt><big>(</big><em>h5file</em>, <em>path='/Results'</em>, <em>chunksize=None</em><big>)</big><a class="reference internal" href="../_modules/cyclopts/cyclopts_io.html#ResultTable"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#cyclopts.cyclopts_io.ResultTable" title="Permalink to this definition">¶</a></dt>
+<dd><p>A Cyclopts Table for generic results.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><p class="first"><strong>h5file</strong> : PyTables File</p>
+<blockquote>
+<div><p>the hdf5 file</p>
+</div></blockquote>
+<p><strong>path</strong> : string</p>
+<blockquote>
+<div><p>the absolute path to the table</p>
+</div></blockquote>
+<p><strong>chunksize</strong> : int, optional</p>
+<blockquote class="last">
+<div><p>the table chunksize, Cyclopts will optimize for a 32Kb L1 cache by
+default</p>
+</div></blockquote>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="class">
+<dt id="cyclopts.cyclopts_io.Table">
+<em class="property">class </em><tt class="descclassname">cyclopts.cyclopts_io.</tt><tt class="descname">Table</tt><big>(</big><em>h5file</em>, <em>path</em>, <em>dt=None</em>, <em>chunksize=None</em><big>)</big><a class="reference internal" href="../_modules/cyclopts/cyclopts_io.html#Table"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#cyclopts.cyclopts_io.Table" title="Permalink to this definition">¶</a></dt>
+<dd><p>A thin wrapper for a PyTables Table to be used by Cyclopts.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><p class="first"><strong>h5file</strong> : PyTables File</p>
+<blockquote>
+<div><p>the hdf5 file</p>
+</div></blockquote>
+<p><strong>path</strong> : string</p>
+<blockquote>
+<div><p>the absolute path to the table</p>
+</div></blockquote>
+<p><strong>dt</strong> : np.dtype, optional</p>
+<blockquote>
+<div><p>the dtype for the table</p>
+</div></blockquote>
+<p><strong>chunksize</strong> : int, optional</p>
+<blockquote class="last">
+<div><p>the table chunksize, Cyclopts will optimize for a 32Kb L1 cache by
+default</p>
+</div></blockquote>
+</td>
+</tr>
+</tbody>
+</table>
+<dl class="method">
+<dt id="cyclopts.cyclopts_io.Table.append_data">
+<tt class="descname">append_data</tt><big>(</big><em>data</em><big>)</big><a class="reference internal" href="../_modules/cyclopts/cyclopts_io.html#Table.append_data"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#cyclopts.cyclopts_io.Table.append_data" title="Permalink to this definition">¶</a></dt>
+<dd><p>Appends data to the Table. If the chunksize limit is reached, data is
+written to disc.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><p class="first"><strong>data</strong> : np.ndarray</p>
+<blockquote class="last">
+<div><p>data to append to the table</p>
+</div></blockquote>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="cyclopts.cyclopts_io.Table.create">
+<tt class="descname">create</tt><big>(</big><big>)</big><a class="reference internal" href="../_modules/cyclopts/cyclopts_io.html#Table.create"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#cyclopts.cyclopts_io.Table.create" title="Permalink to this definition">¶</a></dt>
+<dd><p>Creates a table in the h5file. This must be called before writing.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="cyclopts.cyclopts_io.Table.flush">
+<tt class="descname">flush</tt><big>(</big><big>)</big><a class="reference internal" href="../_modules/cyclopts/cyclopts_io.html#Table.flush"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#cyclopts.cyclopts_io.Table.flush" title="Permalink to this definition">¶</a></dt>
+<dd><p>Writes any remaining data to the table. This must be called before
+closing the h5file.</p>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="class">
+<dt id="cyclopts.cyclopts_io.TableManager">
+<em class="property">class </em><tt class="descclassname">cyclopts.cyclopts_io.</tt><tt class="descname">TableManager</tt><big>(</big><em>h5file</em>, <em>tables</em><big>)</big><a class="reference internal" href="../_modules/cyclopts/cyclopts_io.html#TableManager"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#cyclopts.cyclopts_io.TableManager" title="Permalink to this definition">¶</a></dt>
+<dd><p>A managing class that performs RAII for its tables by creating them if
+needed upon acquisition and flushing them upon deletion. Tables can be
+accessed through the manager by its tables member, which is a dictionary
+from table names to Table objects.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><p class="first"><strong>h5file</strong> : PyTables File</p>
+<blockquote>
+<div><p>the hdf5 file</p>
+</div></blockquote>
+<p><strong>tables</strong> : list of Tables</p>
+<blockquote class="last">
+<div><p>the list of tables to manage</p>
+</div></blockquote>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+</div>
+
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar">
+        <div class="sphinxsidebarwrapper">
+        <p class="logo"><a href="../index.html" title="index">
+          <img class="logo" src="../_static/uni_logo.png" alt="Logo"/>
+        </a></p>
+  <div class="sphinxprev">
+    <h4>Previous page</h4>
+    <p class="topless"><a href="problems.html"
+                          title="Previous page">&larr; Problem Definition Module &#8211; <tt class="docutils literal"><span class="pre">cyclopts.problems</span></tt></a></p>
+  </div>
+  <div class="sphinxnext">
+    <h4>Next page</h4>
+    <p class="topless"><a href="tools.html"
+                          title="Next page">&rarr; Cyclopts Tools Module &#8211; <tt class="docutils literal"><span class="pre">cyclopts.tools</span></tt></a></p>
+  </div>
+  <h3>This Page</h3>
+  <ul class="this-page-menu">
+    <li><a href="../_sources/pyapi/io.txt"
+           rel="nofollow">Show Source</a></li>
+  </ul>
+<div id="searchbox" style="display: none">
+  <h3>Quick search</h3>
+    <form class="search" action="../search.html" method="get">
+      <input type="text" name="q" />
+      <input type="submit" value="Go" />
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+    <p class="searchtip" style="font-size: 90%">
+    Enter search terms or a module, class or function name.
+    </p>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="relbar-bottom">
+        
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="../py-modindex.html" title="Python Module Index"
+             >modules</a> &nbsp; &nbsp;</li>
+        <li class="right" >
+          <a href="../np-modindex.html" title="Python Module Index"
+             >modules</a> &nbsp; &nbsp;</li>
+        <li class="right" >
+          <a href="tools.html" title="Cyclopts Tools Module – cyclopts.tools"
+             >next</a> &nbsp; &nbsp;</li>
+        <li class="right" >
+          <a href="problems.html" title="Problem Definition Module – cyclopts.problems"
+             >previous</a> &nbsp; &nbsp;</li>
+    <li><a href="../index.html">Cyclopts 0.1.0 documentation</a> &raquo;</li>
+
+          <li><a href="main.html" >Python API</a> &raquo;</li> 
+      </ul>
+    </div>
+    </div>
+
+    <div class="footer">
+        &copy; Copyright 2014, Matthew J. Gidden.
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.2.2.
+    </div>
+    <!-- cloud_sptheme 1.4 -->
+  </body>
+</html>

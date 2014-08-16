@@ -1,0 +1,877 @@
+
+
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>cyclopts.random_request_species &mdash; Cyclopts 0.1.0 documentation</title>
+    
+    <link rel="stylesheet" href="../../_static/cloud.css" type="text/css" />
+    <link rel="stylesheet" href="../../_static/pygments.css" type="text/css" />
+    <link rel="stylesheet" href="//fonts.googleapis.com/css?family=Noticia+Text|Open+Sans|Droid+Sans+Mono" type="text/css" />
+    
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    '../../',
+        VERSION:     '0.1.0',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="../../_static/jquery.js"></script>
+    <script type="text/javascript" src="../../_static/underscore.js"></script>
+    <script type="text/javascript" src="../../_static/doctools.js"></script>
+    <script type="text/javascript" src="../../_static/jquery.cookie.js"></script>
+    <script type="text/javascript" src="../../_static/cloud.js"></script>
+    <link rel="top" title="Cyclopts 0.1.0 documentation" href="../../index.html" />
+    <link rel="up" title="Module code" href="../index.html" /> 
+        <meta name="viewport" content="width=device-width, initial-scale=1">
+  </head>
+  <body>
+    <div class="relbar-top">
+        
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../../genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="../../py-modindex.html" title="Python Module Index"
+             >modules</a> &nbsp; &nbsp;</li>
+        <li class="right" >
+          <a href="../../np-modindex.html" title="Python Module Index"
+             >modules</a> &nbsp; &nbsp;</li>
+    <li><a href="../../index.html">Cyclopts 0.1.0 documentation</a> &raquo;</li>
+
+          <li><a href="../index.html" accesskey="U">Module code</a> &raquo;</li> 
+      </ul>
+    </div>
+    </div>
+  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body">
+            
+  <h1>Source code for cyclopts.random_request_species</h1><div class="highlight"><pre>
+<span class="sd">&quot;&quot;&quot;This module defines a ProblemSpecies subclass and related classes for</span>
+<span class="sd">reactor-request-based resources exchanges that are randomly populated (i.e., not</span>
+<span class="sd">related to a specific fuel cycle).</span>
+
+<span class="sd">:author: Matthew Gidden &lt;matthew.gidden _at_ gmail.com&gt;</span>
+<span class="sd">&quot;&quot;&quot;</span>
+<span class="kn">import</span> <span class="nn">operator</span>
+<span class="kn">import</span> <span class="nn">re</span>
+<span class="kn">import</span> <span class="nn">collections</span>
+<span class="kn">import</span> <span class="nn">uuid</span>
+<span class="kn">import</span> <span class="nn">random</span> <span class="kn">as</span> <span class="nn">rnd</span>
+<span class="kn">import</span> <span class="nn">numpy</span> <span class="kn">as</span> <span class="nn">np</span>
+<span class="kn">import</span> <span class="nn">copy</span> <span class="kn">as</span> <span class="nn">cp</span>
+<span class="kn">import</span> <span class="nn">itertools</span>
+
+<span class="kn">import</span> <span class="nn">cyclopts.exchange_instance</span> <span class="kn">as</span> <span class="nn">exinst</span>
+<span class="kn">from</span> <span class="nn">cyclopts.problems</span> <span class="kn">import</span> <span class="n">ProblemSpecies</span>
+<span class="kn">import</span> <span class="nn">cyclopts.cyclopts_io</span> <span class="kn">as</span> <span class="nn">cycio</span>
+<span class="kn">from</span> <span class="nn">cyclopts.exchange_family</span> <span class="kn">import</span> <span class="n">ResourceExchange</span>
+<span class="kn">from</span> <span class="nn">cyclopts.params</span> <span class="kn">import</span> <span class="n">Param</span><span class="p">,</span> <span class="n">BoolParam</span><span class="p">,</span> <span class="n">CoeffParam</span><span class="p">,</span> <span class="n">SupConstrParam</span><span class="p">,</span> \
+    <span class="n">PARAM_CTOR_ARGS</span>
+<span class="kn">from</span> <span class="nn">cyclopts.tools</span> <span class="kn">import</span> <span class="n">Incrementer</span>
+
+<div class="viewcode-block" id="RandomRequestPoint"><a class="viewcode-back" href="../../pyapi/random_request_species.html#cyclopts.random_request_species.RandomRequestPoint">[docs]</a><span class="k">class</span> <span class="nc">RandomRequestPoint</span><span class="p">(</span><span class="nb">object</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;A container class representing a point in parameter space for</span>
+<span class="sd">    RandomRequest problem species.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">n_commods</span> <span class="o">=</span> <span class="bp">None</span><span class="p">,</span> 
+                 <span class="n">n_request</span> <span class="o">=</span> <span class="bp">None</span><span class="p">,</span> <span class="n">assem_per_req</span> <span class="o">=</span> <span class="bp">None</span><span class="p">,</span> <span class="n">req_qty</span> <span class="o">=</span> <span class="bp">None</span><span class="p">,</span> 
+                 <span class="n">assem_multi_commod</span> <span class="o">=</span> <span class="bp">None</span><span class="p">,</span> 
+                 <span class="n">req_multi_commods</span> <span class="o">=</span> <span class="bp">None</span><span class="p">,</span> <span class="n">exclusive</span> <span class="o">=</span> <span class="bp">None</span><span class="p">,</span> <span class="n">n_req_constr</span> <span class="o">=</span> <span class="bp">None</span><span class="p">,</span> 
+                 <span class="n">n_supply</span> <span class="o">=</span> <span class="bp">None</span><span class="p">,</span> <span class="n">sup_multi</span> <span class="o">=</span> <span class="bp">None</span><span class="p">,</span> <span class="n">sup_multi_commods</span> <span class="o">=</span> <span class="bp">None</span><span class="p">,</span> 
+                 <span class="n">n_sup_constr</span> <span class="o">=</span> <span class="bp">None</span><span class="p">,</span> <span class="n">sup_constr_val</span> <span class="o">=</span> <span class="bp">None</span><span class="p">,</span> 
+                 <span class="n">connection</span> <span class="o">=</span> <span class="bp">None</span><span class="p">,</span> <span class="n">constr_coeff</span> <span class="o">=</span> <span class="bp">None</span><span class="p">,</span> <span class="n">pref_coeff</span> <span class="o">=</span> <span class="bp">None</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        n_commods : Param or similar, optional</span>
+<span class="sd">            the number of commodities</span>
+<span class="sd">        n_request : Param or similar, optional</span>
+<span class="sd">            the number of requesters (i.e., RequestGroups)</span>
+<span class="sd">        assem_per_req : Param or similar, optional</span>
+<span class="sd">            the number of assemblies in a request</span>
+<span class="sd">        req_qty : Param or similar, optional</span>
+<span class="sd">            the quantity associated with each request</span>
+<span class="sd">        assem_multi_commod : BoolParam or similar, optional</span>
+<span class="sd">            whether an assembly request can be satisfied by multiple </span>
+<span class="sd">            commodities</span>
+<span class="sd">        req_multi_commods : Param or similar, optional</span>
+<span class="sd">            the number of commodities in a multicommodity zone</span>
+<span class="sd">        exclusive : BoolParam or similar, optional</span>
+<span class="sd">            the probability that a reactor assembly request is exclusive</span>
+<span class="sd">        n_req_constr : Param or similar, optional</span>
+<span class="sd">            the number of constraints associated with a given request group</span>
+<span class="sd">        n_supply : Param or similar, optional</span>
+<span class="sd">            the number of suppliers (i.e., supply ExchangeNodeGroups)</span>
+<span class="sd">        sup_multi : BoolParam or similar, optional</span>
+<span class="sd">            whether a supplier supplies more than one commodity</span>
+<span class="sd">        sup_multi_commods : Param or similar, optional</span>
+<span class="sd">            the number of commodities a multicommodity supplier supplies</span>
+<span class="sd">        n_sup_constr : Param or similar, optional</span>
+<span class="sd">            the number of constraints associated with a given supply group</span>
+<span class="sd">        sup_constr_val : SupConstrParam or similar, optional</span>
+<span class="sd">            the supply constraint rhs value (as a fraction of the total request </span>
+<span class="sd">            amount for a commodity)</span>
+<span class="sd">        connection : BoolParam or similar, optional</span>
+<span class="sd">            the probability that a possible connection between supply and </span>
+<span class="sd">            request nodes is added</span>
+<span class="sd">        constr_coeff : CoeffParam or similar, optional</span>
+<span class="sd">            constraint coefficients</span>
+<span class="sd">        pref_coeff : CoeffParam or similar, optional</span>
+<span class="sd">            preference coefficients</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">n_commods</span> <span class="o">=</span> <span class="n">n_commods</span> \
+            <span class="k">if</span> <span class="n">n_commods</span> <span class="ow">is</span> <span class="ow">not</span> <span class="bp">None</span> <span class="k">else</span> <span class="n">Param</span><span class="p">(</span><span class="mi">1</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">n_request</span> <span class="o">=</span> <span class="n">n_request</span> \
+            <span class="k">if</span> <span class="n">n_request</span> <span class="ow">is</span> <span class="ow">not</span> <span class="bp">None</span> <span class="k">else</span> <span class="n">Param</span><span class="p">(</span><span class="mi">1</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">assem_per_req</span> <span class="o">=</span> <span class="n">assem_per_req</span> \
+            <span class="k">if</span> <span class="n">assem_per_req</span> <span class="ow">is</span> <span class="ow">not</span> <span class="bp">None</span> <span class="k">else</span> <span class="n">Param</span><span class="p">(</span><span class="mi">1</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">req_qty</span> <span class="o">=</span> <span class="n">req_qty</span> \
+            <span class="k">if</span> <span class="n">req_qty</span> <span class="ow">is</span> <span class="ow">not</span> <span class="bp">None</span> <span class="k">else</span> <span class="n">Param</span><span class="p">(</span><span class="mi">1</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">assem_multi_commod</span> <span class="o">=</span> <span class="n">assem_multi_commod</span> \
+            <span class="k">if</span> <span class="n">assem_multi_commod</span> <span class="ow">is</span> <span class="ow">not</span> <span class="bp">None</span> <span class="k">else</span> <span class="n">BoolParam</span><span class="p">(</span><span class="o">-</span><span class="mf">1.0</span><span class="p">)</span> <span class="c"># never true</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">req_multi_commods</span> <span class="o">=</span> <span class="n">req_multi_commods</span> \
+            <span class="k">if</span> <span class="n">req_multi_commods</span> <span class="ow">is</span> <span class="ow">not</span> <span class="bp">None</span> <span class="k">else</span> <span class="n">Param</span><span class="p">(</span><span class="mi">0</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">exclusive</span> <span class="o">=</span> <span class="n">exclusive</span> \
+            <span class="k">if</span> <span class="n">exclusive</span> <span class="ow">is</span> <span class="ow">not</span> <span class="bp">None</span> <span class="k">else</span> <span class="n">BoolParam</span><span class="p">(</span><span class="o">-</span><span class="mf">1.0</span><span class="p">)</span> <span class="c"># never true</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">n_req_constr</span> <span class="o">=</span> <span class="n">n_req_constr</span> \
+            <span class="k">if</span> <span class="n">n_req_constr</span> <span class="ow">is</span> <span class="ow">not</span> <span class="bp">None</span> <span class="k">else</span> <span class="n">Param</span><span class="p">(</span><span class="mi">0</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">n_supply</span> <span class="o">=</span> <span class="n">n_supply</span> \
+            <span class="k">if</span> <span class="n">n_supply</span> <span class="ow">is</span> <span class="ow">not</span> <span class="bp">None</span> <span class="k">else</span> <span class="n">Param</span><span class="p">(</span><span class="mi">1</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">sup_multi</span> <span class="o">=</span> <span class="n">sup_multi</span> \
+            <span class="k">if</span> <span class="n">sup_multi</span> <span class="ow">is</span> <span class="ow">not</span> <span class="bp">None</span> <span class="k">else</span> <span class="n">BoolParam</span><span class="p">(</span><span class="o">-</span><span class="mf">1.0</span><span class="p">)</span> <span class="c"># never true</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">sup_multi_commods</span> <span class="o">=</span> <span class="n">sup_multi_commods</span> \
+            <span class="k">if</span> <span class="n">sup_multi_commods</span> <span class="ow">is</span> <span class="ow">not</span> <span class="bp">None</span> <span class="k">else</span> <span class="n">Param</span><span class="p">(</span><span class="mi">0</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">n_sup_constr</span> <span class="o">=</span> <span class="n">n_sup_constr</span> \
+            <span class="k">if</span> <span class="n">n_sup_constr</span> <span class="ow">is</span> <span class="ow">not</span> <span class="bp">None</span> <span class="k">else</span> <span class="n">Param</span><span class="p">(</span><span class="mi">1</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">sup_constr_val</span> <span class="o">=</span> <span class="n">sup_constr_val</span> \
+            <span class="k">if</span> <span class="n">sup_constr_val</span> <span class="ow">is</span> <span class="ow">not</span> <span class="bp">None</span> <span class="k">else</span> <span class="n">SupConstrParam</span><span class="p">(</span><span class="mf">1.0</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">connection</span> <span class="o">=</span> <span class="n">connection</span> \
+            <span class="k">if</span> <span class="n">connection</span> <span class="ow">is</span> <span class="ow">not</span> <span class="bp">None</span> <span class="k">else</span> <span class="n">BoolParam</span><span class="p">(</span><span class="mf">1.0</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">constr_coeff</span> <span class="o">=</span> <span class="n">constr_coeff</span> \
+            <span class="k">if</span> <span class="n">constr_coeff</span> <span class="ow">is</span> <span class="ow">not</span> <span class="bp">None</span> <span class="k">else</span> <span class="n">CoeffParam</span><span class="p">(</span><span class="mf">1e-10</span><span class="p">,</span> <span class="mf">2.0</span><span class="p">)</span>
+        <span class="c"># 1e-10 is &#39;sufficiently&#39; low</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">pref_coeff</span> <span class="o">=</span> <span class="n">pref_coeff</span> \
+            <span class="k">if</span> <span class="n">pref_coeff</span> <span class="ow">is</span> <span class="ow">not</span> <span class="bp">None</span> <span class="k">else</span> <span class="n">CoeffParam</span><span class="p">(</span><span class="mf">1e-10</span><span class="p">,</span> <span class="mf">1.0</span><span class="p">)</span> 
+
+    <span class="k">def</span> <span class="nf">__eq__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">other</span><span class="p">):</span>
+        <span class="k">for</span> <span class="n">k</span><span class="p">,</span> <span class="n">exp</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">__dict__</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
+            <span class="k">if</span> <span class="n">k</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">other</span><span class="o">.</span><span class="n">__dict__</span><span class="p">:</span>
+                <span class="k">return</span> <span class="bp">False</span>
+            <span class="c"># this is a hack because for some reason for CoeffParams, a == b is</span>
+            <span class="c"># true and a != b is true, but I can&#39;t get corresponding behavior in</span>
+            <span class="c"># ipython. weird.</span>
+            <span class="k">if</span> <span class="ow">not</span> <span class="n">exp</span> <span class="o">==</span> <span class="n">other</span><span class="o">.</span><span class="n">__dict__</span><span class="p">[</span><span class="n">k</span><span class="p">]:</span>
+                <span class="k">return</span> <span class="bp">False</span>
+        <span class="k">return</span> <span class="bp">True</span>
+
+    <span class="k">def</span> <span class="nf">__str__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="n">ret</span> <span class="o">=</span> <span class="p">[</span><span class="s">&quot;{0} = {1}&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">k</span><span class="p">,</span> <span class="nb">getattr</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">k</span><span class="p">)</span><span class="o">.</span><span class="n">__str__</span><span class="p">())</span> \
+                   <span class="k">for</span> <span class="n">k</span><span class="p">,</span> <span class="n">v</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">__dict__</span><span class="o">.</span><span class="n">items</span><span class="p">()]</span>
+        <span class="k">return</span> <span class="s">&quot;RandomRequestPoint</span><span class="se">\n</span><span class="s">{0}&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="s">&quot;</span><span class="se">\n</span><span class="s">&quot;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">ret</span><span class="p">))</span>
+
+    <span class="k">def</span> <span class="nf">_dt_convert</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">obj</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Converts a python object to its numpy dtype. Nones are converted to</span>
+<span class="sd">        strings, and all strings are set to size == 32.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="n">obj</span> <span class="o">==</span> <span class="bp">None</span> <span class="ow">or</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">obj</span><span class="p">,</span> <span class="nb">basestring</span><span class="p">):</span>
+            <span class="k">return</span> <span class="n">np</span><span class="o">.</span><span class="n">dtype</span><span class="p">(</span><span class="s">&#39;|S32&#39;</span><span class="p">)</span>
+        <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">obj</span><span class="p">,</span> <span class="n">collections</span><span class="o">.</span><span class="n">Sequence</span><span class="p">):</span>
+            <span class="k">return</span> <span class="n">np</span><span class="o">.</span><span class="n">dtype</span><span class="p">(</span><span class="s">&#39;|S32&#39;</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">return</span> <span class="n">np</span><span class="o">.</span><span class="n">dtype</span><span class="p">(</span><span class="nb">type</span><span class="p">(</span><span class="n">obj</span><span class="p">))</span>
+
+    <span class="k">def</span> <span class="nf">_convert_seq</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">val</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;converts a string representation of a sequence into a list&quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="p">[</span><span class="nb">float</span><span class="p">(</span><span class="n">i</span><span class="p">)</span> <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> \
+                    <span class="n">re</span><span class="o">.</span><span class="n">sub</span><span class="p">(</span><span class="s">&#39;[\]\[,]&#39;</span><span class="p">,</span> <span class="s">&#39;&#39;</span><span class="p">,</span> <span class="nb">str</span><span class="p">(</span><span class="n">val</span><span class="p">))</span><span class="o">.</span><span class="n">split</span><span class="p">()]</span>
+
+    <span class="k">def</span> <span class="nf">_is_seq_not_str</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">attr</span><span class="p">):</span>
+        <span class="k">return</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">attr</span><span class="p">,</span> <span class="n">collections</span><span class="o">.</span><span class="n">Sequence</span><span class="p">)</span> \
+            <span class="ow">and</span> <span class="ow">not</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">attr</span><span class="p">,</span> <span class="nb">basestring</span><span class="p">)</span>
+
+<div class="viewcode-block" id="RandomRequestPoint.dtype"><a class="viewcode-back" href="../../pyapi/random_request_species.html#cyclopts.random_request_species.RandomRequestPoint.dtype">[docs]</a>    <span class="k">def</span> <span class="nf">dtype</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Returns a numpy dtype describing all composed objects.&quot;&quot;&quot;</span>
+        <span class="n">ret</span> <span class="o">=</span> <span class="p">[(</span><span class="s">&#39;paramid&#39;</span><span class="p">,</span> <span class="p">(</span><span class="s">&#39;str&#39;</span><span class="p">,</span> <span class="mi">16</span><span class="p">)),</span> <span class="p">(</span><span class="s">&#39;family&#39;</span><span class="p">,</span> <span class="p">(</span><span class="s">&#39;str&#39;</span><span class="p">,</span> <span class="mi">30</span><span class="p">))]</span> <span class="c"># uuid</span>
+        <span class="k">for</span> <span class="n">name</span><span class="p">,</span> <span class="n">obj</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">__dict__</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
+            <span class="k">for</span> <span class="n">subname</span><span class="p">,</span> <span class="n">subobj</span> <span class="ow">in</span> <span class="n">obj</span><span class="o">.</span><span class="n">__dict__</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
+                <span class="k">if</span> <span class="n">subname</span><span class="o">.</span><span class="n">startswith</span><span class="p">(</span><span class="s">&#39;_&#39;</span><span class="p">):</span>
+                    <span class="k">continue</span>
+                <span class="n">ret</span><span class="o">.</span><span class="n">append</span><span class="p">((</span><span class="s">&quot;{0}_{1}&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">name</span><span class="p">,</span> <span class="n">subname</span><span class="p">),</span> 
+                            <span class="bp">self</span><span class="o">.</span><span class="n">_dt_convert</span><span class="p">(</span><span class="n">subobj</span><span class="p">)))</span>
+        <span class="k">return</span> <span class="n">np</span><span class="o">.</span><span class="n">dtype</span><span class="p">(</span><span class="n">ret</span><span class="p">)</span>
+                </div>
+    <span class="k">def</span> <span class="nf">export_h5</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">uuid</span><span class="p">,</span> <span class="n">fam_name</span><span class="p">):</span>
+        <span class="n">ret</span> <span class="o">=</span> <span class="p">[</span><span class="n">uuid</span><span class="o">.</span><span class="n">bytes</span><span class="p">,</span> <span class="n">fam_name</span><span class="p">]</span>
+        <span class="k">for</span> <span class="n">name</span><span class="p">,</span> <span class="n">obj</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">__dict__</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
+            <span class="k">for</span> <span class="n">subname</span><span class="p">,</span> <span class="n">subobj</span> <span class="ow">in</span> <span class="n">obj</span><span class="o">.</span><span class="n">__dict__</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
+                <span class="k">if</span> <span class="n">subname</span><span class="o">.</span><span class="n">startswith</span><span class="p">(</span><span class="s">&#39;_&#39;</span><span class="p">):</span>
+                    <span class="k">continue</span>
+                <span class="n">attr</span> <span class="o">=</span> <span class="nb">getattr</span><span class="p">(</span><span class="n">obj</span><span class="p">,</span> <span class="n">subname</span><span class="p">)</span>
+                <span class="n">ret</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="nb">str</span><span class="p">(</span><span class="n">attr</span><span class="p">)</span> <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_is_seq_not_str</span><span class="p">(</span><span class="n">attr</span><span class="p">)</span> <span class="k">else</span> <span class="n">attr</span><span class="p">)</span>
+        <span class="k">return</span> <span class="nb">tuple</span><span class="p">(</span><span class="n">ret</span><span class="p">)</span>
+
+<div class="viewcode-block" id="RandomRequestPoint.valid"><a class="viewcode-back" href="../../pyapi/random_request_species.html#cyclopts.random_request_species.RandomRequestPoint.valid">[docs]</a>    <span class="k">def</span> <span class="nf">valid</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Provides a best-guess estimate as to whether or not a given data</span>
+<span class="sd">        point, as represented by this Sampler, is valid in the domain-defined</span>
+<span class="sd">        parameter space.</span>
+
+<span class="sd">        Returns</span>
+<span class="sd">        -------</span>
+<span class="sd">        bool</span>
+<span class="sd">            whether the sampler&#39;s parameters form a valid point in the </span>
+<span class="sd">            sampler&#39;s parameter space</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">conditions</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="c"># there must be at least as many suppliers as commodities</span>
+        <span class="n">conditions</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">n_commods</span><span class="o">.</span><span class="n">avg</span> <span class="o">&lt;=</span> <span class="bp">self</span><span class="o">.</span><span class="n">n_supply</span><span class="o">.</span><span class="n">avg</span><span class="p">)</span>
+        <span class="c"># there must be at least as many requesters as commodities</span>
+        <span class="n">conditions</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">n_commods</span><span class="o">.</span><span class="n">avg</span> <span class="o">&lt;=</span> \
+                              <span class="p">(</span><span class="mi">1</span> <span class="o">+</span> <span class="bp">self</span><span class="o">.</span><span class="n">req_multi_commods</span><span class="o">.</span><span class="n">avg</span><span class="p">)</span> <span class="o">*</span> <span class="bp">self</span><span class="o">.</span><span class="n">n_request</span><span class="o">.</span><span class="n">avg</span><span class="p">)</span>
+        <span class="c"># there must be at least as many commodities as possible commodities</span>
+        <span class="c"># requestable</span>
+        <span class="n">conditions</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">n_commods</span><span class="o">.</span><span class="n">avg</span> <span class="o">&gt;</span> <span class="bp">self</span><span class="o">.</span><span class="n">req_multi_commods</span><span class="o">.</span><span class="n">avg</span><span class="p">)</span>
+        
+        <span class="c"># there must be at least as many commodities as possible commodities</span>
+        <span class="c"># suppliable</span>
+        <span class="n">conditions</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">n_commods</span><span class="o">.</span><span class="n">avg</span> <span class="o">&gt;</span> <span class="bp">self</span><span class="o">.</span><span class="n">sup_multi_commods</span><span class="o">.</span><span class="n">avg</span><span class="p">)</span>
+        <span class="k">return</span> <span class="nb">all</span><span class="p">(</span><span class="n">c</span> <span class="k">for</span> <span class="n">c</span> <span class="ow">in</span> <span class="n">conditions</span><span class="p">)</span>    
+        </div></div>
+<div class="viewcode-block" id="RandomRequestBuilder"><a class="viewcode-back" href="../../pyapi/random_request_species.html#cyclopts.random_request_species.RandomRequestBuilder">[docs]</a><span class="k">class</span> <span class="nc">RandomRequestBuilder</span><span class="p">(</span><span class="nb">object</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;A helper class to translate sampling parameters for a reactor request</span>
+<span class="sd">    scenario into an instance of GraphParams used by the cyclopts.execute</span>
+<span class="sd">    module.</span>
+
+<span class="sd">    The params member can be populated in a single step by the populate() member</span>
+<span class="sd">    function, or the various supply/request parameters can be generated by the</span>
+<span class="sd">    generate_request and generate_supply member functions and then the params</span>
+<span class="sd">    member can be populated with the appropriate arguments to the</span>
+<span class="sd">    populate_params member function.</span>
+
+<span class="sd">    This builder can be incorporated with other builders by providing the</span>
+<span class="sd">    appropriate offsets.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">sampler</span><span class="p">,</span> <span class="n">commod_offset</span> <span class="o">=</span> <span class="mi">0</span><span class="p">,</span> <span class="n">req_g_offset</span> <span class="o">=</span> <span class="mi">0</span><span class="p">,</span> 
+                 <span class="n">sup_g_offset</span> <span class="o">=</span> <span class="mi">0</span><span class="p">,</span> <span class="n">req_n_offset</span> <span class="o">=</span> <span class="mi">0</span><span class="p">,</span> <span class="n">sup_n_offset</span> <span class="o">=</span> <span class="mi">0</span><span class="p">,</span> 
+                 <span class="n">arc_offset</span> <span class="o">=</span> <span class="mi">0</span><span class="p">,</span>
+                 <span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        sampler : ReactorRequestSampler</span>
+<span class="sd">            a parameter sampling container</span>
+<span class="sd">        params : GraphParams, optional</span>
+<span class="sd">            a pre-populated ExecParam object to populate</span>
+<span class="sd">        commod_offset : int, optional</span>
+<span class="sd">            an offset for commodity ids</span>
+<span class="sd">        req_g_offset : int, optional</span>
+<span class="sd">            an offset for request group ids</span>
+<span class="sd">        sup_g_offset : int, optional</span>
+<span class="sd">            an offset for supply group ids</span>
+<span class="sd">        req_n_offset : int, optional</span>
+<span class="sd">            an offset for request node ids</span>
+<span class="sd">        sup_n_offset : int, optional</span>
+<span class="sd">            an offset for supply node ids</span>
+<span class="sd">        arc_offset : int, optional</span>
+<span class="sd">            an offset for arc ids</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">sampler</span> <span class="o">=</span> <span class="n">sampler</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">commod_offset</span> <span class="o">=</span> <span class="n">commod_offset</span>
+        
+        <span class="bp">self</span><span class="o">.</span><span class="n">req_g_offset</span> <span class="o">=</span> <span class="n">req_g_offset</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">sup_g_offset</span> <span class="o">=</span> <span class="n">sup_g_offset</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">req_n_offset</span> <span class="o">=</span> <span class="n">req_n_offset</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">sup_n_offset</span> <span class="o">=</span> <span class="n">sup_n_offset</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">arc_offset</span> <span class="o">=</span> <span class="n">arc_offset</span>
+
+<div class="viewcode-block" id="RandomRequestBuilder.valid"><a class="viewcode-back" href="../../pyapi/random_request_species.html#cyclopts.random_request_species.RandomRequestBuilder.valid">[docs]</a>    <span class="k">def</span> <span class="nf">valid</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Screens the provided sampler to determine if it provides a valid</span>
+<span class="sd">        point in solution space (e.g., if parameter C requires that the sum of</span>
+<span class="sd">        parameters A and B be less than some value, valid() will return false if</span>
+<span class="sd">        that condition is not met).</span>
+
+<span class="sd">        Returns</span>
+<span class="sd">        -------</span>
+<span class="sd">        b : bool</span>
+<span class="sd">            whether the sampler&#39;s parameters form a valid point in the </span>
+<span class="sd">            sampler&#39;s parameter space</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">commods</span><span class="p">)</span> <span class="o">&lt;=</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">suppliers</span><span class="p">)</span>
+    </div>
+<div class="viewcode-block" id="RandomRequestBuilder.generate_request"><a class="viewcode-back" href="../../pyapi/random_request_species.html#cyclopts.random_request_species.RandomRequestBuilder.generate_request">[docs]</a>    <span class="k">def</span> <span class="nf">generate_request</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">commods</span><span class="p">,</span> <span class="n">requesters</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Returns all requests as a dictionary of requester ids to a list of</span>
+<span class="sd">        assembly requests, where each assembly request is a list of id-commodity</span>
+<span class="sd">        two-tuples that can satisfy such a request.</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        commods : set</span>
+<span class="sd">            the commodities</span>
+<span class="sd">        requesters : list</span>
+<span class="sd">            the requesters        </span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">s</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">sampler</span>
+        <span class="n">n_ids</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">req_n_ids</span> <span class="o">=</span> <span class="n">Incrementer</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">req_n_offset</span><span class="p">)</span>
+        <span class="n">requests</span> <span class="o">=</span> <span class="n">collections</span><span class="o">.</span><span class="n">defaultdict</span><span class="p">(</span><span class="nb">list</span><span class="p">)</span>
+        
+        <span class="n">chosen_commods</span> <span class="o">=</span> <span class="nb">set</span><span class="p">()</span>
+        <span class="k">for</span> <span class="n">g_id</span> <span class="ow">in</span> <span class="n">requesters</span><span class="p">:</span>
+            <span class="n">assems</span> <span class="o">=</span> <span class="n">s</span><span class="o">.</span><span class="n">assem_per_req</span><span class="o">.</span><span class="n">sample</span><span class="p">()</span>
+            <span class="n">assem_commods</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_assem_commods</span><span class="p">(</span><span class="n">commods</span><span class="p">,</span> <span class="n">chosen_commods</span><span class="p">)</span> <span class="c"># modeling assumption</span>
+            <span class="c"># add nodes</span>
+            <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">assems</span><span class="p">):</span>
+                <span class="n">n_nodes</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">assem_commods</span><span class="p">)</span> <span class="k">if</span> <span class="n">s</span><span class="o">.</span><span class="n">assem_multi_commod</span><span class="o">.</span><span class="n">sample</span><span class="p">()</span> \
+                    <span class="k">else</span> <span class="mi">1</span>
+                <span class="n">mutual_reqs</span> <span class="o">=</span> <span class="p">[]</span>
+                <span class="k">for</span> <span class="n">j</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">n_nodes</span><span class="p">):</span>
+                    <span class="n">commod</span> <span class="o">=</span> <span class="n">assem_commods</span><span class="p">[</span><span class="n">j</span><span class="p">]</span>
+                    <span class="n">n_id</span> <span class="o">=</span> <span class="n">n_ids</span><span class="o">.</span><span class="n">next</span><span class="p">()</span>
+                    <span class="n">mutual_reqs</span><span class="o">.</span><span class="n">append</span><span class="p">((</span><span class="n">n_id</span><span class="p">,</span> <span class="n">commod</span><span class="p">))</span>
+                    <span class="n">chosen_commods</span><span class="o">.</span><span class="n">add</span><span class="p">(</span><span class="n">commod</span><span class="p">)</span>
+                    <span class="bp">self</span><span class="o">.</span><span class="n">reqs_to_commods</span><span class="p">[</span><span class="n">n_id</span><span class="p">]</span> <span class="o">=</span> <span class="n">commod</span>
+                    <span class="bp">self</span><span class="o">.</span><span class="n">commods_to_reqs</span><span class="p">[</span><span class="n">commod</span><span class="p">]</span> <span class="o">=</span> <span class="n">n_id</span>
+                <span class="n">requests</span><span class="p">[</span><span class="n">g_id</span><span class="p">]</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">mutual_reqs</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">requests</span>
+                </div>
+<div class="viewcode-block" id="RandomRequestBuilder.generate_supply"><a class="viewcode-back" href="../../pyapi/random_request_species.html#cyclopts.random_request_species.RandomRequestBuilder.generate_supply">[docs]</a>    <span class="k">def</span> <span class="nf">generate_supply</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">commods</span><span class="p">,</span> <span class="n">suppliers</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Returns a mapping from supplier to a list of 2-tuples of supply node</span>
+<span class="sd">        id and request node id and a mapping from supply group id to a list of</span>
+<span class="sd">        commodities supplied by the supplier.</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        commods : set</span>
+<span class="sd">            the commodities</span>
+<span class="sd">        suppliers : list</span>
+<span class="sd">            the suppliers        </span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="c"># modeling assumption</span>
+        <span class="n">commod_assign</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_assign_supply_commods</span><span class="p">(</span><span class="n">commods</span><span class="p">,</span> <span class="n">suppliers</span><span class="p">)</span>
+        <span class="c"># modeling assumption</span>
+        <span class="n">supply</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_select_supply</span><span class="p">(</span><span class="n">commod_assign</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">supply</span><span class="p">,</span> <span class="n">commod_assign</span>
+</div>
+<div class="viewcode-block" id="RandomRequestBuilder.populate_params"><a class="viewcode-back" href="../../pyapi/random_request_species.html#cyclopts.random_request_species.RandomRequestBuilder.populate_params">[docs]</a>    <span class="k">def</span> <span class="nf">populate_params</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">request</span><span class="p">,</span> <span class="n">supply</span><span class="p">,</span> <span class="n">supplier_commods</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Populates params (the GraphParams structure) given known supply and</span>
+<span class="sd">        request</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        request : as returned by generate_request</span>
+<span class="sd">        supply : as returned by generate_supply</span>
+<span class="sd">        supplier_commods : commods supplied by suppliers, as returned by</span>
+<span class="sd">            generate_supply</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">s</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">sampler</span>
+
+        <span class="n">n_node_ucaps</span> <span class="o">=</span> <span class="p">{}</span> <span class="c"># number of capacities per node</span>
+        <span class="n">req_qtys</span> <span class="o">=</span> <span class="p">{}</span> <span class="c"># req node id to req qty </span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">groups</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">nodes</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">arcs</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="n">req</span> <span class="o">=</span> <span class="bp">True</span>
+        <span class="n">bid</span> <span class="o">=</span> <span class="bp">False</span>
+
+        <span class="c"># populate request params</span>
+        <span class="k">for</span> <span class="n">g_id</span><span class="p">,</span> <span class="n">multi_reqs</span> <span class="ow">in</span> <span class="n">request</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
+            <span class="n">total_grp_qty</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_req_grp_qty</span><span class="p">(</span><span class="n">multi_reqs</span><span class="p">)</span>
+            <span class="n">n_constr</span> <span class="o">=</span> <span class="n">s</span><span class="o">.</span><span class="n">n_req_constr</span><span class="o">.</span><span class="n">sample</span><span class="p">()</span>
+            <span class="c"># add qty as first constraint -- required for clp/cbc</span>
+            <span class="n">caps</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">total_grp_qty</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">_req_constr_vals</span><span class="p">(</span><span class="n">n_constr</span><span class="p">,</span> <span class="n">multi_reqs</span><span class="p">))</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">groups</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">exinst</span><span class="o">.</span><span class="n">ExGroup</span><span class="p">(</span><span class="n">g_id</span><span class="p">,</span> <span class="n">req</span><span class="p">,</span> <span class="n">caps</span><span class="p">,</span> <span class="n">total_grp_qty</span><span class="p">))</span>
+            
+            <span class="n">exid</span> <span class="o">=</span> <span class="n">Incrementer</span><span class="p">()</span>
+            <span class="k">for</span> <span class="n">reqs</span> <span class="ow">in</span> <span class="n">multi_reqs</span><span class="p">:</span> <span class="c"># mutually satisfying requests</span>
+                <span class="k">for</span> <span class="n">n_id</span><span class="p">,</span> <span class="n">commod</span> <span class="ow">in</span> <span class="n">reqs</span><span class="p">:</span>
+                    <span class="n">n_node_ucaps</span><span class="p">[</span><span class="n">n_id</span><span class="p">]</span> <span class="o">=</span> <span class="n">n_constr</span>
+                    <span class="n">req_qty</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_req_node_qty</span><span class="p">()</span>
+                    <span class="n">excl</span> <span class="o">=</span> <span class="n">s</span><span class="o">.</span><span class="n">exclusive</span><span class="o">.</span><span class="n">sample</span><span class="p">()</span> <span class="c"># exclusive or not</span>
+                    <span class="n">excl_id</span> <span class="o">=</span> <span class="n">exid</span><span class="o">.</span><span class="n">next</span><span class="p">()</span> <span class="k">if</span> <span class="n">excl</span> <span class="k">else</span> <span class="o">-</span><span class="mi">1</span> <span class="c"># need unique exclusive id</span>
+                    <span class="bp">self</span><span class="o">.</span><span class="n">nodes</span><span class="o">.</span><span class="n">append</span><span class="p">(</span>
+                        <span class="n">exinst</span><span class="o">.</span><span class="n">ExNode</span><span class="p">(</span><span class="n">n_id</span><span class="p">,</span> <span class="n">g_id</span><span class="p">,</span> <span class="n">req</span><span class="p">,</span> <span class="n">req_qty</span><span class="p">,</span> <span class="n">excl</span><span class="p">,</span> <span class="n">excl_id</span><span class="p">))</span>
+                    <span class="n">req_qtys</span><span class="p">[</span><span class="n">n_id</span><span class="p">]</span> <span class="o">=</span> <span class="n">req_qty</span>
+    
+        <span class="c"># populate supply params and arc relations</span>
+        <span class="n">a_ids</span> <span class="o">=</span> <span class="n">Incrementer</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">arc_offset</span><span class="p">)</span>
+        <span class="n">commod_demand</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_commod_demand</span><span class="p">()</span>
+        <span class="n">supplier_capacity</span> <span class="o">=</span> \
+            <span class="bp">self</span><span class="o">.</span><span class="n">_supplier_capacity</span><span class="p">(</span><span class="n">commod_demand</span><span class="p">,</span> <span class="n">supplier_commods</span><span class="p">)</span>
+        <span class="k">for</span> <span class="n">g_id</span><span class="p">,</span> <span class="n">sups</span> <span class="ow">in</span> <span class="n">supply</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
+            <span class="n">caps</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_sup_constr_vals</span><span class="p">(</span><span class="n">supplier_capacity</span><span class="p">[</span><span class="n">g_id</span><span class="p">],</span> 
+                                         <span class="n">s</span><span class="o">.</span><span class="n">n_sup_constr</span><span class="o">.</span><span class="n">sample</span><span class="p">())</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">groups</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">exinst</span><span class="o">.</span><span class="n">ExGroup</span><span class="p">(</span><span class="n">g_id</span><span class="p">,</span> <span class="n">bid</span><span class="p">,</span> <span class="n">caps</span><span class="p">))</span>
+            <span class="k">for</span> <span class="n">v_id</span><span class="p">,</span> <span class="n">u_id</span> <span class="ow">in</span> <span class="n">sups</span><span class="p">:</span>
+                <span class="n">req_qty</span> <span class="o">=</span> <span class="n">req_qtys</span><span class="p">[</span><span class="n">u_id</span><span class="p">]</span>
+                <span class="n">n_node_ucaps</span><span class="p">[</span><span class="n">v_id</span><span class="p">]</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">caps</span><span class="p">)</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">nodes</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">exinst</span><span class="o">.</span><span class="n">ExNode</span><span class="p">(</span><span class="n">v_id</span><span class="p">,</span> <span class="n">g_id</span><span class="p">,</span> <span class="n">bid</span><span class="p">,</span> <span class="n">req_qty</span><span class="p">))</span>
+                <span class="c"># arc from u-v node</span>
+                <span class="c"># add qty as first constraint -- required for clp/cbc</span>
+                <span class="n">ucaps</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">append</span><span class="p">(</span>
+                    <span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">_req_def_constr</span><span class="p">(</span><span class="n">req_qty</span><span class="p">)],</span> 
+                    <span class="p">[</span><span class="n">s</span><span class="o">.</span><span class="n">constr_coeff</span><span class="o">.</span><span class="n">sample</span><span class="p">()</span> <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">n_node_ucaps</span><span class="p">[</span><span class="n">u_id</span><span class="p">])])</span>
+                <span class="n">vcaps</span> <span class="o">=</span> <span class="p">[</span><span class="n">s</span><span class="o">.</span><span class="n">constr_coeff</span><span class="o">.</span><span class="n">sample</span><span class="p">()</span> <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">n_node_ucaps</span><span class="p">[</span><span class="n">v_id</span><span class="p">])]</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">arcs</span><span class="o">.</span><span class="n">append</span><span class="p">(</span>
+                    <span class="n">exinst</span><span class="o">.</span><span class="n">ExArc</span><span class="p">(</span><span class="n">a_ids</span><span class="o">.</span><span class="n">next</span><span class="p">(),</span> <span class="n">u_id</span><span class="p">,</span> <span class="n">ucaps</span><span class="p">,</span> 
+                                 <span class="n">v_id</span><span class="p">,</span> <span class="n">vcaps</span><span class="p">,</span> <span class="n">s</span><span class="o">.</span><span class="n">pref_coeff</span><span class="o">.</span><span class="n">sample</span><span class="p">()))</span>
+
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">groups</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">nodes</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">arcs</span>
+</div>
+<div class="viewcode-block" id="RandomRequestBuilder.build"><a class="viewcode-back" href="../../pyapi/random_request_species.html#cyclopts.random_request_species.RandomRequestBuilder.build">[docs]</a>    <span class="k">def</span> <span class="nf">build</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Builds Group, Node, and Arc components of a Reactor-Request based</span>
+<span class="sd">        Resource Exchange</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">s</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">sampler</span>
+        <span class="n">commods</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">commods</span> <span class="o">=</span> \
+            <span class="nb">set</span><span class="p">(</span><span class="nb">range</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">commod_offset</span><span class="p">,</span> 
+                      <span class="bp">self</span><span class="o">.</span><span class="n">commod_offset</span> <span class="o">+</span> <span class="n">s</span><span class="o">.</span><span class="n">n_commods</span><span class="o">.</span><span class="n">sample</span><span class="p">()))</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">n_request</span> <span class="o">=</span> <span class="n">s</span><span class="o">.</span><span class="n">n_request</span><span class="o">.</span><span class="n">sample</span><span class="p">()</span> <span class="c"># number of request groups</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">n_supply</span> <span class="o">=</span> <span class="n">s</span><span class="o">.</span><span class="n">n_supply</span><span class="o">.</span><span class="n">sample</span><span class="p">()</span> <span class="c"># number of supply groups</span>
+        <span class="c"># the request quantity per assembly (i.e., kg of fuel per assembly request)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">req_qty</span> <span class="o">=</span> <span class="n">s</span><span class="o">.</span><span class="n">req_qty</span><span class="o">.</span><span class="n">sample</span><span class="p">()</span> 
+
+        <span class="n">req_g_ids</span> <span class="o">=</span> <span class="n">Incrementer</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">req_g_offset</span><span class="p">)</span>
+        <span class="c"># request groups</span>
+        <span class="n">requesters</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">requesters</span> <span class="o">=</span> \
+            <span class="p">[</span><span class="n">req_g_ids</span><span class="o">.</span><span class="n">next</span><span class="p">()</span> <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">n_request</span><span class="p">)]</span> 
+        <span class="c"># include request values because ids are global</span>
+        <span class="n">sup_g_ids</span> <span class="o">=</span> \
+            <span class="n">Incrementer</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">req_g_offset</span> <span class="o">+</span> <span class="bp">self</span><span class="o">.</span><span class="n">sup_g_offset</span> <span class="o">+</span> <span class="bp">self</span><span class="o">.</span><span class="n">n_request</span><span class="p">)</span>
+        <span class="c"># supply groups</span>
+        <span class="n">suppliers</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">suppliers</span> <span class="o">=</span> \
+            <span class="p">[</span><span class="n">sup_g_ids</span><span class="o">.</span><span class="n">next</span><span class="p">()</span> <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">n_supply</span><span class="p">)]</span> 
+        <span class="bp">self</span><span class="o">.</span><span class="n">arc_ids</span> <span class="o">=</span> <span class="n">Incrementer</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">arc_offset</span><span class="p">)</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">reqs_to_commods</span> <span class="o">=</span> <span class="p">{}</span> <span class="c"># requests to their commodities</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">commods_to_reqs</span> <span class="o">=</span> <span class="p">{}</span> <span class="c"># commodities to all requests</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">sups_to_commods</span> <span class="o">=</span> <span class="p">{}</span> <span class="c"># supply to their commodities</span>
+
+        <span class="n">request</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">generate_request</span><span class="p">(</span><span class="n">commods</span><span class="p">,</span> <span class="n">requesters</span><span class="p">)</span>
+        <span class="n">supply</span><span class="p">,</span> <span class="n">supplier_commods</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">generate_supply</span><span class="p">(</span><span class="n">commods</span><span class="p">,</span> <span class="n">suppliers</span><span class="p">)</span>
+
+        <span class="n">requested_commods</span> <span class="o">=</span> <span class="nb">set</span><span class="p">(</span><span class="n">v</span> <span class="k">for</span> <span class="n">k</span><span class="p">,</span> <span class="n">v</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">reqs_to_commods</span><span class="o">.</span><span class="n">items</span><span class="p">())</span>
+        <span class="n">supplied_commods</span> <span class="o">=</span> <span class="nb">set</span><span class="p">(</span><span class="n">v</span> <span class="k">for</span> <span class="n">k</span><span class="p">,</span> <span class="n">v</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">sups_to_commods</span><span class="o">.</span><span class="n">items</span><span class="p">())</span>
+        <span class="k">if</span> <span class="p">(</span><span class="n">requested_commods</span> <span class="o">!=</span> <span class="nb">set</span><span class="p">(</span><span class="n">commods</span><span class="p">)):</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">((</span><span class="s">&quot;All commmodities are not requested; &quot;</span>
+                              <span class="s">&quot;Commodities: {0}, &quot;</span>
+                              <span class="s">&quot;requested commodities {1}.&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span>
+                        <span class="nb">set</span><span class="p">(</span><span class="n">commods</span><span class="p">),</span> <span class="n">requested_commods</span><span class="p">)))</span>
+        <span class="k">if</span> <span class="p">(</span><span class="n">supplied_commods</span> <span class="o">!=</span> <span class="nb">set</span><span class="p">(</span><span class="n">commods</span><span class="p">)):</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">((</span><span class="s">&quot;All commmodities are not supplied; &quot;</span>
+                              <span class="s">&quot;Commodities: {0}, &quot;</span>
+                              <span class="s">&quot;supplied commodities {1}.&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span>
+                        <span class="nb">set</span><span class="p">(</span><span class="n">commods</span><span class="p">),</span> <span class="n">supplied_commods</span><span class="p">)))</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">populate_params</span><span class="p">(</span><span class="n">request</span><span class="p">,</span> <span class="n">supply</span><span class="p">,</span> <span class="n">supplier_commods</span><span class="p">)</span>
+    
+    <span class="c">#</span>
+    <span class="c"># Encapsulated assumptions</span>
+    <span class="c">#</span></div>
+    <span class="k">def</span> <span class="nf">_assem_commods</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">commods</span><span class="p">,</span> <span class="n">chosen_commods</span> <span class="o">=</span> <span class="nb">set</span><span class="p">()):</span>
+        <span class="sd">&quot;&quot;&quot;Returns a list of commodities that satisfy assembly requests with the</span>
+<span class="sd">        primary commodity as the first element. This is a basic modeling</span>
+<span class="sd">        assumption for reactor request exchange building.</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        chosen_commods : set</span>
+<span class="sd">            a set of commodities that have already been chosen; this set is used </span>
+<span class="sd">            to guarantee that there is at least one requester for each commodity</span>
+<span class="sd">        commods : set</span>
+<span class="sd">            the commodities</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">s</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">sampler</span>
+        <span class="n">left</span> <span class="o">=</span> <span class="n">cp</span><span class="o">.</span><span class="n">deepcopy</span><span class="p">(</span><span class="n">commods</span><span class="p">)</span>
+        
+        <span class="c"># choose a new commodity if we need to, otherwise choose a random one</span>
+        <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">chosen_commods</span><span class="p">)</span> <span class="o">!=</span> <span class="nb">len</span><span class="p">(</span><span class="n">commods</span><span class="p">):</span>
+            <span class="n">pool</span> <span class="o">=</span> <span class="n">commods</span><span class="o">.</span><span class="n">difference</span><span class="p">(</span><span class="n">chosen_commods</span><span class="p">)</span>
+            <span class="n">first_commod</span> <span class="o">=</span> <span class="n">rnd</span><span class="o">.</span><span class="n">sample</span><span class="p">(</span><span class="n">pool</span><span class="p">,</span> <span class="mi">1</span><span class="p">)[</span><span class="mi">0</span><span class="p">]</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">first_commod</span> <span class="o">=</span> <span class="n">rnd</span><span class="o">.</span><span class="n">sample</span><span class="p">(</span><span class="n">left</span><span class="p">,</span> <span class="mi">1</span><span class="p">)[</span><span class="mi">0</span><span class="p">]</span>
+        <span class="n">assem_commods</span> <span class="o">=</span> <span class="p">[</span><span class="n">first_commod</span><span class="p">]</span>
+        <span class="n">left</span><span class="o">.</span><span class="n">remove</span><span class="p">(</span><span class="n">first_commod</span><span class="p">)</span>
+        <span class="c"># other commodities for assemblies that can be satisfied by </span>
+        <span class="c"># multiple commodities</span>
+        <span class="n">assem_commods</span> <span class="o">+=</span> <span class="n">rnd</span><span class="o">.</span><span class="n">sample</span><span class="p">(</span><span class="n">left</span><span class="p">,</span> <span class="n">s</span><span class="o">.</span><span class="n">req_multi_commods</span><span class="o">.</span><span class="n">sample</span><span class="p">())</span>
+        <span class="k">return</span> <span class="n">assem_commods</span>
+
+    <span class="k">def</span> <span class="nf">_assign_supply_commods</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">commods</span><span class="p">,</span> <span class="n">suppliers</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Returns a mapping from supplier to a list commodities it</span>
+<span class="sd">        supplies. This is a basic modeling assumption for reactor request</span>
+<span class="sd">        exchange building.</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        commods : set</span>
+<span class="sd">            the commodities</span>
+<span class="sd">        suppliers : list</span>
+<span class="sd">            the suppliers</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">commods</span><span class="p">)</span> <span class="o">&gt;</span> <span class="nb">len</span><span class="p">(</span><span class="n">suppliers</span><span class="p">):</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s">&quot;There must be at least as many suppliers as commodities.&quot;</span><span class="p">)</span>
+
+        <span class="n">s</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">sampler</span>
+        <span class="n">c_list</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span><span class="n">commods</span><span class="p">)</span>
+        <span class="n">rnd</span><span class="o">.</span><span class="n">shuffle</span><span class="p">(</span><span class="n">c_list</span><span class="p">)</span> <span class="c"># get a random ordering</span>
+        <span class="n">assign</span> <span class="o">=</span> <span class="p">{}</span>
+        <span class="n">i</span> <span class="o">=</span> <span class="mi">0</span>
+        <span class="c"># give each supplier a primary commodity, guaranteeing that all</span>
+        <span class="c"># commodities have at least one supplier, and some number of randomly</span>
+        <span class="c"># sampled secondary commodities if applicable</span>
+        <span class="k">for</span> <span class="n">sup</span> <span class="ow">in</span> <span class="n">suppliers</span><span class="p">:</span>
+            <span class="n">primary</span> <span class="o">=</span> <span class="n">c_list</span><span class="p">[</span><span class="n">i</span> <span class="o">%</span> <span class="nb">len</span><span class="p">(</span><span class="n">commods</span><span class="p">)]</span>
+            <span class="n">i</span> <span class="o">+=</span> <span class="mi">1</span>
+            <span class="n">n_extra</span> <span class="o">=</span> <span class="n">s</span><span class="o">.</span><span class="n">sup_multi_commods</span><span class="o">.</span><span class="n">sample</span><span class="p">()</span> \
+                <span class="k">if</span> <span class="n">s</span><span class="o">.</span><span class="n">sup_multi</span><span class="o">.</span><span class="n">sample</span><span class="p">()</span> <span class="k">else</span> <span class="mi">0</span>
+            <span class="n">pool</span> <span class="o">=</span> <span class="n">cp</span><span class="o">.</span><span class="n">copy</span><span class="p">(</span><span class="n">commods</span><span class="p">)</span>
+            <span class="n">pool</span><span class="o">.</span><span class="n">remove</span><span class="p">(</span><span class="n">primary</span><span class="p">)</span>
+            <span class="n">secondaries</span> <span class="o">=</span> <span class="n">rnd</span><span class="o">.</span><span class="n">sample</span><span class="p">(</span><span class="n">pool</span><span class="p">,</span> <span class="n">n_extra</span><span class="p">)</span>
+            <span class="n">assign</span><span class="p">[</span><span class="n">sup</span><span class="p">]</span> <span class="o">=</span> <span class="p">[</span><span class="n">primary</span><span class="p">]</span> <span class="o">+</span> <span class="n">secondaries</span>
+        <span class="k">return</span> <span class="n">assign</span>
+
+    <span class="k">def</span> <span class="nf">_select_supply</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">commod_assign</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Returns a mapping from supplier to a list of 2-tuples of supply node</span>
+<span class="sd">        id and request node id. This is a basic modeling assumption for sreactor</span>
+<span class="sd">        request exchange building.</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        commod_assign : as returned by _assign_supply_commods</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">s</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">sampler</span>
+
+        <span class="c"># include request values because ids are global</span>
+        <span class="n">n_ids</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">sup_n_ids</span> <span class="o">=</span> <span class="n">Incrementer</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">req_n_offset</span> <span class="o">+</span> 
+                                             <span class="bp">self</span><span class="o">.</span><span class="n">sup_n_offset</span> <span class="o">+</span> 
+                                             <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">reqs_to_commods</span><span class="p">))</span>
+
+        <span class="n">supply</span> <span class="o">=</span> <span class="n">collections</span><span class="o">.</span><span class="n">defaultdict</span><span class="p">(</span><span class="nb">list</span><span class="p">)</span> <span class="c"># supplier group id to arcs</span>
+        <span class="n">possible_supply</span> <span class="o">=</span> <span class="n">collections</span><span class="o">.</span><span class="n">defaultdict</span><span class="p">(</span><span class="nb">list</span><span class="p">)</span> <span class="c"># req to supplier group id</span>
+        <span class="k">for</span> <span class="n">g_id</span><span class="p">,</span> <span class="n">g_commods</span> <span class="ow">in</span> <span class="n">commod_assign</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
+            <span class="k">for</span> <span class="n">req</span><span class="p">,</span> <span class="n">commod</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">reqs_to_commods</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
+                <span class="k">if</span> <span class="n">commod</span> <span class="ow">in</span> <span class="n">g_commods</span><span class="p">:</span>
+                    <span class="n">possible_supply</span><span class="p">[</span><span class="n">req</span><span class="p">]</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">g_id</span><span class="p">)</span>
+
+        <span class="k">for</span> <span class="n">req</span><span class="p">,</span> <span class="n">g_ids</span> <span class="ow">in</span> <span class="n">possible_supply</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
+            <span class="n">rnd</span><span class="o">.</span><span class="n">shuffle</span><span class="p">(</span><span class="n">g_ids</span><span class="p">)</span>
+            <span class="c"># guarantees all reqs are connected to at least 1 supplier</span>
+            <span class="n">s_id</span> <span class="o">=</span> <span class="n">n_ids</span><span class="o">.</span><span class="n">next</span><span class="p">()</span>
+            <span class="n">supply</span><span class="p">[</span><span class="n">g_ids</span><span class="p">[</span><span class="mi">0</span><span class="p">]]</span><span class="o">.</span><span class="n">append</span><span class="p">((</span><span class="n">s_id</span><span class="p">,</span> <span class="n">req</span><span class="p">))</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">sups_to_commods</span><span class="p">[</span><span class="n">s_id</span><span class="p">]</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">reqs_to_commods</span><span class="p">[</span><span class="n">req</span><span class="p">]</span>
+            <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="nb">len</span><span class="p">(</span><span class="n">g_ids</span><span class="p">)):</span>
+                <span class="k">if</span> <span class="n">s</span><span class="o">.</span><span class="n">connection</span><span class="o">.</span><span class="n">sample</span><span class="p">():</span>
+                    <span class="n">s_id</span> <span class="o">=</span> <span class="n">n_ids</span><span class="o">.</span><span class="n">next</span><span class="p">()</span>
+                    <span class="n">supply</span><span class="p">[</span><span class="n">g_ids</span><span class="p">[</span><span class="n">i</span><span class="p">]]</span><span class="o">.</span><span class="n">append</span><span class="p">((</span><span class="n">s_id</span><span class="p">,</span> <span class="n">req</span><span class="p">))</span>
+                    <span class="bp">self</span><span class="o">.</span><span class="n">sups_to_commods</span><span class="p">[</span><span class="n">s_id</span><span class="p">]</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">reqs_to_commods</span><span class="p">[</span><span class="n">req</span><span class="p">]</span>
+        <span class="k">return</span> <span class="n">supply</span>
+
+    <span class="k">def</span> <span class="nf">_req_grp_qty</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">reqs</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Returns the request quantity for a request group.</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        reqs : list</span>
+<span class="sd">            the requests associated with the group</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="c"># assumes 1 assembly == 1 mass unit, all constr vals equivalent. note</span>
+        <span class="c"># that reqs = [ [satisfying commods] ], so one entry per actual request</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">req_qty</span> <span class="o">*</span> <span class="nb">len</span><span class="p">(</span><span class="n">reqs</span><span class="p">)</span>
+
+    <span class="k">def</span> <span class="nf">_req_constr_vals</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">n_constr</span><span class="p">,</span> <span class="n">reqs</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Returns a list of rhs constraint values for a request group.</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        n_constr : int</span>
+<span class="sd">            the number of constraints for the group</span>
+<span class="sd">        reqs : list</span>
+<span class="sd">            the requests associated with the group</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="c"># note that reqs = [ [satisfying commods] ], so one entry per actual</span>
+        <span class="c"># request</span>
+        <span class="n">constr_val</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">reqs</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([</span><span class="n">constr_val</span> <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">n_constr</span><span class="p">)])</span>
+    
+    <span class="k">def</span> <span class="nf">_req_node_qty</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Returns the quantity for an individual request.&quot;&quot;&quot;</span>
+        <span class="c"># change these if all assemblies have mass != 1</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">req_qty</span>
+    
+    <span class="k">def</span> <span class="nf">_req_def_constr</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">req_qty</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Returns the default unit constraint value for a request.</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        req_qty : float</span>
+<span class="sd">            the request quantity</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="c"># change these if all assemblies have mass != 1 </span>
+        <span class="c"># ---</span>
+        <span class="c"># ^ I don&#39;t actually think so, this looks like the unit capacity, which</span>
+        <span class="c"># should always be 1 if all requests have the same mass</span>
+        <span class="k">return</span> <span class="mi">1</span>
+
+    <span class="k">def</span> <span class="nf">_commod_demand</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Returns a mapping from commodities to the total demand of all nodes</span>
+<span class="sd">        for that commodity.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">commod_demand</span> <span class="o">=</span> <span class="n">collections</span><span class="o">.</span><span class="n">defaultdict</span><span class="p">(</span><span class="nb">float</span><span class="p">)</span>
+        <span class="k">for</span> <span class="n">req</span><span class="p">,</span> <span class="n">commod</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">reqs_to_commods</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
+            <span class="n">commod_demand</span><span class="p">[</span><span class="n">commod</span><span class="p">]</span> <span class="o">+=</span> <span class="mi">1</span> <span class="c"># need to change if assembly size != 1</span>
+        <span class="k">return</span> <span class="n">commod_demand</span>
+
+    <span class="k">def</span> <span class="nf">_supplier_capacity</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">commod_demand</span><span class="p">,</span> <span class="n">supplier_commods</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Returns a mapping from suppliers to their maximum supply</span>
+<span class="sd">        capacity. </span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        commod_demand : dict</span>
+<span class="sd">            a mapping of commodity to total demand over all request nodes</span>
+<span class="sd">        supplier_commods : dict</span>
+<span class="sd">            a mapping of suppliers to the commodities they supply</span>
+
+<span class="sd">        Details</span>
+<span class="sd">        -------</span>
+<span class="sd">        The maximum supply capacity is calculated as the maximum demand for all</span>
+<span class="sd">        commodities that can be supplied.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">factor</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">req_qty</span>
+        <span class="k">return</span> <span class="p">{</span><span class="n">sup</span><span class="p">:</span> <span class="n">factor</span> <span class="o">*</span> <span class="nb">max</span><span class="p">([</span><span class="n">commod_demand</span><span class="p">[</span><span class="n">c</span><span class="p">]</span> <span class="k">for</span> <span class="n">c</span> <span class="ow">in</span> <span class="n">commods</span><span class="p">])</span> \
+                    <span class="k">for</span> <span class="n">sup</span><span class="p">,</span> <span class="n">commods</span> <span class="ow">in</span> <span class="n">supplier_commods</span><span class="o">.</span><span class="n">items</span><span class="p">()}</span>
+
+    <span class="k">def</span> <span class="nf">_sup_constr_vals</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">capacity</span><span class="p">,</span> <span class="n">n_constr</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Returns a list of rhs constraint values for a supplier.</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        capacity : float</span>
+<span class="sd">            the baseline supplier capacity</span>
+<span class="sd">        n_constr : int</span>
+<span class="sd">            the number of constraints</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="c"># assumes that all supplier constraint values are based of a baseline</span>
+        <span class="c"># constraint value</span>
+        <span class="n">s</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">sampler</span>
+        <span class="k">return</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([</span><span class="n">s</span><span class="o">.</span><span class="n">sup_constr_val</span><span class="o">.</span><span class="n">sample</span><span class="p">()</span> <span class="o">*</span> <span class="n">capacity</span> \
+                             <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">n_constr</span><span class="p">)])</span>
+</div>
+<div class="viewcode-block" id="RandomRequest"><a class="viewcode-back" href="../../pyapi/random_request_species.html#cyclopts.random_request_species.RandomRequest">[docs]</a><span class="k">class</span> <span class="nc">RandomRequest</span><span class="p">(</span><span class="n">ProblemSpecies</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;A problem species for random (non-fuel cycle specific) reactor request</span>
+<span class="sd">    exchanges.&quot;&quot;&quot;</span>
+
+    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="nb">super</span><span class="p">(</span><span class="n">RandomRequest</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="n">__init__</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_params_it</span> <span class="o">=</span> <span class="bp">None</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_n_points</span> <span class="o">=</span> <span class="bp">None</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">tbl_name</span> <span class="o">=</span> <span class="s">&#39;RandomRequestParameters&#39;</span>
+
+    <span class="k">def</span> <span class="nf">_get_param_dict</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">rc_dict</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Provides a dictionary of parameter names to all constructor arguments</span>
+<span class="sd">        for a resource exchange range of instances.</span>
+<span class="sd">        </span>
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        rc_dict : dict</span>
+<span class="sd">            A dictionary of attributes, e.g. from a RunControl object</span>
+<span class="sd">        </span>
+<span class="sd">        Returns</span>
+<span class="sd">        -------</span>
+<span class="sd">        params_dict : dict</span>
+<span class="sd">            A dictionary whose keys are parameter names and values are lists of</span>
+<span class="sd">            ranges of constructor arguments.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">params_dict</span> <span class="o">=</span> <span class="p">{}</span>
+        <span class="n">s</span> <span class="o">=</span> <span class="n">RandomRequestPoint</span><span class="p">()</span>
+        <span class="k">for</span> <span class="n">k</span><span class="p">,</span> <span class="n">v</span> <span class="ow">in</span> <span class="n">rc_dict</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
+            <span class="n">name</span> <span class="o">=</span> <span class="n">k</span>
+            <span class="n">attr</span> <span class="o">=</span> <span class="n">v</span>
+            <span class="k">if</span> <span class="nb">hasattr</span><span class="p">(</span><span class="n">s</span><span class="p">,</span> <span class="n">name</span><span class="p">):</span>
+                <span class="n">vals</span> <span class="o">=</span> <span class="p">[]</span>
+                <span class="n">args</span> <span class="o">=</span> <span class="n">PARAM_CTOR_ARGS</span><span class="p">[</span><span class="nb">type</span><span class="p">(</span><span class="nb">getattr</span><span class="p">(</span><span class="n">s</span><span class="p">,</span> <span class="n">name</span><span class="p">))]</span>
+                <span class="k">for</span> <span class="n">arg</span> <span class="ow">in</span> <span class="n">args</span><span class="p">:</span>
+                    <span class="k">if</span> <span class="n">arg</span> <span class="ow">in</span> <span class="n">attr</span><span class="p">:</span>
+                        <span class="n">vals</span> <span class="o">+=</span> <span class="p">[</span><span class="n">attr</span><span class="p">[</span><span class="n">arg</span><span class="p">]]</span>
+                <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">vals</span><span class="p">)</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">:</span>
+                    <span class="n">params_dict</span><span class="p">[</span><span class="n">name</span><span class="p">]</span> <span class="o">=</span> <span class="n">vals</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="k">print</span><span class="p">(</span><span class="s">&quot;Found an entry named {0} that &quot;</span>
+                      <span class="s">&quot;is unknown to the parser.&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">k</span><span class="p">))</span>
+                
+        <span class="k">return</span> <span class="n">params_dict</span>
+
+    <span class="k">def</span> <span class="nf">_param_gen</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">params_dict</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Returns input for _add_subtree() given input for build()&quot;&quot;&quot;</span>
+        <span class="n">params_dict</span> <span class="o">=</span> <span class="p">{</span><span class="n">k</span><span class="p">:</span> <span class="p">[</span><span class="n">i</span> <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="n">itertools</span><span class="o">.</span><span class="n">product</span><span class="p">(</span><span class="o">*</span><span class="n">v</span><span class="p">)]</span> \
+                           <span class="k">for</span> <span class="n">k</span><span class="p">,</span> <span class="n">v</span> <span class="ow">in</span> <span class="n">params_dict</span><span class="o">.</span><span class="n">items</span><span class="p">()}</span>
+        <span class="n">s</span> <span class="o">=</span> <span class="n">RandomRequestPoint</span><span class="p">()</span>
+        <span class="k">for</span> <span class="n">k</span><span class="p">,</span> <span class="n">v</span> <span class="ow">in</span> <span class="n">params_dict</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
+            <span class="k">yield</span> <span class="n">k</span><span class="p">,</span> <span class="p">[</span><span class="nb">type</span><span class="p">(</span><span class="nb">getattr</span><span class="p">(</span><span class="n">s</span><span class="p">,</span> <span class="n">k</span><span class="p">))(</span><span class="o">*</span><span class="n">args</span><span class="p">)</span> <span class="k">for</span> <span class="n">args</span> <span class="ow">in</span> <span class="n">v</span><span class="p">]</span>
+
+    <span class="nd">@property</span>
+<div class="viewcode-block" id="RandomRequest.family"><a class="viewcode-back" href="../../pyapi/random_request_species.html#cyclopts.random_request_species.RandomRequest.family">[docs]</a>    <span class="k">def</span> <span class="nf">family</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Returns</span>
+<span class="sd">        -------</span>
+<span class="sd">        family : ResourceExchange</span>
+<span class="sd">            An instance of this species&#39; family</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="n">ResourceExchange</span><span class="p">()</span>
+</div>
+    <span class="nd">@property</span>
+<div class="viewcode-block" id="RandomRequest.name"><a class="viewcode-back" href="../../pyapi/random_request_species.html#cyclopts.random_request_species.RandomRequest.name">[docs]</a>    <span class="k">def</span> <span class="nf">name</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Returns</span>
+<span class="sd">        -------</span>
+<span class="sd">        name : string</span>
+<span class="sd">            The name of this species</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="s">&#39;RandomRequest&#39;</span>
+</div>
+<div class="viewcode-block" id="RandomRequest.register_tables"><a class="viewcode-back" href="../../pyapi/random_request_species.html#cyclopts.random_request_species.RandomRequest.register_tables">[docs]</a>    <span class="k">def</span> <span class="nf">register_tables</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">h5file</span><span class="p">,</span> <span class="n">prefix</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        h5file : PyTables File</span>
+<span class="sd">            the hdf5 file</span>
+<span class="sd">        prefix : string</span>
+<span class="sd">            the absolute path to the group for tables of this species</span>
+
+<span class="sd">        Returns</span>
+<span class="sd">        -------</span>
+<span class="sd">        tables : list of cyclopts_io.Tables</span>
+<span class="sd">            All tables that could be written to by this species.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="p">[</span><span class="n">cycio</span><span class="o">.</span><span class="n">Table</span><span class="p">(</span><span class="n">h5file</span><span class="p">,</span> 
+                            <span class="s">&#39;/&#39;</span><span class="o">.</span><span class="n">join</span><span class="p">([</span><span class="n">prefix</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">tbl_name</span><span class="p">]),</span>
+                            <span class="n">RandomRequestPoint</span><span class="p">()</span><span class="o">.</span><span class="n">dtype</span><span class="p">())]</span>
+</div>
+<div class="viewcode-block" id="RandomRequest.read_space"><a class="viewcode-back" href="../../pyapi/random_request_species.html#cyclopts.random_request_species.RandomRequest.read_space">[docs]</a>    <span class="k">def</span> <span class="nf">read_space</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">space_dict</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        space_dict : dict</span>
+<span class="sd">            A dictionary container resulting from the reading in of a run </span>
+<span class="sd">            control file</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">pdict</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_get_param_dict</span><span class="p">(</span><span class="n">space_dict</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_n_points</span> <span class="o">=</span> <span class="nb">reduce</span><span class="p">(</span><span class="n">operator</span><span class="o">.</span><span class="n">mul</span><span class="p">,</span> 
+                                <span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">l</span><span class="p">)</span> <span class="k">for</span> <span class="n">_</span><span class="p">,</span> <span class="n">val</span> <span class="ow">in</span> <span class="n">pdict</span><span class="o">.</span><span class="n">iteritems</span><span class="p">()</span> \
+                                     <span class="k">for</span> <span class="n">l</span> <span class="ow">in</span> <span class="n">val</span><span class="p">),</span> <span class="mi">1</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_params_it</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_param_gen</span><span class="p">(</span><span class="n">pdict</span><span class="p">)</span>
+        </div>
+    <span class="nd">@property</span>
+<div class="viewcode-block" id="RandomRequest.n_points"><a class="viewcode-back" href="../../pyapi/random_request_species.html#cyclopts.random_request_species.RandomRequest.n_points">[docs]</a>    <span class="k">def</span> <span class="nf">n_points</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Returns</span>
+<span class="sd">        -------</span>
+<span class="sd">        n : int</span>
+<span class="sd">            The total number of points in the parameter space</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_n_points</span>
+    </div>
+<div class="viewcode-block" id="RandomRequest.points"><a class="viewcode-back" href="../../pyapi/random_request_species.html#cyclopts.random_request_species.RandomRequest.points">[docs]</a>    <span class="k">def</span> <span class="nf">points</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Returns</span>
+<span class="sd">        -------</span>
+<span class="sd">        point : RandomRequestPoint</span>
+<span class="sd">            A representation of a point in parameter space to be used by this </span>
+<span class="sd">            species</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">pairings</span> <span class="o">=</span> <span class="p">[[(</span><span class="n">name</span><span class="p">,</span> <span class="n">param</span><span class="p">)</span> <span class="k">for</span> <span class="n">param</span> <span class="ow">in</span> <span class="n">params</span><span class="p">]</span> \
+                        <span class="k">for</span> <span class="n">name</span><span class="p">,</span> <span class="n">params</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">_params_it</span><span class="p">]</span>
+        <span class="k">for</span> <span class="n">prod</span> <span class="ow">in</span> <span class="n">itertools</span><span class="o">.</span><span class="n">product</span><span class="p">(</span><span class="o">*</span><span class="n">pairings</span><span class="p">):</span>
+            <span class="n">point</span> <span class="o">=</span> <span class="n">RandomRequestPoint</span><span class="p">()</span>
+            <span class="k">for</span> <span class="n">name</span><span class="p">,</span> <span class="n">param</span> <span class="ow">in</span> <span class="n">prod</span><span class="p">:</span>
+                <span class="nb">setattr</span><span class="p">(</span><span class="n">point</span><span class="p">,</span> <span class="n">name</span><span class="p">,</span> <span class="n">param</span><span class="p">)</span>
+            <span class="k">if</span> <span class="n">point</span><span class="o">.</span><span class="n">valid</span><span class="p">():</span>
+                <span class="k">yield</span> <span class="n">point</span>
+</div>
+<div class="viewcode-block" id="RandomRequest.record_point"><a class="viewcode-back" href="../../pyapi/random_request_species.html#cyclopts.random_request_species.RandomRequest.record_point">[docs]</a>    <span class="k">def</span> <span class="nf">record_point</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">point</span><span class="p">,</span> <span class="n">param_uuid</span><span class="p">,</span> <span class="n">tables</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        point : RandomRequestPoint</span>
+<span class="sd">            A representation of a point in parameter space</span>
+<span class="sd">        param_uuid : uuid</span>
+<span class="sd">            The uuid of the point in parameter space</span>
+<span class="sd">        tables : list of cyclopts_io.Table</span>
+<span class="sd">            The tables that can be written to</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">tables</span><span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">tbl_name</span><span class="p">]</span><span class="o">.</span><span class="n">append_data</span><span class="p">(</span>
+            <span class="p">[</span><span class="n">point</span><span class="o">.</span><span class="n">export_h5</span><span class="p">(</span><span class="n">param_uuid</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">family</span><span class="o">.</span><span class="n">name</span><span class="p">)])</span>
+        </div>
+<div class="viewcode-block" id="RandomRequest.gen_inst"><a class="viewcode-back" href="../../pyapi/random_request_species.html#cyclopts.random_request_species.RandomRequest.gen_inst">[docs]</a>    <span class="k">def</span> <span class="nf">gen_inst</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">point</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        point :  RandomRequestPoint</span>
+<span class="sd">            A representation of a point in parameter space</span>
+<span class="sd">           </span>
+<span class="sd">        Returns</span>
+<span class="sd">        -------</span>
+<span class="sd">        inst : tuple of lists of ExGroups, ExNodes, and ExArgs</span>
+<span class="sd">            A representation of a problem instance to be used by this species&#39; </span>
+<span class="sd">            family</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">builder</span> <span class="o">=</span> <span class="n">RandomRequestBuilder</span><span class="p">(</span><span class="n">point</span><span class="p">)</span>
+        <span class="n">builder</span><span class="o">.</span><span class="n">build</span><span class="p">()</span>
+        <span class="k">return</span> <span class="n">builder</span><span class="o">.</span><span class="n">groups</span><span class="p">,</span> <span class="n">builder</span><span class="o">.</span><span class="n">nodes</span><span class="p">,</span> <span class="n">builder</span><span class="o">.</span><span class="n">arcs</span></div></div>
+</pre></div>
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar">
+        <div class="sphinxsidebarwrapper">
+        <p class="logo"><a href="../../index.html" title="index">
+          <img class="logo" src="../../_static/uni_logo.png" alt="Logo"/>
+        </a></p>
+<div id="searchbox" style="display: none">
+  <h3>Quick search</h3>
+    <form class="search" action="../../search.html" method="get">
+      <input type="text" name="q" />
+      <input type="submit" value="Go" />
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+    <p class="searchtip" style="font-size: 90%">
+    Enter search terms or a module, class or function name.
+    </p>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="relbar-bottom">
+        
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../../genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="../../py-modindex.html" title="Python Module Index"
+             >modules</a> &nbsp; &nbsp;</li>
+        <li class="right" >
+          <a href="../../np-modindex.html" title="Python Module Index"
+             >modules</a> &nbsp; &nbsp;</li>
+    <li><a href="../../index.html">Cyclopts 0.1.0 documentation</a> &raquo;</li>
+
+          <li><a href="../index.html" >Module code</a> &raquo;</li> 
+      </ul>
+    </div>
+    </div>
+
+    <div class="footer">
+        &copy; Copyright 2014, Matthew J. Gidden.
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.2.2.
+    </div>
+    <!-- cloud_sptheme 1.4 -->
+  </body>
+</html>

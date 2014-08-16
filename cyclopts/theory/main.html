@@ -29,8 +29,8 @@
     <script type="text/javascript" src="../_static/jquery.cookie.js"></script>
     <script type="text/javascript" src="../_static/cloud.js"></script>
     <link rel="top" title="Cyclopts 0.1.0 documentation" href="../index.html" />
-    <link rel="next" title="Reactor Request-Based Exchange" href="reactor_request.html" />
-    <link rel="prev" title="Cyclopts Utility Module – cyclopts.tools" href="../pyapi/tools.html" /> 
+    <link rel="next" title="Random Reactor Request-Based Exchange" href="random_reactor_request.html" />
+    <link rel="prev" title="Random Request Species Module – cyclopts.random_request_species" href="../pyapi/random_request_species.html" /> 
         <meta name="viewport" content="width=device-width, initial-scale=1">
   </head>
   <body>
@@ -49,10 +49,10 @@
           <a href="../np-modindex.html" title="Python Module Index"
              >modules</a> &nbsp; &nbsp;</li>
         <li class="right" >
-          <a href="reactor_request.html" title="Reactor Request-Based Exchange"
+          <a href="random_reactor_request.html" title="Random Reactor Request-Based Exchange"
              accesskey="N">next</a> &nbsp; &nbsp;</li>
         <li class="right" >
-          <a href="../pyapi/tools.html" title="Cyclopts Utility Module – cyclopts.tools"
+          <a href="../pyapi/random_request_species.html" title="Random Request Species Module – cyclopts.random_request_species"
              accesskey="P">previous</a> &nbsp; &nbsp;</li>
     <li><a href="../index.html">Cyclopts 0.1.0 documentation</a> &raquo;</li>
  
@@ -68,6 +68,8 @@
             
   <div class="section" id="cyclopts-theory">
 <span id="theory"></span><h1>Cyclopts Theory<a class="headerlink" href="#cyclopts-theory" title="Permalink to this headline">¶</a></h1>
+<div class="section" id="resource-exchange-problem-family">
+<h2>Resource Exchange Problem Family<a class="headerlink" href="#resource-exchange-problem-family" title="Permalink to this headline">¶</a></h2>
 <p>Cyclus is a nuclear fuel cycle simulator, and the primary consumer of fuel in
 such cycles are nuclear reactors. Used fuel eventually leaves reactors and can
 be stored or processed.</p>
@@ -97,22 +99,8 @@ second example can be modeled as facility compound with a reactor, reprocessing
 facility, and fuel fabrication facility each with a high affinity for trade with
 the other. The first example can be avoided by the bidding facility delineating
 between mox fuel for reactors and byproducts for storage.</p>
-<div class="section" id="resource-exchange-generation-parameters">
-<h2>Resource Exchange Generation Parameters<a class="headerlink" href="#resource-exchange-generation-parameters" title="Permalink to this headline">¶</a></h2>
-<p>In order to generate random cases of resource exchanges, a parameter space must
-be defined. Given a full set of selected parameters, classes of resource
-exchanges that fit those parameters can be generated. The parameter space
-depends on the exchange being generated:</p>
-<div class="toctree-wrapper compound">
-<ul>
-<li class="toctree-l1"><a class="reference internal" href="reactor_request.html">Reactor Request-Based Exchange</a></li>
-<li class="toctree-l1"><a class="reference internal" href="reactor_supply.html">Reactor Supply-Based Exchange</a></li>
-<li class="toctree-l1"><a class="reference internal" href="full_xchange.html">A Full (Combined) Exchange</a></li>
-</ul>
-</div>
-</div>
 <div class="section" id="formulation-effects">
-<h2>Formulation Effects<a class="headerlink" href="#formulation-effects" title="Permalink to this headline">¶</a></h2>
+<h3>Formulation Effects<a class="headerlink" href="#formulation-effects" title="Permalink to this headline">¶</a></h3>
 <p>Each parameter has a theoretical basis in the real-life problem that is being
 modeled and an effect on the underlying formulation. This section describes the
 underlying formulation for each problem type and describes which parameters
@@ -126,9 +114,9 @@ relate to that effect.</p>
 <li>the number of constraints</li>
 </ul>
 <div class="section" id="reactor-request">
-<h3>Reactor Request<a class="headerlink" href="#reactor-request" title="Permalink to this headline">¶</a></h3>
+<h4>Reactor Request<a class="headerlink" href="#reactor-request" title="Permalink to this headline">¶</a></h4>
 <div class="section" id="number-of-request-nodes">
-<h4>Number of Request Nodes<a class="headerlink" href="#number-of-request-nodes" title="Permalink to this headline">¶</a></h4>
+<h5>Number of Request Nodes<a class="headerlink" href="#number-of-request-nodes" title="Permalink to this headline">¶</a></h5>
 <ul class="simple">
 <li>number of requesters</li>
 <li>assemblies per request</li>
@@ -137,7 +125,7 @@ relate to that effect.</p>
 </ul>
 </div>
 <div class="section" id="number-of-supply-nodes">
-<h4>Number of Supply Nodes<a class="headerlink" href="#number-of-supply-nodes" title="Permalink to this headline">¶</a></h4>
+<h5>Number of Supply Nodes<a class="headerlink" href="#number-of-supply-nodes" title="Permalink to this headline">¶</a></h5>
 <ul class="simple">
 <li>number of suppliers</li>
 <li>fraction of multi-commodities suppliers</li>
@@ -145,7 +133,7 @@ relate to that effect.</p>
 </ul>
 </div>
 <div class="section" id="number-of-arcs">
-<h4>Number of Arcs<a class="headerlink" href="#number-of-arcs" title="Permalink to this headline">¶</a></h4>
+<h5>Number of Arcs<a class="headerlink" href="#number-of-arcs" title="Permalink to this headline">¶</a></h5>
 <ul class="simple">
 <li>number of request nodes</li>
 <li>number of supply nodes</li>
@@ -153,13 +141,13 @@ relate to that effect.</p>
 </ul>
 </div>
 <div class="section" id="number-of-exclusive-arcs">
-<h4>Number of Exclusive Arcs<a class="headerlink" href="#number-of-exclusive-arcs" title="Permalink to this headline">¶</a></h4>
+<h5>Number of Exclusive Arcs<a class="headerlink" href="#number-of-exclusive-arcs" title="Permalink to this headline">¶</a></h5>
 <ul class="simple">
 <li>exclusion probability</li>
 </ul>
 </div>
 <div class="section" id="number-of-constraints">
-<h4>Number of Constraints<a class="headerlink" href="#number-of-constraints" title="Permalink to this headline">¶</a></h4>
+<h5>Number of Constraints<a class="headerlink" href="#number-of-constraints" title="Permalink to this headline">¶</a></h5>
 <ul class="simple">
 <li>number of supply constraints</li>
 <li>number of suppliers</li>
@@ -169,9 +157,9 @@ relate to that effect.</p>
 </div>
 </div>
 <div class="section" id="reactor-supply">
-<h3>Reactor Supply<a class="headerlink" href="#reactor-supply" title="Permalink to this headline">¶</a></h3>
+<h4>Reactor Supply<a class="headerlink" href="#reactor-supply" title="Permalink to this headline">¶</a></h4>
 <div class="section" id="id1">
-<h4>Number of Request Nodes<a class="headerlink" href="#id1" title="Permalink to this headline">¶</a></h4>
+<h5>Number of Request Nodes<a class="headerlink" href="#id1" title="Permalink to this headline">¶</a></h5>
 <ul class="simple">
 <li>number of requesters</li>
 <li>fraction of multicommodity requesters</li>
@@ -179,14 +167,14 @@ relate to that effect.</p>
 </ul>
 </div>
 <div class="section" id="id2">
-<h4>Number of Supply Nodes<a class="headerlink" href="#id2" title="Permalink to this headline">¶</a></h4>
+<h5>Number of Supply Nodes<a class="headerlink" href="#id2" title="Permalink to this headline">¶</a></h5>
 <ul class="simple">
 <li>number of suppliers</li>
 <li>assemblies per supplier</li>
 </ul>
 </div>
 <div class="section" id="id3">
-<h4>Number of Arcs<a class="headerlink" href="#id3" title="Permalink to this headline">¶</a></h4>
+<h5>Number of Arcs<a class="headerlink" href="#id3" title="Permalink to this headline">¶</a></h5>
 <ul class="simple">
 <li>number of request nodes</li>
 <li>number of supply nodes</li>
@@ -194,13 +182,13 @@ relate to that effect.</p>
 </ul>
 </div>
 <div class="section" id="id4">
-<h4>Number of Exclusive Arcs<a class="headerlink" href="#id4" title="Permalink to this headline">¶</a></h4>
+<h5>Number of Exclusive Arcs<a class="headerlink" href="#id4" title="Permalink to this headline">¶</a></h5>
 <ul class="simple">
 <li>exclusion probability</li>
 </ul>
 </div>
 <div class="section" id="id5">
-<h4>Number of Constraints<a class="headerlink" href="#id5" title="Permalink to this headline">¶</a></h4>
+<h5>Number of Constraints<a class="headerlink" href="#id5" title="Permalink to this headline">¶</a></h5>
 <ul class="simple">
 <li>number of assemblies</li>
 <li>number of requesters</li>
@@ -209,7 +197,7 @@ relate to that effect.</p>
 </div>
 </div>
 <div class="section" id="performance">
-<h3>Performance<a class="headerlink" href="#performance" title="Permalink to this headline">¶</a></h3>
+<h4>Performance<a class="headerlink" href="#performance" title="Permalink to this headline">¶</a></h4>
 <p>Both formulation&#8217;s performance will be functions of:</p>
 <ul class="simple">
 <li>number of commodities</li>
@@ -220,6 +208,21 @@ relate to that effect.</p>
 <li>supply constraint values</li>
 <li>demand constraint values</li>
 <li>preference coefficient values</li>
+</ul>
+</div>
+</div>
+</div>
+<div class="section" id="resource-exchange-species">
+<h2>Resource Exchange Species<a class="headerlink" href="#resource-exchange-species" title="Permalink to this headline">¶</a></h2>
+<p>In order to generate random cases of resource exchanges, a parameter space must
+be defined. Given a full set of selected parameters, classes of resource
+exchanges that fit those parameters can be generated. The parameter space
+depends on the exchange being generated:</p>
+<div class="toctree-wrapper compound">
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="random_reactor_request.html">Random Reactor Request-Based Exchange</a></li>
+<li class="toctree-l1"><a class="reference internal" href="random_reactor_supply.html">Random Reactor Supply-Based Exchange</a></li>
+<li class="toctree-l1"><a class="reference internal" href="random_full_xchange.html">A Full (Combined) Random Exchange</a></li>
 </ul>
 </div>
 </div>
@@ -237,13 +240,11 @@ relate to that effect.</p>
     <h3><a href="../index.html">Table of Contents</a></h3>
     <ul>
 <li><a class="reference internal" href="#">Cyclopts Theory</a><ul>
-<li><a class="reference internal" href="#resource-exchange-generation-parameters">Resource Exchange Generation Parameters</a></li>
-<li><a class="reference internal" href="#formulation-effects">Formulation Effects</a><ul>
-<li><a class="reference internal" href="#reactor-request">Reactor Request</a></li>
-<li><a class="reference internal" href="#reactor-supply">Reactor Supply</a></li>
-<li><a class="reference internal" href="#performance">Performance</a></li>
+<li><a class="reference internal" href="#resource-exchange-problem-family">Resource Exchange Problem Family</a><ul>
+<li><a class="reference internal" href="#formulation-effects">Formulation Effects</a></li>
 </ul>
 </li>
+<li><a class="reference internal" href="#resource-exchange-species">Resource Exchange Species</a></li>
 </ul>
 </li>
 </ul>
@@ -251,13 +252,13 @@ relate to that effect.</p>
   </div>
   <div class="sphinxprev">
     <h4>Previous page</h4>
-    <p class="topless"><a href="../pyapi/tools.html"
-                          title="Previous page">&larr; Cyclopts Utility Module &#8211; <tt class="docutils literal"><span class="pre">cyclopts.tools</span></tt></a></p>
+    <p class="topless"><a href="../pyapi/random_request_species.html"
+                          title="Previous page">&larr; Random Request Species Module &#8211; <tt class="docutils literal"><span class="pre">cyclopts.random_request_species</span></tt></a></p>
   </div>
   <div class="sphinxnext">
     <h4>Next page</h4>
-    <p class="topless"><a href="reactor_request.html"
-                          title="Next page">&rarr; Reactor Request-Based Exchange</a></p>
+    <p class="topless"><a href="random_reactor_request.html"
+                          title="Next page">&rarr; Random Reactor Request-Based Exchange</a></p>
   </div>
   <h3>This Page</h3>
   <ul class="this-page-menu">
@@ -296,10 +297,10 @@ relate to that effect.</p>
           <a href="../np-modindex.html" title="Python Module Index"
              >modules</a> &nbsp; &nbsp;</li>
         <li class="right" >
-          <a href="reactor_request.html" title="Reactor Request-Based Exchange"
+          <a href="random_reactor_request.html" title="Random Reactor Request-Based Exchange"
              >next</a> &nbsp; &nbsp;</li>
         <li class="right" >
-          <a href="../pyapi/tools.html" title="Cyclopts Utility Module – cyclopts.tools"
+          <a href="../pyapi/random_request_species.html" title="Random Request Species Module – cyclopts.random_request_species"
              >previous</a> &nbsp; &nbsp;</li>
     <li><a href="../index.html">Cyclopts 0.1.0 documentation</a> &raquo;</li>
  

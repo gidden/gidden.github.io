@@ -8,7 +8,7 @@
   <head>
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
     
-    <title>Cyclopts Utility Module – cyclopts.tools &mdash; Cyclopts 0.1.0 documentation</title>
+    <title>Cyclopts Tools Module – cyclopts.tools &mdash; Cyclopts 0.1.0 documentation</title>
     
     <link rel="stylesheet" href="../_static/cloud.css" type="text/css" />
     <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
@@ -30,8 +30,8 @@
     <script type="text/javascript" src="../_static/cloud.js"></script>
     <link rel="top" title="Cyclopts 0.1.0 documentation" href="../index.html" />
     <link rel="up" title="Python API" href="main.html" />
-    <link rel="next" title="Cyclopts Theory" href="../theory/main.html" />
-    <link rel="prev" title="Analysis Module – cyclopts.analysis" href="analysis.html" /> 
+    <link rel="next" title="Condor Interaction Modules" href="condor.html" />
+    <link rel="prev" title="I/O Module – cyclopts.cyclopts_io" href="io.html" /> 
         <meta name="viewport" content="width=device-width, initial-scale=1">
   </head>
   <body>
@@ -50,10 +50,10 @@
           <a href="../np-modindex.html" title="Python Module Index"
              >modules</a> &nbsp; &nbsp;</li>
         <li class="right" >
-          <a href="../theory/main.html" title="Cyclopts Theory"
+          <a href="condor.html" title="Condor Interaction Modules"
              accesskey="N">next</a> &nbsp; &nbsp;</li>
         <li class="right" >
-          <a href="analysis.html" title="Analysis Module – cyclopts.analysis"
+          <a href="io.html" title="I/O Module – cyclopts.cyclopts_io"
              accesskey="P">previous</a> &nbsp; &nbsp;</li>
     <li><a href="../index.html">Cyclopts 0.1.0 documentation</a> &raquo;</li>
 
@@ -68,9 +68,10 @@
         <div class="bodywrapper">
           <div class="body">
             
-  <div class="section" id="cyclopts-utility-module-cyclopts-tools">
-<span id="tools"></span><h1>Cyclopts Utility Module &#8211; <a class="reference internal" href="#module-cyclopts.tools" title="cyclopts.tools"><tt class="xref py py-mod docutils literal"><span class="pre">cyclopts.tools</span></tt></a><a class="headerlink" href="#cyclopts-utility-module-cyclopts-tools" title="Permalink to this headline">¶</a></h1>
-<p>This module provides a variety of utilities that help work with Cyclopts.</p>
+  <div class="section" id="cyclopts-tools-module-cyclopts-tools">
+<span id="tools"></span><h1>Cyclopts Tools Module &#8211; <a class="reference internal" href="#module-cyclopts.tools" title="cyclopts.tools"><tt class="xref py py-mod docutils literal"><span class="pre">cyclopts.tools</span></tt></a><a class="headerlink" href="#cyclopts-tools-module-cyclopts-tools" title="Permalink to this headline">¶</a></h1>
+<p>This module provides a variety of utilities that are useful when working with
+Cyclopts.</p>
 <span class="target" id="module-cyclopts.tools"></span><p>Provides some useful tools for working with Cyclopts, including reporting
 output.</p>
 <table class="docutils field-list" frame="void" rules="none">
@@ -81,6 +82,30 @@ output.</p>
 </tr>
 </tbody>
 </table>
+<dl class="class">
+<dt id="cyclopts.tools.Incrementer">
+<em class="property">class </em><tt class="descclassname">cyclopts.tools.</tt><tt class="descname">Incrementer</tt><big>(</big><em>start=0</em><big>)</big><a class="reference internal" href="../_modules/cyclopts/tools.html#Incrementer"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#cyclopts.tools.Incrementer" title="Permalink to this definition">¶</a></dt>
+<dd><p>A simple helper class to increment a value</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><p class="first"><strong>start</strong> : int, optional</p>
+<blockquote class="last">
+<div><p>an initial value</p>
+</div></blockquote>
+</td>
+</tr>
+</tbody>
+</table>
+<dl class="method">
+<dt id="cyclopts.tools.Incrementer.next">
+<tt class="descname">next</tt><big>(</big><big>)</big><a class="reference internal" href="../_modules/cyclopts/tools.html#Incrementer.next"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#cyclopts.tools.Incrementer.next" title="Permalink to this definition">¶</a></dt>
+<dd><p>Returns an incremented value</p>
+</dd></dl>
+
+</dd></dl>
+
 <dl class="class">
 <dt id="cyclopts.tools.RunControl">
 <em class="property">class </em><tt class="descclassname">cyclopts.tools.</tt><tt class="descname">RunControl</tt><big>(</big><em>**kwargs</em><big>)</big><a class="reference internal" href="../_modules/cyclopts/tools.html#RunControl"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#cyclopts.tools.RunControl" title="Permalink to this definition">¶</a></dt>
@@ -102,16 +127,41 @@ xdress/utils.py</p>
 </table>
 </dd></dl>
 
-<dl class="class">
-<dt id="cyclopts.tools.SamplerBuilder">
-<em class="property">class </em><tt class="descclassname">cyclopts.tools.</tt><tt class="descname">SamplerBuilder</tt><big>(</big><em>rc</em><big>)</big><a class="reference internal" href="../_modules/cyclopts/tools.html#SamplerBuilder"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#cyclopts.tools.SamplerBuilder" title="Permalink to this definition">¶</a></dt>
-<dd><p>A helper class to build configure instances of parameter samplers</p>
-<dl class="method">
-<dt id="cyclopts.tools.SamplerBuilder.build">
-<tt class="descname">build</tt><big>(</big><big>)</big><a class="reference internal" href="../_modules/cyclopts/tools.html#SamplerBuilder.build"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#cyclopts.tools.SamplerBuilder.build" title="Permalink to this definition">¶</a></dt>
-<dd><p>Builds all permutations of samplers.</p>
-</dd></dl>
-
+<dl class="function">
+<dt id="cyclopts.tools.collect_instids">
+<tt class="descclassname">cyclopts.tools.</tt><tt class="descname">collect_instids</tt><big>(</big><em>h5file</em>, <em>path</em>, <em>rc=None</em>, <em>instids=None</em>, <em>colname='instid'</em><big>)</big><a class="reference internal" href="../_modules/cyclopts/tools.html#collect_instids"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#cyclopts.tools.collect_instids" title="Permalink to this definition">¶</a></dt>
+<dd><p>Collects all instids as specified.</p>
+<p>If rc and instids is None, all ids found in the h5file&#8217;s path are collected.
+Otherwise, instids provided by the instid listing and the paramater space
+defined by the run control <cite>inst_queries</cite> parameter are collected.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><p class="first"><strong>h5file</strong> : PyTables File object</p>
+<blockquote>
+<div><p>the file to collect ids from</p>
+</div></blockquote>
+<p><strong>path</strong> : str</p>
+<blockquote>
+<div><p>the path to a property table node</p>
+</div></blockquote>
+<p><strong>rc</strong> : RunControl object, optional</p>
+<blockquote>
+<div><p>a run control object specifying a subset of instids to collect</p>
+</div></blockquote>
+<p><strong>instids</strong> : collection of uuids</p>
+<blockquote>
+<div><p>explicit instids to collect</p>
+</div></blockquote>
+<p><strong>colname</strong> : str</p>
+<blockquote class="last">
+<div><p>the instance id column name</p>
+</div></blockquote>
+</td>
+</tr>
+</tbody>
+</table>
 </dd></dl>
 
 <dl class="function">
@@ -145,7 +195,74 @@ end of the first database in the list.</p>
 <dl class="function">
 <dt id="cyclopts.tools.exec_file">
 <tt class="descclassname">cyclopts.tools.</tt><tt class="descname">exec_file</tt><big>(</big><em>filename</em>, <em>glb=None</em>, <em>loc=None</em><big>)</big><a class="reference internal" href="../_modules/cyclopts/tools.html#exec_file"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#cyclopts.tools.exec_file" title="Permalink to this definition">¶</a></dt>
-<dd><p>A function equivalent to the Python 2.x execfile statement.</p>
+<dd><p>A function equivalent to the Python 2.x execfile statement. Taken from
+xdress/utils.py</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="cyclopts.tools.get_obj">
+<tt class="descclassname">cyclopts.tools.</tt><tt class="descname">get_obj</tt><big>(</big><em>kind=None</em>, <em>rcs=None</em>, <em>args=None</em><big>)</big><a class="reference internal" href="../_modules/cyclopts/tools.html#get_obj"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#cyclopts.tools.get_obj" title="Permalink to this definition">¶</a></dt>
+<dd><p>Get an object of certain kind, e.g. species or family. Both the rc and
+args argument will be searched for attributes named &lt;kind&gt;_package,
+&lt;kind&gt;_module, and &lt;kind&gt;_cname. The package/module is then imported and an
+instance of the cname is returned. The CLI is searched before the rcs.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><p class="first"><strong>kind</strong> : str</p>
+<blockquote>
+<div><p>the kind of object</p>
+</div></blockquote>
+<p><strong>rcs</strong> : list of RunControl objects or single object, optional</p>
+<blockquote>
+<div><p>rcs are checked in order</p>
+</div></blockquote>
+<p><strong>args</strong> : argparse args, optional</p>
+<blockquote class="last">
+<div><p>CLI args</p>
+</div></blockquote>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="function">
+<dt id="cyclopts.tools.get_process_children">
+<tt class="descclassname">cyclopts.tools.</tt><tt class="descname">get_process_children</tt><big>(</big><em>pid</em><big>)</big><a class="reference internal" href="../_modules/cyclopts/tools.html#get_process_children"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#cyclopts.tools.get_process_children" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="function">
+<dt id="cyclopts.tools.memusg">
+<tt class="descclassname">cyclopts.tools.</tt><tt class="descname">memusg</tt><big>(</big><em>pid</em><big>)</big><a class="reference internal" href="../_modules/cyclopts/tools.html#memusg"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#cyclopts.tools.memusg" title="Permalink to this definition">¶</a></dt>
+<dd><p>in kb</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="cyclopts.tools.obj_info">
+<tt class="descclassname">cyclopts.tools.</tt><tt class="descname">obj_info</tt><big>(</big><em>kind=None</em>, <em>rcs=None</em>, <em>args=None</em><big>)</big><a class="reference internal" href="../_modules/cyclopts/tools.html#obj_info"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#cyclopts.tools.obj_info" title="Permalink to this definition">¶</a></dt>
+<dd><p>Get information about an importable object</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><p class="first"><strong>kind</strong> : str</p>
+<blockquote>
+<div><p>the kind of object</p>
+</div></blockquote>
+<p><strong>rcs</strong> : list of RunControl objects or single object, optional</p>
+<blockquote>
+<div><p>rcs are checked in order</p>
+</div></blockquote>
+<p><strong>args</strong> : argparse args, optional</p>
+<blockquote class="last">
+<div><p>CLI args</p>
+</div></blockquote>
+</td>
+</tr>
+</tbody>
+</table>
 </dd></dl>
 
 <dl class="function">
@@ -157,20 +274,16 @@ end of the first database in the list.</p>
 <col class="field-body" />
 <tbody valign="top">
 <tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><p class="first"><strong>files</strong> : list or str</p>
-<blockquote class="last">
+<blockquote>
 <div><p>the files to parse</p>
 </div></blockquote>
 </td>
 </tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first last"><strong>rc</strong> : RunControl</p>
+</td>
+</tr>
 </tbody>
 </table>
-</dd></dl>
-
-<dl class="function">
-<dt id="cyclopts.tools.run">
-<tt class="descclassname">cyclopts.tools.</tt><tt class="descname">run</tt><big>(</big><em>args</em>, <em>cwd=None</em>, <em>shell=False</em>, <em>kill_tree=True</em>, <em>timeout=-1</em>, <em>env=None</em><big>)</big><a class="reference internal" href="../_modules/cyclopts/tools.html#run"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#cyclopts.tools.run" title="Permalink to this definition">¶</a></dt>
-<dd><p>Run a command with a timeout after which it will be forcibly
-killed.</p>
 </dd></dl>
 
 <dl class="function">
@@ -208,13 +321,13 @@ killed.</p>
         </a></p>
   <div class="sphinxprev">
     <h4>Previous page</h4>
-    <p class="topless"><a href="analysis.html"
-                          title="Previous page">&larr; Analysis Module &#8211; <tt class="docutils literal"><span class="pre">cyclopts.analysis</span></tt></a></p>
+    <p class="topless"><a href="io.html"
+                          title="Previous page">&larr; I/O Module &#8211; <tt class="docutils literal"><span class="pre">cyclopts.cyclopts_io</span></tt></a></p>
   </div>
   <div class="sphinxnext">
     <h4>Next page</h4>
-    <p class="topless"><a href="../theory/main.html"
-                          title="Next page">&rarr; Cyclopts Theory</a></p>
+    <p class="topless"><a href="condor.html"
+                          title="Next page">&rarr; Condor Interaction Modules</a></p>
   </div>
   <h3>This Page</h3>
   <ul class="this-page-menu">
@@ -253,10 +366,10 @@ killed.</p>
           <a href="../np-modindex.html" title="Python Module Index"
              >modules</a> &nbsp; &nbsp;</li>
         <li class="right" >
-          <a href="../theory/main.html" title="Cyclopts Theory"
+          <a href="condor.html" title="Condor Interaction Modules"
              >next</a> &nbsp; &nbsp;</li>
         <li class="right" >
-          <a href="analysis.html" title="Analysis Module – cyclopts.analysis"
+          <a href="io.html" title="I/O Module – cyclopts.cyclopts_io"
              >previous</a> &nbsp; &nbsp;</li>
     <li><a href="../index.html">Cyclopts 0.1.0 documentation</a> &raquo;</li>
 

@@ -1,0 +1,592 @@
+
+
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>Random Request Species Module – cyclopts.random_request_species &mdash; Cyclopts 0.1.0 documentation</title>
+    
+    <link rel="stylesheet" href="../_static/cloud.css" type="text/css" />
+    <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
+    <link rel="stylesheet" href="//fonts.googleapis.com/css?family=Noticia+Text|Open+Sans|Droid+Sans+Mono" type="text/css" />
+    
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    '../',
+        VERSION:     '0.1.0',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="../_static/jquery.js"></script>
+    <script type="text/javascript" src="../_static/underscore.js"></script>
+    <script type="text/javascript" src="../_static/doctools.js"></script>
+    <script type="text/javascript" src="../_static/jquery.cookie.js"></script>
+    <script type="text/javascript" src="../_static/cloud.js"></script>
+    <link rel="top" title="Cyclopts 0.1.0 documentation" href="../index.html" />
+    <link rel="up" title="Python API" href="main.html" />
+    <link rel="next" title="Cyclopts Theory" href="../theory/main.html" />
+    <link rel="prev" title="Exchange Family Module – cyclopts.exchange_family" href="exchange_family.html" /> 
+        <meta name="viewport" content="width=device-width, initial-scale=1">
+  </head>
+  <body>
+    <div class="relbar-top">
+        
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="../py-modindex.html" title="Python Module Index"
+             >modules</a> &nbsp; &nbsp;</li>
+        <li class="right" >
+          <a href="../np-modindex.html" title="Python Module Index"
+             >modules</a> &nbsp; &nbsp;</li>
+        <li class="right" >
+          <a href="../theory/main.html" title="Cyclopts Theory"
+             accesskey="N">next</a> &nbsp; &nbsp;</li>
+        <li class="right" >
+          <a href="exchange_family.html" title="Exchange Family Module – cyclopts.exchange_family"
+             accesskey="P">previous</a> &nbsp; &nbsp;</li>
+    <li><a href="../index.html">Cyclopts 0.1.0 documentation</a> &raquo;</li>
+
+          <li><a href="main.html" accesskey="U">Python API</a> &raquo;</li> 
+      </ul>
+    </div>
+    </div>
+  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body">
+            
+  <div class="section" id="module-cyclopts.random_request_species">
+<span id="random-request-species-module-cyclopts-random-request-species"></span><span id="random-request-species"></span><h1>Random Request Species Module &#8211; <a class="reference internal" href="#module-cyclopts.random_request_species" title="cyclopts.random_request_species"><tt class="xref py py-mod docutils literal"><span class="pre">cyclopts.random_request_species</span></tt></a><a class="headerlink" href="#module-cyclopts.random_request_species" title="Permalink to this headline">¶</a></h1>
+<p>This module defines a ProblemSpecies subclass and related classes for
+reactor-request-based resources exchanges that are randomly populated (i.e., not
+related to a specific fuel cycle).</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">author:</th><td class="field-body">Matthew Gidden &lt;matthew.gidden _at_ gmail.com&gt;</td>
+</tr>
+</tbody>
+</table>
+<dl class="class">
+<dt id="cyclopts.random_request_species.RandomRequest">
+<em class="property">class </em><tt class="descclassname">cyclopts.random_request_species.</tt><tt class="descname">RandomRequest</tt><a class="reference internal" href="../_modules/cyclopts/random_request_species.html#RandomRequest"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#cyclopts.random_request_species.RandomRequest" title="Permalink to this definition">¶</a></dt>
+<dd><p>A problem species for random (non-fuel cycle specific) reactor request
+exchanges.</p>
+<dl class="method">
+<dt id="cyclopts.random_request_species.RandomRequest.gen_inst">
+<tt class="descname">gen_inst</tt><big>(</big><em>point</em><big>)</big><a class="reference internal" href="../_modules/cyclopts/random_request_species.html#RandomRequest.gen_inst"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#cyclopts.random_request_species.RandomRequest.gen_inst" title="Permalink to this definition">¶</a></dt>
+<dd><table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><p class="first"><strong>point</strong> :  RandomRequestPoint</p>
+<blockquote>
+<div><p>A representation of a point in parameter space</p>
+</div></blockquote>
+</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first"><strong>inst</strong> : tuple of lists of ExGroups, ExNodes, and ExArgs</p>
+<blockquote class="last">
+<div><p>A representation of a problem instance to be used by this species&#8217; 
+family</p>
+</div></blockquote>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="cyclopts.random_request_species.RandomRequest.points">
+<tt class="descname">points</tt><big>(</big><big>)</big><a class="reference internal" href="../_modules/cyclopts/random_request_species.html#RandomRequest.points"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#cyclopts.random_request_species.RandomRequest.points" title="Permalink to this definition">¶</a></dt>
+<dd><table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Returns:</th><td class="field-body"><p class="first"><strong>point</strong> : RandomRequestPoint</p>
+<blockquote class="last">
+<div><p>A representation of a point in parameter space to be used by this 
+species</p>
+</div></blockquote>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="cyclopts.random_request_species.RandomRequest.read_space">
+<tt class="descname">read_space</tt><big>(</big><em>space_dict</em><big>)</big><a class="reference internal" href="../_modules/cyclopts/random_request_species.html#RandomRequest.read_space"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#cyclopts.random_request_species.RandomRequest.read_space" title="Permalink to this definition">¶</a></dt>
+<dd><table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><p class="first"><strong>space_dict</strong> : dict</p>
+<blockquote class="last">
+<div><p>A dictionary container resulting from the reading in of a run 
+control file</p>
+</div></blockquote>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="cyclopts.random_request_species.RandomRequest.record_point">
+<tt class="descname">record_point</tt><big>(</big><em>point</em>, <em>param_uuid</em>, <em>tables</em><big>)</big><a class="reference internal" href="../_modules/cyclopts/random_request_species.html#RandomRequest.record_point"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#cyclopts.random_request_species.RandomRequest.record_point" title="Permalink to this definition">¶</a></dt>
+<dd><table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><p class="first"><strong>point</strong> : RandomRequestPoint</p>
+<blockquote>
+<div><p>A representation of a point in parameter space</p>
+</div></blockquote>
+<p><strong>param_uuid</strong> : uuid</p>
+<blockquote>
+<div><p>The uuid of the point in parameter space</p>
+</div></blockquote>
+<p><strong>tables</strong> : list of cyclopts_io.Table</p>
+<blockquote class="last">
+<div><p>The tables that can be written to</p>
+</div></blockquote>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="cyclopts.random_request_species.RandomRequest.register_tables">
+<tt class="descname">register_tables</tt><big>(</big><em>h5file</em>, <em>prefix</em><big>)</big><a class="reference internal" href="../_modules/cyclopts/random_request_species.html#RandomRequest.register_tables"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#cyclopts.random_request_species.RandomRequest.register_tables" title="Permalink to this definition">¶</a></dt>
+<dd><table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><p class="first"><strong>h5file</strong> : PyTables File</p>
+<blockquote>
+<div><p>the hdf5 file</p>
+</div></blockquote>
+<p><strong>prefix</strong> : string</p>
+<blockquote>
+<div><p>the absolute path to the group for tables of this species</p>
+</div></blockquote>
+</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first"><strong>tables</strong> : list of cyclopts_io.Tables</p>
+<blockquote class="last">
+<div><p>All tables that could be written to by this species.</p>
+</div></blockquote>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="cyclopts.random_request_species.RandomRequest.family">
+<tt class="descname">family</tt><a class="reference internal" href="../_modules/cyclopts/random_request_species.html#RandomRequest.family"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#cyclopts.random_request_species.RandomRequest.family" title="Permalink to this definition">¶</a></dt>
+<dd><table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Returns:</th><td class="field-body"><p class="first"><strong>family</strong> : ResourceExchange</p>
+<blockquote class="last">
+<div><p>An instance of this species&#8217; family</p>
+</div></blockquote>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="cyclopts.random_request_species.RandomRequest.n_points">
+<tt class="descname">n_points</tt><a class="reference internal" href="../_modules/cyclopts/random_request_species.html#RandomRequest.n_points"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#cyclopts.random_request_species.RandomRequest.n_points" title="Permalink to this definition">¶</a></dt>
+<dd><table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Returns:</th><td class="field-body"><p class="first"><strong>n</strong> : int</p>
+<blockquote class="last">
+<div><p>The total number of points in the parameter space</p>
+</div></blockquote>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="cyclopts.random_request_species.RandomRequest.name">
+<tt class="descname">name</tt><a class="reference internal" href="../_modules/cyclopts/random_request_species.html#RandomRequest.name"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#cyclopts.random_request_species.RandomRequest.name" title="Permalink to this definition">¶</a></dt>
+<dd><table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Returns:</th><td class="field-body"><p class="first"><strong>name</strong> : string</p>
+<blockquote class="last">
+<div><p>The name of this species</p>
+</div></blockquote>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="class">
+<dt id="cyclopts.random_request_species.RandomRequestBuilder">
+<em class="property">class </em><tt class="descclassname">cyclopts.random_request_species.</tt><tt class="descname">RandomRequestBuilder</tt><big>(</big><em>sampler</em>, <em>commod_offset=0</em>, <em>req_g_offset=0</em>, <em>sup_g_offset=0</em>, <em>req_n_offset=0</em>, <em>sup_n_offset=0</em>, <em>arc_offset=0</em>, <em>*args</em>, <em>**kwargs</em><big>)</big><a class="reference internal" href="../_modules/cyclopts/random_request_species.html#RandomRequestBuilder"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#cyclopts.random_request_species.RandomRequestBuilder" title="Permalink to this definition">¶</a></dt>
+<dd><p>A helper class to translate sampling parameters for a reactor request
+scenario into an instance of GraphParams used by the cyclopts.execute
+module.</p>
+<p>The params member can be populated in a single step by the populate() member
+function, or the various supply/request parameters can be generated by the
+generate_request and generate_supply member functions and then the params
+member can be populated with the appropriate arguments to the
+populate_params member function.</p>
+<p>This builder can be incorporated with other builders by providing the
+appropriate offsets.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><p class="first"><strong>sampler</strong> : ReactorRequestSampler</p>
+<blockquote>
+<div><p>a parameter sampling container</p>
+</div></blockquote>
+<p><strong>params</strong> : GraphParams, optional</p>
+<blockquote>
+<div><p>a pre-populated ExecParam object to populate</p>
+</div></blockquote>
+<p><strong>commod_offset</strong> : int, optional</p>
+<blockquote>
+<div><p>an offset for commodity ids</p>
+</div></blockquote>
+<p><strong>req_g_offset</strong> : int, optional</p>
+<blockquote>
+<div><p>an offset for request group ids</p>
+</div></blockquote>
+<p><strong>sup_g_offset</strong> : int, optional</p>
+<blockquote>
+<div><p>an offset for supply group ids</p>
+</div></blockquote>
+<p><strong>req_n_offset</strong> : int, optional</p>
+<blockquote>
+<div><p>an offset for request node ids</p>
+</div></blockquote>
+<p><strong>sup_n_offset</strong> : int, optional</p>
+<blockquote>
+<div><p>an offset for supply node ids</p>
+</div></blockquote>
+<p><strong>arc_offset</strong> : int, optional</p>
+<blockquote class="last">
+<div><p>an offset for arc ids</p>
+</div></blockquote>
+</td>
+</tr>
+</tbody>
+</table>
+<dl class="method">
+<dt id="cyclopts.random_request_species.RandomRequestBuilder.build">
+<tt class="descname">build</tt><big>(</big><em>*args</em>, <em>**kwargs</em><big>)</big><a class="reference internal" href="../_modules/cyclopts/random_request_species.html#RandomRequestBuilder.build"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#cyclopts.random_request_species.RandomRequestBuilder.build" title="Permalink to this definition">¶</a></dt>
+<dd><p>Builds Group, Node, and Arc components of a Reactor-Request based
+Resource Exchange</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="cyclopts.random_request_species.RandomRequestBuilder.generate_request">
+<tt class="descname">generate_request</tt><big>(</big><em>commods</em>, <em>requesters</em>, <em>*args</em>, <em>**kwargs</em><big>)</big><a class="reference internal" href="../_modules/cyclopts/random_request_species.html#RandomRequestBuilder.generate_request"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#cyclopts.random_request_species.RandomRequestBuilder.generate_request" title="Permalink to this definition">¶</a></dt>
+<dd><p>Returns all requests as a dictionary of requester ids to a list of
+assembly requests, where each assembly request is a list of id-commodity
+two-tuples that can satisfy such a request.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><p class="first"><strong>commods</strong> : set</p>
+<blockquote>
+<div><p>the commodities</p>
+</div></blockquote>
+<p><strong>requesters</strong> : list</p>
+<blockquote class="last">
+<div><p>the requesters</p>
+</div></blockquote>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="cyclopts.random_request_species.RandomRequestBuilder.generate_supply">
+<tt class="descname">generate_supply</tt><big>(</big><em>commods</em>, <em>suppliers</em>, <em>*args</em>, <em>**kwargs</em><big>)</big><a class="reference internal" href="../_modules/cyclopts/random_request_species.html#RandomRequestBuilder.generate_supply"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#cyclopts.random_request_species.RandomRequestBuilder.generate_supply" title="Permalink to this definition">¶</a></dt>
+<dd><p>Returns a mapping from supplier to a list of 2-tuples of supply node
+id and request node id and a mapping from supply group id to a list of
+commodities supplied by the supplier.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><p class="first"><strong>commods</strong> : set</p>
+<blockquote>
+<div><p>the commodities</p>
+</div></blockquote>
+<p><strong>suppliers</strong> : list</p>
+<blockquote class="last">
+<div><p>the suppliers</p>
+</div></blockquote>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="cyclopts.random_request_species.RandomRequestBuilder.populate_params">
+<tt class="descname">populate_params</tt><big>(</big><em>request</em>, <em>supply</em>, <em>supplier_commods</em><big>)</big><a class="reference internal" href="../_modules/cyclopts/random_request_species.html#RandomRequestBuilder.populate_params"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#cyclopts.random_request_species.RandomRequestBuilder.populate_params" title="Permalink to this definition">¶</a></dt>
+<dd><p>Populates params (the GraphParams structure) given known supply and
+request</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><p class="first"><strong>request</strong> : as returned by generate_request</p>
+<p><strong>supply</strong> : as returned by generate_supply</p>
+<p><strong>supplier_commods</strong> : commods supplied by suppliers, as returned by</p>
+<blockquote class="last">
+<div><p>generate_supply</p>
+</div></blockquote>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="cyclopts.random_request_species.RandomRequestBuilder.valid">
+<tt class="descname">valid</tt><big>(</big><big>)</big><a class="reference internal" href="../_modules/cyclopts/random_request_species.html#RandomRequestBuilder.valid"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#cyclopts.random_request_species.RandomRequestBuilder.valid" title="Permalink to this definition">¶</a></dt>
+<dd><p>Screens the provided sampler to determine if it provides a valid
+point in solution space (e.g., if parameter C requires that the sum of
+parameters A and B be less than some value, valid() will return false if
+that condition is not met).</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Returns:</th><td class="field-body"><p class="first"><strong>b</strong> : bool</p>
+<blockquote class="last">
+<div><p>whether the sampler&#8217;s parameters form a valid point in the 
+sampler&#8217;s parameter space</p>
+</div></blockquote>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="class">
+<dt id="cyclopts.random_request_species.RandomRequestPoint">
+<em class="property">class </em><tt class="descclassname">cyclopts.random_request_species.</tt><tt class="descname">RandomRequestPoint</tt><big>(</big><em>n_commods=None</em>, <em>n_request=None</em>, <em>assem_per_req=None</em>, <em>req_qty=None</em>, <em>assem_multi_commod=None</em>, <em>req_multi_commods=None</em>, <em>exclusive=None</em>, <em>n_req_constr=None</em>, <em>n_supply=None</em>, <em>sup_multi=None</em>, <em>sup_multi_commods=None</em>, <em>n_sup_constr=None</em>, <em>sup_constr_val=None</em>, <em>connection=None</em>, <em>constr_coeff=None</em>, <em>pref_coeff=None</em><big>)</big><a class="reference internal" href="../_modules/cyclopts/random_request_species.html#RandomRequestPoint"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#cyclopts.random_request_species.RandomRequestPoint" title="Permalink to this definition">¶</a></dt>
+<dd><p>A container class representing a point in parameter space for
+RandomRequest problem species.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><p class="first"><strong>n_commods</strong> : Param or similar, optional</p>
+<blockquote>
+<div><p>the number of commodities</p>
+</div></blockquote>
+<p><strong>n_request</strong> : Param or similar, optional</p>
+<blockquote>
+<div><p>the number of requesters (i.e., RequestGroups)</p>
+</div></blockquote>
+<p><strong>assem_per_req</strong> : Param or similar, optional</p>
+<blockquote>
+<div><p>the number of assemblies in a request</p>
+</div></blockquote>
+<p><strong>req_qty</strong> : Param or similar, optional</p>
+<blockquote>
+<div><p>the quantity associated with each request</p>
+</div></blockquote>
+<p><strong>assem_multi_commod</strong> : BoolParam or similar, optional</p>
+<blockquote>
+<div><p>whether an assembly request can be satisfied by multiple 
+commodities</p>
+</div></blockquote>
+<p><strong>req_multi_commods</strong> : Param or similar, optional</p>
+<blockquote>
+<div><p>the number of commodities in a multicommodity zone</p>
+</div></blockquote>
+<p><strong>exclusive</strong> : BoolParam or similar, optional</p>
+<blockquote>
+<div><p>the probability that a reactor assembly request is exclusive</p>
+</div></blockquote>
+<p><strong>n_req_constr</strong> : Param or similar, optional</p>
+<blockquote>
+<div><p>the number of constraints associated with a given request group</p>
+</div></blockquote>
+<p><strong>n_supply</strong> : Param or similar, optional</p>
+<blockquote>
+<div><p>the number of suppliers (i.e., supply ExchangeNodeGroups)</p>
+</div></blockquote>
+<p><strong>sup_multi</strong> : BoolParam or similar, optional</p>
+<blockquote>
+<div><p>whether a supplier supplies more than one commodity</p>
+</div></blockquote>
+<p><strong>sup_multi_commods</strong> : Param or similar, optional</p>
+<blockquote>
+<div><p>the number of commodities a multicommodity supplier supplies</p>
+</div></blockquote>
+<p><strong>n_sup_constr</strong> : Param or similar, optional</p>
+<blockquote>
+<div><p>the number of constraints associated with a given supply group</p>
+</div></blockquote>
+<p><strong>sup_constr_val</strong> : SupConstrParam or similar, optional</p>
+<blockquote>
+<div><p>the supply constraint rhs value (as a fraction of the total request 
+amount for a commodity)</p>
+</div></blockquote>
+<p><strong>connection</strong> : BoolParam or similar, optional</p>
+<blockquote>
+<div><p>the probability that a possible connection between supply and 
+request nodes is added</p>
+</div></blockquote>
+<p><strong>constr_coeff</strong> : CoeffParam or similar, optional</p>
+<blockquote>
+<div><p>constraint coefficients</p>
+</div></blockquote>
+<p><strong>pref_coeff</strong> : CoeffParam or similar, optional</p>
+<blockquote class="last">
+<div><p>preference coefficients</p>
+</div></blockquote>
+</td>
+</tr>
+</tbody>
+</table>
+<dl class="method">
+<dt id="cyclopts.random_request_species.RandomRequestPoint.dtype">
+<tt class="descname">dtype</tt><big>(</big><big>)</big><a class="reference internal" href="../_modules/cyclopts/random_request_species.html#RandomRequestPoint.dtype"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#cyclopts.random_request_species.RandomRequestPoint.dtype" title="Permalink to this definition">¶</a></dt>
+<dd><p>Returns a numpy dtype describing all composed objects.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="cyclopts.random_request_species.RandomRequestPoint.valid">
+<tt class="descname">valid</tt><big>(</big><big>)</big><a class="reference internal" href="../_modules/cyclopts/random_request_species.html#RandomRequestPoint.valid"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#cyclopts.random_request_species.RandomRequestPoint.valid" title="Permalink to this definition">¶</a></dt>
+<dd><p>Provides a best-guess estimate as to whether or not a given data
+point, as represented by this Sampler, is valid in the domain-defined
+parameter space.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Returns:</th><td class="field-body"><p class="first"><strong>bool</strong> :</p>
+<blockquote class="last">
+<div><p>whether the sampler&#8217;s parameters form a valid point in the 
+sampler&#8217;s parameter space</p>
+</div></blockquote>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+</dd></dl>
+
+</div>
+
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar">
+        <div class="sphinxsidebarwrapper">
+        <p class="logo"><a href="../index.html" title="index">
+          <img class="logo" src="../_static/uni_logo.png" alt="Logo"/>
+        </a></p>
+  <div class="sphinxprev">
+    <h4>Previous page</h4>
+    <p class="topless"><a href="exchange_family.html"
+                          title="Previous page">&larr; Exchange Family Module &#8211; <tt class="docutils literal"><span class="pre">cyclopts.exchange_family</span></tt></a></p>
+  </div>
+  <div class="sphinxnext">
+    <h4>Next page</h4>
+    <p class="topless"><a href="../theory/main.html"
+                          title="Next page">&rarr; Cyclopts Theory</a></p>
+  </div>
+  <h3>This Page</h3>
+  <ul class="this-page-menu">
+    <li><a href="../_sources/pyapi/random_request_species.txt"
+           rel="nofollow">Show Source</a></li>
+  </ul>
+<div id="searchbox" style="display: none">
+  <h3>Quick search</h3>
+    <form class="search" action="../search.html" method="get">
+      <input type="text" name="q" />
+      <input type="submit" value="Go" />
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+    <p class="searchtip" style="font-size: 90%">
+    Enter search terms or a module, class or function name.
+    </p>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="relbar-bottom">
+        
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="../py-modindex.html" title="Python Module Index"
+             >modules</a> &nbsp; &nbsp;</li>
+        <li class="right" >
+          <a href="../np-modindex.html" title="Python Module Index"
+             >modules</a> &nbsp; &nbsp;</li>
+        <li class="right" >
+          <a href="../theory/main.html" title="Cyclopts Theory"
+             >next</a> &nbsp; &nbsp;</li>
+        <li class="right" >
+          <a href="exchange_family.html" title="Exchange Family Module – cyclopts.exchange_family"
+             >previous</a> &nbsp; &nbsp;</li>
+    <li><a href="../index.html">Cyclopts 0.1.0 documentation</a> &raquo;</li>
+
+          <li><a href="main.html" >Python API</a> &raquo;</li> 
+      </ul>
+    </div>
+    </div>
+
+    <div class="footer">
+        &copy; Copyright 2014, Matthew J. Gidden.
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.2.2.
+    </div>
+    <!-- cloud_sptheme 1.4 -->
+  </body>
+</html>

@@ -1,0 +1,365 @@
+
+
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>cyclopts.exchange_family &mdash; Cyclopts 0.1.0 documentation</title>
+    
+    <link rel="stylesheet" href="../../_static/cloud.css" type="text/css" />
+    <link rel="stylesheet" href="../../_static/pygments.css" type="text/css" />
+    <link rel="stylesheet" href="//fonts.googleapis.com/css?family=Noticia+Text|Open+Sans|Droid+Sans+Mono" type="text/css" />
+    
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    '../../',
+        VERSION:     '0.1.0',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="../../_static/jquery.js"></script>
+    <script type="text/javascript" src="../../_static/underscore.js"></script>
+    <script type="text/javascript" src="../../_static/doctools.js"></script>
+    <script type="text/javascript" src="../../_static/jquery.cookie.js"></script>
+    <script type="text/javascript" src="../../_static/cloud.js"></script>
+    <link rel="top" title="Cyclopts 0.1.0 documentation" href="../../index.html" />
+    <link rel="up" title="Module code" href="../index.html" /> 
+        <meta name="viewport" content="width=device-width, initial-scale=1">
+  </head>
+  <body>
+    <div class="relbar-top">
+        
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../../genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="../../py-modindex.html" title="Python Module Index"
+             >modules</a> &nbsp; &nbsp;</li>
+        <li class="right" >
+          <a href="../../np-modindex.html" title="Python Module Index"
+             >modules</a> &nbsp; &nbsp;</li>
+    <li><a href="../../index.html">Cyclopts 0.1.0 documentation</a> &raquo;</li>
+
+          <li><a href="../index.html" accesskey="U">Module code</a> &raquo;</li> 
+      </ul>
+    </div>
+    </div>
+  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body">
+            
+  <h1>Source code for cyclopts.exchange_family</h1><div class="highlight"><pre>
+<span class="sd">&quot;&quot;&quot;This module defines a ProblemFamily subclass for Cyclus Resource Exchanges.</span>
+
+<span class="sd">:author: Matthew Gidden &lt;matthew.gidden _at_ gmail.com&gt;</span>
+<span class="sd">&quot;&quot;&quot;</span>
+<span class="kn">import</span> <span class="nn">numpy</span> <span class="kn">as</span> <span class="nn">np</span>
+<span class="kn">from</span> <span class="nn">collections</span> <span class="kn">import</span> <span class="n">Iterable</span>
+
+<span class="kn">from</span> <span class="nn">cyclopts.problems</span> <span class="kn">import</span> <span class="n">ProblemFamily</span>
+<span class="kn">import</span> <span class="nn">cyclopts.cyclopts_io</span> <span class="kn">as</span> <span class="nn">cycio</span>
+<span class="kn">import</span> <span class="nn">cyclopts.exchange_instance</span> <span class="kn">as</span> <span class="nn">exinst</span>
+
+<span class="n">_N_CAPS_MAX</span> <span class="o">=</span> <span class="mi">10</span>
+
+<span class="c"># add to this if more objects need to be persistable</span>
+<span class="n">_tbl_names</span> <span class="o">=</span> <span class="p">{</span>
+    <span class="s">&quot;ExGroup&quot;</span><span class="p">:</span> <span class="s">&quot;ExchangeGroups&quot;</span><span class="p">,</span>
+    <span class="s">&quot;ExNode&quot;</span><span class="p">:</span> <span class="s">&quot;ExchangeNodes&quot;</span><span class="p">,</span>
+    <span class="s">&quot;ExArc&quot;</span><span class="p">:</span> <span class="s">&quot;ExchangeArcs&quot;</span><span class="p">,</span>
+    <span class="s">&quot;properties&quot;</span><span class="p">:</span> <span class="s">&quot;ExchangeInstProperties&quot;</span><span class="p">,</span>
+    <span class="s">&quot;solutions&quot;</span><span class="p">:</span> <span class="s">&quot;ExchangeInstSolutions&quot;</span><span class="p">,</span>    
+    <span class="s">&quot;solution_properties&quot;</span><span class="p">:</span> <span class="s">&quot;ExchangeInstSolutionProperties&quot;</span><span class="p">,</span>    
+<span class="p">}</span>
+
+<span class="c"># this must be kept up to date with the cyclopts.instance classes</span>
+<span class="n">_dtypes</span> <span class="o">=</span> <span class="p">{</span>
+    <span class="s">&quot;ExGroup&quot;</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">dtype</span><span class="p">([</span>
+        <span class="p">(</span><span class="s">&quot;instid&quot;</span><span class="p">,</span> <span class="p">(</span><span class="s">&#39;str&#39;</span><span class="p">,</span> <span class="mi">16</span><span class="p">)),</span> <span class="c"># 16 bytes for uuid</span>
+        <span class="p">(</span><span class="s">&quot;id&quot;</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">int64</span><span class="p">),</span>
+        <span class="p">(</span><span class="s">&quot;kind&quot;</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">bool_</span><span class="p">),</span>
+        <span class="p">(</span><span class="s">&quot;caps&quot;</span><span class="p">,</span> <span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">float64</span><span class="p">,</span> <span class="n">_N_CAPS_MAX</span><span class="p">),),</span> <span class="c"># array of size N_CAPS_MAX</span>
+        <span class="p">(</span><span class="s">&quot;qty&quot;</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">float64</span><span class="p">),</span>
+        <span class="p">]),</span>
+    <span class="s">&quot;ExNode&quot;</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">dtype</span><span class="p">([</span>
+        <span class="p">(</span><span class="s">&quot;instid&quot;</span><span class="p">,</span> <span class="p">(</span><span class="s">&#39;str&#39;</span><span class="p">,</span> <span class="mi">16</span><span class="p">)),</span> <span class="c"># 16 bytes for uuid</span>
+        <span class="p">(</span><span class="s">&quot;id&quot;</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">int64</span><span class="p">),</span>
+        <span class="p">(</span><span class="s">&quot;gid&quot;</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">int64</span><span class="p">),</span>
+        <span class="p">(</span><span class="s">&quot;kind&quot;</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">bool_</span><span class="p">),</span>
+        <span class="p">(</span><span class="s">&quot;qty&quot;</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">float64</span><span class="p">),</span>
+        <span class="p">(</span><span class="s">&quot;excl&quot;</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">bool_</span><span class="p">),</span>
+        <span class="p">(</span><span class="s">&quot;excl_id&quot;</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">int64</span><span class="p">),</span>
+        <span class="p">]),</span>
+    <span class="s">&quot;ExArc&quot;</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">dtype</span><span class="p">([</span>
+        <span class="p">(</span><span class="s">&quot;instid&quot;</span><span class="p">,</span> <span class="p">(</span><span class="s">&#39;str&#39;</span><span class="p">,</span> <span class="mi">16</span><span class="p">)),</span> <span class="c"># 16 bytes for uuid</span>
+        <span class="p">(</span><span class="s">&quot;id&quot;</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">int64</span><span class="p">),</span>
+        <span class="p">(</span><span class="s">&quot;uid&quot;</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">int64</span><span class="p">),</span>
+        <span class="p">(</span><span class="s">&quot;ucaps&quot;</span><span class="p">,</span> <span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">float64</span><span class="p">,</span> <span class="n">_N_CAPS_MAX</span><span class="p">),),</span> <span class="c"># array of size N_CAPS_MAX</span>
+        <span class="p">(</span><span class="s">&quot;vid&quot;</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">int64</span><span class="p">),</span>
+        <span class="p">(</span><span class="s">&quot;vcaps&quot;</span><span class="p">,</span> <span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">float64</span><span class="p">,</span> <span class="n">_N_CAPS_MAX</span><span class="p">),),</span> <span class="c"># array of size N_CAPS_MAX</span>
+        <span class="p">(</span><span class="s">&quot;pref&quot;</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">float64</span><span class="p">),</span>
+        <span class="p">]),</span>
+    <span class="s">&quot;properties&quot;</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">dtype</span><span class="p">([</span>
+        <span class="p">(</span><span class="s">&quot;paramid&quot;</span><span class="p">,</span> <span class="p">(</span><span class="s">&#39;str&#39;</span><span class="p">,</span> <span class="mi">16</span><span class="p">)),</span> <span class="c"># 16 bytes for uuid</span>
+        <span class="p">(</span><span class="s">&quot;instid&quot;</span><span class="p">,</span> <span class="p">(</span><span class="s">&#39;str&#39;</span><span class="p">,</span> <span class="mi">16</span><span class="p">)),</span> <span class="c"># 16 bytes for uuid</span>
+        <span class="p">(</span><span class="s">&quot;species&quot;</span><span class="p">,</span> <span class="p">(</span><span class="s">&#39;str&#39;</span><span class="p">,</span> <span class="mi">30</span><span class="p">)),</span> <span class="c"># 30 is long enough..</span>
+        <span class="p">(</span><span class="s">&quot;n_arcs&quot;</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">int64</span><span class="p">),</span>
+        <span class="p">(</span><span class="s">&quot;n_u_grps&quot;</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">int64</span><span class="p">),</span>
+        <span class="p">(</span><span class="s">&quot;n_v_grps&quot;</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">int64</span><span class="p">),</span>
+        <span class="p">(</span><span class="s">&quot;n_u_nodes&quot;</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">int64</span><span class="p">),</span>
+        <span class="p">(</span><span class="s">&quot;n_v_nodes&quot;</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">int64</span><span class="p">),</span>
+        <span class="p">(</span><span class="s">&quot;n_constrs&quot;</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">int64</span><span class="p">),</span>
+        <span class="p">(</span><span class="s">&quot;excl_frac&quot;</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">float64</span><span class="p">),</span>
+        <span class="p">]),</span>
+    <span class="s">&quot;solutions&quot;</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">dtype</span><span class="p">([</span>
+        <span class="p">(</span><span class="s">&quot;solnid&quot;</span><span class="p">,</span> <span class="p">(</span><span class="s">&#39;str&#39;</span><span class="p">,</span> <span class="mi">16</span><span class="p">)),</span> <span class="c"># 16 bytes for uuid</span>
+        <span class="p">(</span><span class="s">&quot;arc_id&quot;</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">int64</span><span class="p">),</span>
+        <span class="p">(</span><span class="s">&quot;flow&quot;</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">float64</span><span class="p">),</span>
+        <span class="p">]),</span>
+    <span class="s">&quot;solution_properties&quot;</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">dtype</span><span class="p">([</span>
+        <span class="p">(</span><span class="s">&quot;solnid&quot;</span><span class="p">,</span> <span class="p">(</span><span class="s">&#39;str&#39;</span><span class="p">,</span> <span class="mi">16</span><span class="p">)),</span> <span class="c"># 16 bytes for uuid</span>
+        <span class="p">(</span><span class="s">&quot;instid&quot;</span><span class="p">,</span> <span class="p">(</span><span class="s">&#39;str&#39;</span><span class="p">,</span> <span class="mi">16</span><span class="p">)),</span> <span class="c"># 16 bytes for uuid</span>
+        <span class="p">(</span><span class="s">&quot;pref_flow&quot;</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">float64</span><span class="p">),</span>
+        <span class="p">(</span><span class="s">&quot;cyclus_version&quot;</span><span class="p">,</span> <span class="p">(</span><span class="s">&#39;str&#39;</span><span class="p">,</span> <span class="mi">12</span><span class="p">)),</span>
+        <span class="p">]),</span>
+    <span class="p">}</span>
+
+<span class="c"># these functions must be kept up to date with cyclopts.instance</span>
+<span class="k">def</span> <span class="nf">grp_tpl</span><span class="p">(</span><span class="n">instid</span><span class="p">,</span> <span class="n">obj</span><span class="p">):</span>    
+    <span class="k">return</span><span class="p">(</span><span class="n">instid</span><span class="o">.</span><span class="n">bytes</span><span class="p">,</span> <span class="n">obj</span><span class="o">.</span><span class="n">id</span><span class="p">,</span> <span class="n">obj</span><span class="o">.</span><span class="n">kind</span><span class="p">,</span> 
+           <span class="n">np</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">obj</span><span class="o">.</span><span class="n">caps</span><span class="p">,</span> <span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">*</span> <span class="p">(</span><span class="n">_N_CAPS_MAX</span> <span class="o">-</span> <span class="nb">len</span><span class="p">(</span><span class="n">obj</span><span class="o">.</span><span class="n">caps</span><span class="p">))),</span> <span class="n">obj</span><span class="o">.</span><span class="n">qty</span><span class="p">)</span>
+
+<span class="k">def</span> <span class="nf">node_tpl</span><span class="p">(</span><span class="n">instid</span><span class="p">,</span> <span class="n">obj</span><span class="p">):</span>    
+    <span class="k">return</span><span class="p">(</span><span class="n">instid</span><span class="o">.</span><span class="n">bytes</span><span class="p">,</span> <span class="n">obj</span><span class="o">.</span><span class="n">id</span><span class="p">,</span> <span class="n">obj</span><span class="o">.</span><span class="n">gid</span><span class="p">,</span> <span class="n">obj</span><span class="o">.</span><span class="n">kind</span><span class="p">,</span> <span class="n">obj</span><span class="o">.</span><span class="n">qty</span><span class="p">,</span> <span class="n">obj</span><span class="o">.</span><span class="n">excl</span><span class="p">,</span> <span class="n">obj</span><span class="o">.</span><span class="n">excl_id</span><span class="p">)</span>
+
+<span class="k">def</span> <span class="nf">arc_tpl</span><span class="p">(</span><span class="n">instid</span><span class="p">,</span> <span class="n">obj</span><span class="p">):</span>
+    <span class="k">return</span><span class="p">(</span><span class="n">instid</span><span class="o">.</span><span class="n">bytes</span><span class="p">,</span> <span class="n">obj</span><span class="o">.</span><span class="n">id</span><span class="p">,</span> 
+           <span class="n">obj</span><span class="o">.</span><span class="n">uid</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">obj</span><span class="o">.</span><span class="n">ucaps</span><span class="p">,</span> <span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">*</span> <span class="p">(</span><span class="n">_N_CAPS_MAX</span> <span class="o">-</span> <span class="nb">len</span><span class="p">(</span><span class="n">obj</span><span class="o">.</span><span class="n">ucaps</span><span class="p">))),</span> 
+           <span class="n">obj</span><span class="o">.</span><span class="n">vid</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">obj</span><span class="o">.</span><span class="n">vcaps</span><span class="p">,</span> <span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">*</span> <span class="p">(</span><span class="n">_N_CAPS_MAX</span> <span class="o">-</span> <span class="nb">len</span><span class="p">(</span><span class="n">obj</span><span class="o">.</span><span class="n">vcaps</span><span class="p">))),</span> 
+           <span class="n">obj</span><span class="o">.</span><span class="n">pref</span><span class="p">)</span>
+
+<span class="k">def</span> <span class="nf">prop_tpl</span><span class="p">(</span><span class="n">instid</span><span class="p">,</span> <span class="n">paramid</span><span class="p">,</span> <span class="n">species</span><span class="p">,</span> <span class="n">groups</span><span class="p">,</span> <span class="n">nodes</span><span class="p">,</span> <span class="n">arcs</span><span class="p">):</span>
+    <span class="n">nu_grps</span> <span class="o">=</span> <span class="nb">sum</span><span class="p">(</span><span class="mi">1</span> <span class="k">for</span> <span class="n">g</span> <span class="ow">in</span> <span class="n">groups</span> <span class="k">if</span> <span class="nb">int</span><span class="p">(</span><span class="n">g</span><span class="o">.</span><span class="n">kind</span><span class="p">))</span>
+    <span class="n">nv_grps</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">groups</span><span class="p">)</span> <span class="o">-</span> <span class="n">nu_grps</span>
+    <span class="n">nu_nodes</span> <span class="o">=</span> <span class="nb">sum</span><span class="p">(</span><span class="mi">1</span> <span class="k">for</span> <span class="n">n</span> <span class="ow">in</span> <span class="n">nodes</span> <span class="k">if</span> <span class="n">n</span><span class="o">.</span><span class="n">kind</span><span class="p">)</span>
+    <span class="n">nv_nodes</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">nodes</span><span class="p">)</span> <span class="o">-</span> <span class="n">nu_nodes</span>
+    <span class="n">excl</span> <span class="o">=</span> <span class="p">{</span><span class="n">n</span><span class="o">.</span><span class="n">id</span><span class="p">:</span> <span class="n">n</span><span class="o">.</span><span class="n">excl</span> <span class="k">for</span> <span class="n">n</span> <span class="ow">in</span> <span class="n">nodes</span><span class="p">}</span>
+    <span class="n">excl_frac</span> <span class="o">=</span> <span class="nb">sum</span><span class="p">(</span><span class="mf">1.0</span> <span class="k">for</span> <span class="n">a</span> <span class="ow">in</span> <span class="n">arcs</span> <span class="k">if</span> <span class="n">excl</span><span class="p">[</span><span class="n">a</span><span class="o">.</span><span class="n">uid</span><span class="p">]</span> <span class="ow">or</span> <span class="n">excl</span><span class="p">[</span><span class="n">a</span><span class="o">.</span><span class="n">vid</span><span class="p">])</span> <span class="o">/</span> <span class="nb">len</span><span class="p">(</span><span class="n">arcs</span><span class="p">)</span>
+    <span class="n">nconstr</span> <span class="o">=</span> <span class="nb">sum</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">g</span><span class="o">.</span><span class="n">caps</span><span class="p">)</span> <span class="k">for</span> <span class="n">g</span> <span class="ow">in</span> <span class="n">groups</span><span class="p">)</span>
+    <span class="k">return</span> <span class="p">(</span><span class="n">paramid</span><span class="o">.</span><span class="n">bytes</span><span class="p">,</span> <span class="n">instid</span><span class="o">.</span><span class="n">bytes</span><span class="p">,</span> <span class="n">species</span><span class="p">,</span> <span class="nb">len</span><span class="p">(</span><span class="n">arcs</span><span class="p">),</span> <span class="n">nu_grps</span><span class="p">,</span> <span class="n">nv_grps</span><span class="p">,</span> 
+            <span class="n">nu_nodes</span><span class="p">,</span> <span class="n">nv_nodes</span><span class="p">,</span> <span class="n">nconstr</span><span class="p">,</span> <span class="n">excl_frac</span><span class="p">)</span>
+
+<div class="viewcode-block" id="ResourceExchange"><a class="viewcode-back" href="../../pyapi/exchange_family.html#cyclopts.exchange_family.ResourceExchange">[docs]</a><span class="k">class</span> <span class="nc">ResourceExchange</span><span class="p">(</span><span class="n">ProblemFamily</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;A class representing families of resource exchange problems.&quot;&quot;&quot;</span>
+
+    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="nb">super</span><span class="p">(</span><span class="n">ResourceExchange</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="n">__init__</span><span class="p">()</span>
+
+    <span class="nd">@property</span>
+<div class="viewcode-block" id="ResourceExchange.name"><a class="viewcode-back" href="../../pyapi/exchange_family.html#cyclopts.exchange_family.ResourceExchange.name">[docs]</a>    <span class="k">def</span> <span class="nf">name</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Returns</span>
+<span class="sd">        -------</span>
+<span class="sd">        name : string</span>
+<span class="sd">            The name of this species</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="s">&#39;ResourceExchange&#39;</span>
+</div>
+    <span class="nd">@property</span>
+<div class="viewcode-block" id="ResourceExchange.property_table_name"><a class="viewcode-back" href="../../pyapi/exchange_family.html#cyclopts.exchange_family.ResourceExchange.property_table_name">[docs]</a>    <span class="k">def</span> <span class="nf">property_table_name</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Returns</span>
+<span class="sd">        -------</span>
+<span class="sd">        name : string</span>
+<span class="sd">            The name of this family&#39;s instance property table</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="n">_tbl_names</span><span class="p">[</span><span class="s">&#39;properties&#39;</span><span class="p">]</span>
+</div>
+<div class="viewcode-block" id="ResourceExchange.register_tables"><a class="viewcode-back" href="../../pyapi/exchange_family.html#cyclopts.exchange_family.ResourceExchange.register_tables">[docs]</a>    <span class="k">def</span> <span class="nf">register_tables</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">h5file</span><span class="p">,</span> <span class="n">prefix</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        h5file : PyTables File</span>
+<span class="sd">            the hdf5 file</span>
+<span class="sd">        prefix : string</span>
+<span class="sd">            the absolute path to the group for tables of this family</span>
+
+<span class="sd">        Returns</span>
+<span class="sd">        -------</span>
+<span class="sd">        tables : list of cyclopts_io.Tables</span>
+<span class="sd">            All tables that could be written to by this species.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="p">[</span><span class="n">cycio</span><span class="o">.</span><span class="n">Table</span><span class="p">(</span><span class="n">h5file</span><span class="p">,</span> 
+                            <span class="s">&#39;/&#39;</span><span class="o">.</span><span class="n">join</span><span class="p">([</span><span class="n">prefix</span><span class="p">,</span> <span class="n">_tbl_names</span><span class="p">[</span><span class="n">x</span><span class="p">]]),</span> 
+                            <span class="n">_dtypes</span><span class="p">[</span><span class="n">x</span><span class="p">])</span> <span class="k">for</span> <span class="n">x</span> <span class="ow">in</span> <span class="n">_tbl_names</span><span class="o">.</span><span class="n">keys</span><span class="p">()]</span>
+</div>
+<div class="viewcode-block" id="ResourceExchange.record_inst"><a class="viewcode-back" href="../../pyapi/exchange_family.html#cyclopts.exchange_family.ResourceExchange.record_inst">[docs]</a>    <span class="k">def</span> <span class="nf">record_inst</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">inst</span><span class="p">,</span> <span class="n">inst_uuid</span><span class="p">,</span> <span class="n">param_uuid</span><span class="p">,</span> <span class="n">species</span><span class="p">,</span> <span class="n">tables</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        inst : tuple of lists of ExGroups, ExNodes, and ExArgs</span>
+<span class="sd">            A representation of a problem instance</span>
+<span class="sd">        inst_uuid : uuid</span>
+<span class="sd">            The uuid of the instance</span>
+<span class="sd">        param_uuid : uuid</span>
+<span class="sd">            The uuid of the point in parameter space</span>
+<span class="sd">        species : str</span>
+<span class="sd">            The name of the species that generated this instance</span>
+<span class="sd">        tables : list of cyclopts_io.Table</span>
+<span class="sd">            The tables that can be written to</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">groups</span><span class="p">,</span> <span class="n">nodes</span><span class="p">,</span> <span class="n">arcs</span> <span class="o">=</span> <span class="n">inst</span>
+        
+        <span class="n">data</span> <span class="o">=</span> <span class="p">[</span><span class="n">grp_tpl</span><span class="p">(</span><span class="n">inst_uuid</span><span class="p">,</span> <span class="n">x</span><span class="p">)</span> <span class="k">for</span> <span class="n">x</span> <span class="ow">in</span> <span class="n">groups</span><span class="p">]</span>
+        <span class="n">tables</span><span class="p">[</span><span class="n">_tbl_names</span><span class="p">[</span><span class="s">&#39;ExGroup&#39;</span><span class="p">]]</span><span class="o">.</span><span class="n">append_data</span><span class="p">(</span><span class="n">data</span><span class="p">)</span>
+        
+        <span class="n">data</span> <span class="o">=</span> <span class="p">[</span><span class="n">node_tpl</span><span class="p">(</span><span class="n">inst_uuid</span><span class="p">,</span> <span class="n">x</span><span class="p">)</span> <span class="k">for</span> <span class="n">x</span> <span class="ow">in</span> <span class="n">nodes</span><span class="p">]</span>
+        <span class="n">tables</span><span class="p">[</span><span class="n">_tbl_names</span><span class="p">[</span><span class="s">&#39;ExNode&#39;</span><span class="p">]]</span><span class="o">.</span><span class="n">append_data</span><span class="p">(</span><span class="n">data</span><span class="p">)</span>
+        
+        <span class="n">data</span> <span class="o">=</span> <span class="p">[</span><span class="n">arc_tpl</span><span class="p">(</span><span class="n">inst_uuid</span><span class="p">,</span> <span class="n">x</span><span class="p">)</span> <span class="k">for</span> <span class="n">x</span> <span class="ow">in</span> <span class="n">arcs</span><span class="p">]</span>
+        <span class="n">tables</span><span class="p">[</span><span class="n">_tbl_names</span><span class="p">[</span><span class="s">&#39;ExArc&#39;</span><span class="p">]]</span><span class="o">.</span><span class="n">append_data</span><span class="p">(</span><span class="n">data</span><span class="p">)</span>
+        
+        <span class="n">data</span> <span class="o">=</span> <span class="p">[</span><span class="n">prop_tpl</span><span class="p">(</span><span class="n">inst_uuid</span><span class="p">,</span> <span class="n">param_uuid</span><span class="p">,</span> <span class="n">species</span><span class="p">,</span> <span class="n">groups</span><span class="p">,</span> <span class="n">nodes</span><span class="p">,</span> <span class="n">arcs</span><span class="p">)]</span>
+        <span class="n">tables</span><span class="p">[</span><span class="n">_tbl_names</span><span class="p">[</span><span class="s">&#39;properties&#39;</span><span class="p">]]</span><span class="o">.</span><span class="n">append_data</span><span class="p">(</span><span class="n">data</span><span class="p">)</span>
+</div>
+<div class="viewcode-block" id="ResourceExchange.record_soln"><a class="viewcode-back" href="../../pyapi/exchange_family.html#cyclopts.exchange_family.ResourceExchange.record_soln">[docs]</a>    <span class="k">def</span> <span class="nf">record_soln</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">soln</span><span class="p">,</span> <span class="n">soln_uuid</span><span class="p">,</span> <span class="n">inst</span><span class="p">,</span> <span class="n">inst_uuid</span><span class="p">,</span> <span class="n">tables</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        soln : ExSolution</span>
+<span class="sd">            A representation of a problem solution</span>
+<span class="sd">        soln_uuid : uuid</span>
+<span class="sd">            The uuid of the solution</span>
+<span class="sd">        inst : tuple of lists of ExGroups, ExNodes, and ExArgs</span>
+<span class="sd">            A representation of a problem instance</span>
+<span class="sd">        inst_uuid : uuid</span>
+<span class="sd">            The uuid of the instance</span>
+<span class="sd">        tables : list of cyclopts_io.Table</span>
+<span class="sd">            The tables that can be written to</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">groups</span><span class="p">,</span> <span class="n">nodes</span><span class="p">,</span> <span class="n">arcs</span> <span class="o">=</span> <span class="n">inst</span>
+        <span class="n">tbl</span> <span class="o">=</span> <span class="n">tables</span><span class="p">[</span><span class="n">_tbl_names</span><span class="p">[</span><span class="s">&#39;solutions&#39;</span><span class="p">]]</span>
+        <span class="k">for</span> <span class="n">arcid</span><span class="p">,</span> <span class="n">flow</span> <span class="ow">in</span> <span class="n">soln</span><span class="o">.</span><span class="n">flows</span><span class="o">.</span><span class="n">iteritems</span><span class="p">():</span>
+            <span class="k">if</span> <span class="n">flow</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">:</span>
+                <span class="n">tbl</span><span class="o">.</span><span class="n">append_data</span><span class="p">([(</span><span class="n">soln_uuid</span><span class="o">.</span><span class="n">bytes</span><span class="p">,</span> <span class="n">arcid</span><span class="p">,</span> <span class="n">flow</span><span class="p">)])</span>
+        <span class="n">tbl</span> <span class="o">=</span> <span class="n">tables</span><span class="p">[</span><span class="n">_tbl_names</span><span class="p">[</span><span class="s">&#39;solution_properties&#39;</span><span class="p">]]</span>
+        <span class="n">tbl</span><span class="o">.</span><span class="n">append_data</span><span class="p">([(</span><span class="n">soln_uuid</span><span class="o">.</span><span class="n">bytes</span><span class="p">,</span> <span class="n">inst_uuid</span><span class="o">.</span><span class="n">bytes</span><span class="p">,</span> <span class="n">soln</span><span class="o">.</span><span class="n">pref_flow</span><span class="p">,</span> 
+                          <span class="n">soln</span><span class="o">.</span><span class="n">cyclus_version</span><span class="p">)])</span>
+            </div>
+<div class="viewcode-block" id="ResourceExchange.read_inst"><a class="viewcode-back" href="../../pyapi/exchange_family.html#cyclopts.exchange_family.ResourceExchange.read_inst">[docs]</a>    <span class="k">def</span> <span class="nf">read_inst</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">uuid</span><span class="p">,</span> <span class="n">tables</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        uuid : uuid</span>
+<span class="sd">            The uuid of the instance to read</span>
+<span class="sd">        tables : list of cyclopts_io.Table</span>
+<span class="sd">            The tables that can be written to</span>
+
+<span class="sd">        Returns</span>
+<span class="sd">        -------</span>
+<span class="sd">        inst : tuple of lists of ExGroups, ExNodes, and ExArgs</span>
+<span class="sd">            A representation of a problem instance</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">xdattrs</span> <span class="o">=</span> <span class="k">lambda</span> <span class="n">obj</span><span class="p">:</span> <span class="p">[</span><span class="n">x</span> <span class="k">for</span> <span class="n">x</span> <span class="ow">in</span> <span class="n">obj</span><span class="o">.</span><span class="n">__class__</span><span class="o">.</span><span class="n">__dict__</span><span class="o">.</span><span class="n">keys</span><span class="p">()</span> \
+                                   <span class="k">if</span> <span class="ow">not</span> <span class="n">x</span><span class="o">.</span><span class="n">startswith</span><span class="p">(</span><span class="s">&#39;_&#39;</span><span class="p">)]</span>
+        <span class="n">ctors</span> <span class="o">=</span> <span class="p">{</span><span class="s">&#39;ExGroup&#39;</span><span class="p">:</span> <span class="n">exinst</span><span class="o">.</span><span class="n">ExGroup</span><span class="p">,</span> 
+                 <span class="s">&#39;ExNode&#39;</span><span class="p">:</span> <span class="n">exinst</span><span class="o">.</span><span class="n">ExNode</span><span class="p">,</span> 
+                 <span class="s">&#39;ExArc&#39;</span><span class="p">:</span> <span class="n">exinst</span><span class="o">.</span><span class="n">ExArc</span><span class="p">}</span>
+        <span class="n">objs</span> <span class="o">=</span> <span class="p">{</span><span class="s">&#39;ExGroup&#39;</span><span class="p">:</span> <span class="p">[],</span> <span class="s">&#39;ExNode&#39;</span><span class="p">:</span> <span class="p">[],</span> <span class="s">&#39;ExArc&#39;</span><span class="p">:</span> <span class="p">[]}</span>
+        <span class="k">for</span> <span class="n">name</span> <span class="ow">in</span> <span class="n">ctors</span><span class="o">.</span><span class="n">keys</span><span class="p">():</span>
+            <span class="n">tbl</span> <span class="o">=</span> <span class="n">tables</span><span class="p">[</span><span class="n">_tbl_names</span><span class="p">[</span><span class="n">name</span><span class="p">]]</span>
+            <span class="n">rows</span> <span class="o">=</span> <span class="n">tbl</span><span class="o">.</span><span class="n">instid_rows</span><span class="p">(</span><span class="n">uuid</span><span class="o">.</span><span class="n">bytes</span><span class="p">)</span>
+            <span class="n">setattrs</span> <span class="o">=</span> <span class="n">xdattrs</span><span class="p">(</span><span class="n">ctors</span><span class="p">[</span><span class="n">name</span><span class="p">]())</span>
+            <span class="k">for</span> <span class="n">row</span> <span class="ow">in</span> <span class="n">rows</span><span class="p">:</span>
+                <span class="n">obj</span> <span class="o">=</span> <span class="n">ctors</span><span class="p">[</span><span class="n">name</span><span class="p">]()</span>
+                <span class="k">for</span> <span class="n">var</span> <span class="ow">in</span> <span class="n">setattrs</span><span class="p">:</span>
+                    <span class="n">attr</span> <span class="o">=</span> <span class="nb">getattr</span><span class="p">(</span><span class="n">obj</span><span class="p">,</span> <span class="n">var</span><span class="p">)</span>
+                    <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">attr</span><span class="p">,</span> <span class="n">Iterable</span><span class="p">):</span>
+                        <span class="n">ary</span> <span class="o">=</span> <span class="n">row</span><span class="p">[</span><span class="n">var</span><span class="p">]</span>
+                        <span class="n">attr</span> <span class="o">=</span> <span class="n">ary</span><span class="p">[</span><span class="n">ary</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">]</span> 
+                    <span class="k">else</span><span class="p">:</span>
+                        <span class="n">attr</span> <span class="o">=</span> <span class="n">row</span><span class="p">[</span><span class="n">var</span><span class="p">]</span>
+                    <span class="nb">setattr</span><span class="p">(</span><span class="n">obj</span><span class="p">,</span> <span class="n">var</span><span class="p">,</span> <span class="n">attr</span><span class="p">)</span>
+                <span class="n">objs</span><span class="p">[</span><span class="n">name</span><span class="p">]</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">obj</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">objs</span><span class="p">[</span><span class="s">&#39;ExGroup&#39;</span><span class="p">],</span> <span class="n">objs</span><span class="p">[</span><span class="s">&#39;ExNode&#39;</span><span class="p">],</span> <span class="n">objs</span><span class="p">[</span><span class="s">&#39;ExArc&#39;</span><span class="p">]</span>
+            </div>
+<div class="viewcode-block" id="ResourceExchange.run_inst"><a class="viewcode-back" href="../../pyapi/exchange_family.html#cyclopts.exchange_family.ResourceExchange.run_inst">[docs]</a>    <span class="k">def</span> <span class="nf">run_inst</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">inst</span><span class="p">,</span> <span class="n">solver</span><span class="p">,</span> <span class="n">verbose</span><span class="o">=</span><span class="bp">False</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        inst : tuple of lists of ExGroups, ExNodes, and ExArgs</span>
+<span class="sd">            A representation of a problem instance</span>
+<span class="sd">        solver : ProbSolver or similar</span>
+<span class="sd">            A representation of a problem solver</span>
+<span class="sd">        verbose : bool</span>
+<span class="sd">            A verbosity flag</span>
+
+<span class="sd">        Returns</span>
+<span class="sd">        -------</span>
+<span class="sd">        soln : ExSolution</span>
+<span class="sd">            A representation of a problem solution</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">groups</span><span class="p">,</span> <span class="n">nodes</span><span class="p">,</span> <span class="n">arcs</span> <span class="o">=</span> <span class="n">inst</span>
+        <span class="k">return</span> <span class="n">exinst</span><span class="o">.</span><span class="n">Run</span><span class="p">(</span><span class="n">groups</span><span class="p">,</span> <span class="n">nodes</span><span class="p">,</span> <span class="n">arcs</span><span class="p">,</span> <span class="n">solver</span><span class="p">,</span> <span class="n">verbose</span><span class="p">)</span></div></div>
+</pre></div>
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar">
+        <div class="sphinxsidebarwrapper">
+        <p class="logo"><a href="../../index.html" title="index">
+          <img class="logo" src="../../_static/uni_logo.png" alt="Logo"/>
+        </a></p>
+<div id="searchbox" style="display: none">
+  <h3>Quick search</h3>
+    <form class="search" action="../../search.html" method="get">
+      <input type="text" name="q" />
+      <input type="submit" value="Go" />
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+    <p class="searchtip" style="font-size: 90%">
+    Enter search terms or a module, class or function name.
+    </p>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="relbar-bottom">
+        
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../../genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="../../py-modindex.html" title="Python Module Index"
+             >modules</a> &nbsp; &nbsp;</li>
+        <li class="right" >
+          <a href="../../np-modindex.html" title="Python Module Index"
+             >modules</a> &nbsp; &nbsp;</li>
+    <li><a href="../../index.html">Cyclopts 0.1.0 documentation</a> &raquo;</li>
+
+          <li><a href="../index.html" >Module code</a> &raquo;</li> 
+      </ul>
+    </div>
+    </div>
+
+    <div class="footer">
+        &copy; Copyright 2014, Matthew J. Gidden.
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.2.2.
+    </div>
+    <!-- cloud_sptheme 1.4 -->
+  </body>
+</html>

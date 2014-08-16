@@ -8,7 +8,7 @@
   <head>
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
     
-    <title>Python Module Index &mdash; Cyclopts 0.1.0 documentation</title>
+    <title>Configuring a Condor Submit Node &mdash; Cyclopts 0.1.0 documentation</title>
     
     <link rel="stylesheet" href="_static/cloud.css" type="text/css" />
     <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
@@ -29,10 +29,9 @@
     <script type="text/javascript" src="_static/jquery.cookie.js"></script>
     <script type="text/javascript" src="_static/cloud.js"></script>
     <link rel="top" title="Cyclopts 0.1.0 documentation" href="index.html" />
- 
+    <link rel="next" title="Python API" href="pyapi/main.html" />
+    <link rel="prev" title="Command Line Interface (CLI)" href="cli.html" /> 
         <meta name="viewport" content="width=device-width, initial-scale=1">
-
-
   </head>
   <body>
     <div class="relbar-top">
@@ -47,8 +46,14 @@
           <a href="py-modindex.html" title="Python Module Index"
              >modules</a> &nbsp; &nbsp;</li>
         <li class="right" >
-          <a href="#" title="Python Module Index"
+          <a href="np-modindex.html" title="Python Module Index"
              >modules</a> &nbsp; &nbsp;</li>
+        <li class="right" >
+          <a href="pyapi/main.html" title="Python API"
+             accesskey="N">next</a> &nbsp; &nbsp;</li>
+        <li class="right" >
+          <a href="cli.html" title="Command Line Interface (CLI)"
+             accesskey="P">previous</a> &nbsp; &nbsp;</li>
     <li><a href="index.html">Cyclopts 0.1.0 documentation</a> &raquo;</li>
  
       </ul>
@@ -61,74 +66,20 @@
         <div class="bodywrapper">
           <div class="body">
             
-
-   <h1>Python Module Index</h1>
-
-   <div class="modindex-jumpbox">
-   <a href="#cap-c"><strong>c</strong></a>
-   </div>
-
-   <table class="indextable modindextable" cellspacing="0" cellpadding="2">
-     <tr class="pcap"><td></td><td>&nbsp;</td><td></td></tr>
-     <tr class="cap" id="cap-c"><td></td><td>
-       <strong>c</strong></td><td></td></tr>
-     <tr>
-       <td><img src="_static/minus.png" class="toggler"
-              id="toggle-1" style="display: none" alt="-" /></td>
-       <td>
-       <tt class="xref">cyclopts</tt></td><td>
-       <em></em></td></tr>
-     <tr class="cg-1">
-       <td></td>
-       <td>&nbsp;&nbsp;&nbsp;
-       <a href="pyapi/analysis.html#module-cyclopts.analysis"><tt class="xref">cyclopts.analysis</tt></a></td><td>
-       <em></em></td></tr>
-     <tr class="cg-1">
-       <td></td>
-       <td>&nbsp;&nbsp;&nbsp;
-       <a href="pyapi/condor.html#module-cyclopts.condor.dag"><tt class="xref">cyclopts.condor.dag</tt></a></td><td>
-       <em></em></td></tr>
-     <tr class="cg-1">
-       <td></td>
-       <td>&nbsp;&nbsp;&nbsp;
-       <a href="pyapi/condor.html#module-cyclopts.condor.queue"><tt class="xref">cyclopts.condor.queue</tt></a></td><td>
-       <em></em></td></tr>
-     <tr class="cg-1">
-       <td></td>
-       <td>&nbsp;&nbsp;&nbsp;
-       <a href="pyapi/condor.html#module-cyclopts.condor.utils"><tt class="xref">cyclopts.condor.utils</tt></a></td><td>
-       <em></em></td></tr>
-     <tr class="cg-1">
-       <td></td>
-       <td>&nbsp;&nbsp;&nbsp;
-       <a href="pyapi/io.html#module-cyclopts.cyclopts_io"><tt class="xref">cyclopts.cyclopts_io</tt></a></td><td>
-       <em></em></td></tr>
-     <tr class="cg-1">
-       <td></td>
-       <td>&nbsp;&nbsp;&nbsp;
-       <a href="pyapi/exchange_family.html#module-cyclopts.exchange_family"><tt class="xref">cyclopts.exchange_family</tt></a></td><td>
-       <em></em></td></tr>
-     <tr class="cg-1">
-       <td></td>
-       <td>&nbsp;&nbsp;&nbsp;
-       <a href="pyapi/params.html#module-cyclopts.params"><tt class="xref">cyclopts.params</tt></a></td><td>
-       <em></em></td></tr>
-     <tr class="cg-1">
-       <td></td>
-       <td>&nbsp;&nbsp;&nbsp;
-       <a href="pyapi/problems.html#module-cyclopts.problems"><tt class="xref">cyclopts.problems</tt></a></td><td>
-       <em></em></td></tr>
-     <tr class="cg-1">
-       <td></td>
-       <td>&nbsp;&nbsp;&nbsp;
-       <a href="pyapi/random_request_species.html#module-cyclopts.random_request_species"><tt class="xref">cyclopts.random_request_species</tt></a></td><td>
-       <em></em></td></tr>
-     <tr class="cg-1">
-       <td></td>
-       <td>&nbsp;&nbsp;&nbsp;
-       <a href="pyapi/tools.html#module-cyclopts.tools"><tt class="xref">cyclopts.tools</tt></a></td><td>
-       <em></em></td></tr>
-   </table>
+  <div class="section" id="configuring-a-condor-submit-node">
+<span id="submit-node"></span><h1>Configuring a Condor Submit Node<a class="headerlink" href="#configuring-a-condor-submit-node" title="Permalink to this headline">¶</a></h1>
+<p>Cyclopts can be run on a Condor-configured system relatively easily. The
+following steps are required:</p>
+<ul class="simple">
+<li>Install <a class="reference external" href="http://ccl.cse.nd.edu/software/workqueue/">Work Queue</a> on the
+submit node.<ul>
+<li>Update your PATH and PYTHON_PATH as suggested in the install directions.</li>
+</ul>
+</li>
+<li>Run <tt class="docutils literal"><span class="pre">cyclopts</span> <span class="pre">cde</span></tt> on your local machine. This will send a tarred cde
+environment to the submit node to be used by Cyclopts runs.</li>
+</ul>
+</div>
 
 
           </div>
@@ -139,6 +90,21 @@
         <p class="logo"><a href="index.html" title="index">
           <img class="logo" src="_static/uni_logo.png" alt="Logo"/>
         </a></p>
+  <div class="sphinxprev">
+    <h4>Previous page</h4>
+    <p class="topless"><a href="cli.html"
+                          title="Previous page">&larr; Command Line Interface (CLI)</a></p>
+  </div>
+  <div class="sphinxnext">
+    <h4>Next page</h4>
+    <p class="topless"><a href="pyapi/main.html"
+                          title="Next page">&rarr; Python API</a></p>
+  </div>
+  <h3>This Page</h3>
+  <ul class="this-page-menu">
+    <li><a href="_sources/submit_node.txt"
+           rel="nofollow">Show Source</a></li>
+  </ul>
 <div id="searchbox" style="display: none">
   <h3>Quick search</h3>
     <form class="search" action="search.html" method="get">
@@ -168,8 +134,14 @@
           <a href="py-modindex.html" title="Python Module Index"
              >modules</a> &nbsp; &nbsp;</li>
         <li class="right" >
-          <a href="#" title="Python Module Index"
+          <a href="np-modindex.html" title="Python Module Index"
              >modules</a> &nbsp; &nbsp;</li>
+        <li class="right" >
+          <a href="pyapi/main.html" title="Python API"
+             >next</a> &nbsp; &nbsp;</li>
+        <li class="right" >
+          <a href="cli.html" title="Command Line Interface (CLI)"
+             >previous</a> &nbsp; &nbsp;</li>
     <li><a href="index.html">Cyclopts 0.1.0 documentation</a> &raquo;</li>
  
       </ul>

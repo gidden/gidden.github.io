@@ -8,7 +8,7 @@
   <head>
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
     
-    <title>Condor Interaction Module – cyclopts.condor &mdash; Cyclopts 0.1.0 documentation</title>
+    <title>Condor Interaction Modules &mdash; Cyclopts 0.1.0 documentation</title>
     
     <link rel="stylesheet" href="../_static/cloud.css" type="text/css" />
     <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
@@ -30,8 +30,8 @@
     <script type="text/javascript" src="../_static/cloud.js"></script>
     <link rel="top" title="Cyclopts 0.1.0 documentation" href="../index.html" />
     <link rel="up" title="Python API" href="main.html" />
-    <link rel="next" title="Analysis Module – cyclopts.analysis" href="analysis.html" />
-    <link rel="prev" title="Parameter Definition Module – cyclopts.params" href="params.html" /> 
+    <link rel="next" title="Exchange Family Module – cyclopts.exchange_family" href="exchange_family.html" />
+    <link rel="prev" title="Cyclopts Tools Module – cyclopts.tools" href="tools.html" /> 
         <meta name="viewport" content="width=device-width, initial-scale=1">
   </head>
   <body>
@@ -50,10 +50,10 @@
           <a href="../np-modindex.html" title="Python Module Index"
              >modules</a> &nbsp; &nbsp;</li>
         <li class="right" >
-          <a href="analysis.html" title="Analysis Module – cyclopts.analysis"
+          <a href="exchange_family.html" title="Exchange Family Module – cyclopts.exchange_family"
              accesskey="N">next</a> &nbsp; &nbsp;</li>
         <li class="right" >
-          <a href="params.html" title="Parameter Definition Module – cyclopts.params"
+          <a href="tools.html" title="Cyclopts Tools Module – cyclopts.tools"
              accesskey="P">previous</a> &nbsp; &nbsp;</li>
     <li><a href="../index.html">Cyclopts 0.1.0 documentation</a> &raquo;</li>
 
@@ -68,10 +68,278 @@
         <div class="bodywrapper">
           <div class="body">
             
-  <div class="section" id="condor-interaction-module-cyclopts-condor">
-<span id="condor"></span><h1>Condor Interaction Module &#8211; <a class="reference internal" href="#module-cyclopts.condor" title="cyclopts.condor"><tt class="xref py py-mod docutils literal"><span class="pre">cyclopts.condor</span></tt></a><a class="headerlink" href="#condor-interaction-module-cyclopts-condor" title="Permalink to this headline">¶</a></h1>
-<p>This module provides an API to launch jobs to condor and receive related output.</p>
-<span class="target" id="module-cyclopts.condor"></span></div>
+  <div class="section" id="condor-interaction-modules">
+<span id="condor"></span><h1>Condor Interaction Modules<a class="headerlink" href="#condor-interaction-modules" title="Permalink to this headline">¶</a></h1>
+<div class="section" id="module-cyclopts.condor.utils">
+<span id="utility-module-cyclopts-condor-utils"></span><h2>Utility Module &#8211; <a class="reference internal" href="#module-cyclopts.condor.utils" title="cyclopts.condor.utils"><tt class="xref py py-mod docutils literal"><span class="pre">cyclopts.condor.utils</span></tt></a><a class="headerlink" href="#module-cyclopts.condor.utils" title="Permalink to this headline">¶</a></h2>
+<p>This module defines methods that assist in interacting with condor on a
+remote machine.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">author:</th><td class="field-body">Matthew Gidden &lt;matthew.gidden _at_ gmail.com&gt;</td>
+</tr>
+</tbody>
+</table>
+<dl class="function">
+<dt id="cyclopts.condor.utils.collect">
+<tt class="descclassname">cyclopts.condor.utils.</tt><tt class="descname">collect</tt><big>(</big><em>localdir</em>, <em>remotedir</em>, <em>user</em>, <em>host='submit-3.chtc.wisc.edu'</em>, <em>outdb='cyclopts_results.h5'</em>, <em>clean=False</em>, <em>keyfile=None</em>, <em>verbose=False</em><big>)</big><a class="reference internal" href="../_modules/cyclopts/condor/utils.html#collect"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#cyclopts.condor.utils.collect" title="Permalink to this definition">¶</a></dt>
+<dd><p>Collects all cyclopts output on a remote site and collapses it into a
+single data base on a local machine.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><p class="first"><strong>localdir</strong> : str</p>
+<blockquote>
+<div><p>the directory to place output on the local machine</p>
+</div></blockquote>
+<p><strong>remotedir</strong> : str</p>
+<blockquote>
+<div><p>the directory on the remote machine</p>
+</div></blockquote>
+<p><strong>user</strong> : str</p>
+<blockquote>
+<div><p>the remote machine user name</p>
+</div></blockquote>
+<p><strong>host</strong> : str, optional</p>
+<blockquote>
+<div><p>the remote machine host</p>
+</div></blockquote>
+<p><strong>outdb</strong> : str, optional</p>
+<blockquote>
+<div><p>the name of the database file to to be used on the local machine</p>
+</div></blockquote>
+<p><strong>clean</strong> : bool, optional</p>
+<blockquote>
+<div><p>whether or not to clean up the remote machine</p>
+</div></blockquote>
+<p><strong>keyfile</strong> : str, optional</p>
+<blockquote>
+<div><p>a SSH private key file to use</p>
+</div></blockquote>
+<p><strong>verbose</strong> : str, optional</p>
+<blockquote class="last">
+<div><p>print information</p>
+</div></blockquote>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="function">
+<dt id="cyclopts.condor.utils.exec_remote_cmd">
+<tt class="descclassname">cyclopts.condor.utils.</tt><tt class="descname">exec_remote_cmd</tt><big>(</big><em>client</em>, <em>cmd</em>, <em>t_sleep=5</em>, <em>verbose=False</em><big>)</big><a class="reference internal" href="../_modules/cyclopts/condor/utils.html#exec_remote_cmd"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#cyclopts.condor.utils.exec_remote_cmd" title="Permalink to this definition">¶</a></dt>
+<dd><p>A wrapper function around paramiko.client.exec_command that helps with
+error handling and returns only once the command has been completed.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><p class="first"><strong>client</strong> : paramiko ssh client</p>
+<blockquote>
+<div><p>the client to use</p>
+</div></blockquote>
+<p><strong>cmd</strong> : str</p>
+<blockquote>
+<div><p>the command to execute</p>
+</div></blockquote>
+<p><strong>t_sleep</strong> : float, optional</p>
+<blockquote>
+<div><p>the amount of time to wait between querying if a job is complete</p>
+</div></blockquote>
+<p><strong>verbose</strong> : str, optional</p>
+<blockquote class="last">
+<div><p>print information about the command</p>
+</div></blockquote>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="function">
+<dt id="cyclopts.condor.utils.rm">
+<tt class="descclassname">cyclopts.condor.utils.</tt><tt class="descname">rm</tt><big>(</big><em>user</em>, <em>host='submit-3.chtc.wisc.edu'</em>, <em>keyfile=None</em>, <em>expr=None</em>, <em>verbose=False</em><big>)</big><a class="reference internal" href="../_modules/cyclopts/condor/utils.html#rm"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#cyclopts.condor.utils.rm" title="Permalink to this definition">¶</a></dt>
+<dd><p>Remove condor jobs on a remote machine.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><p class="first"><strong>user</strong> : str</p>
+<blockquote>
+<div><p>the remote machine user name</p>
+</div></blockquote>
+<p><strong>host</strong> : str, optional</p>
+<blockquote>
+<div><p>the remote machine host</p>
+</div></blockquote>
+<p><strong>keyfile</strong> : str, optional</p>
+<blockquote>
+<div><p>a SSH private key file to use</p>
+</div></blockquote>
+<p><strong>expr</strong> : str, optional</p>
+<blockquote>
+<div><p>an expression used to search for jobs</p>
+</div></blockquote>
+<p><strong>verbose</strong> : str, optional</p>
+<blockquote class="last">
+<div><p>print information</p>
+</div></blockquote>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+</div>
+<div class="section" id="module-cyclopts.condor.queue">
+<span id="work-queue-module-cyclopts-condor-queue"></span><h2>Work Queue Module &#8211; <a class="reference internal" href="#module-cyclopts.condor.queue" title="cyclopts.condor.queue"><tt class="xref py py-mod docutils literal"><span class="pre">cyclopts.condor.queue</span></tt></a><a class="headerlink" href="#module-cyclopts.condor.queue" title="Permalink to this headline">¶</a></h2>
+<p>This module defines methods to lauch Worker Queue Cyclopts jobs.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">author:</th><td class="field-body">Matthew Gidden &lt;matthew.gidden _at_ gmail.com&gt;</td>
+</tr>
+</tbody>
+</table>
+<dl class="function">
+<dt id="cyclopts.condor.queue.submit">
+<tt class="descclassname">cyclopts.condor.queue.</tt><tt class="descname">submit</tt><big>(</big><em>user</em>, <em>db</em>, <em>instids</em>, <em>module</em>, <em>cname</em>, <em>solvers</em>, <em>remotedir</em>, <em>host='submit-3.chtc.wisc.edu'</em>, <em>keyfile=None</em>, <em>nodes=None</em>, <em>port='5422'</em>, <em>verbose=False</em><big>)</big><a class="reference internal" href="../_modules/cyclopts/condor/queue.html#submit"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#cyclopts.condor.queue.submit" title="Permalink to this definition">¶</a></dt>
+<dd><p>Connects via SSH to a condor submit node, and executes a Cyclopts Work
+Queue run.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><p class="first"><strong>user</strong> : str</p>
+<blockquote>
+<div><p>the user on the condor submit host</p>
+</div></blockquote>
+<p><strong>db</strong> : str</p>
+<blockquote>
+<div><p>the problem instance database</p>
+</div></blockquote>
+<p><strong>instids</strong> : set</p>
+<blockquote>
+<div><p>the set of instances to run</p>
+</div></blockquote>
+<p><strong>module</strong> : str</p>
+<blockquote>
+<div><p>the ProblemFamily module</p>
+</div></blockquote>
+<p><strong>cname</strong> : str</p>
+<blockquote>
+<div><p>the ProblemFamily cname</p>
+</div></blockquote>
+<p><strong>solvers</strong> : list</p>
+<blockquote>
+<div><p>the solvers to use</p>
+</div></blockquote>
+<p><strong>remotedir</strong> : str</p>
+<blockquote>
+<div><p>the base run directory on the condor submit node, relative to 
+~/cyclopts-runs</p>
+</div></blockquote>
+<p><strong>host</strong> : str, optional</p>
+<blockquote>
+<div><p>the condor submit host</p>
+</div></blockquote>
+<p><strong>keyfile</strong> : str, optional</p>
+<blockquote>
+<div><p>the public key file</p>
+</div></blockquote>
+<p><strong>nodes</strong> : list, optional</p>
+<blockquote>
+<div><p>a list of execute nodes prefixes (e.g., e121.chtc.wisc.edu -&gt; e121)</p>
+</div></blockquote>
+<p><strong>port</strong> : str, optional</p>
+<blockquote>
+<div><p>the port to use for master/worker communication</p>
+</div></blockquote>
+<p><strong>verbose</strong> : bool, optional</p>
+<blockquote class="last">
+<div><p>whether to print information regarding the submission process</p>
+</div></blockquote>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+</div>
+<div class="section" id="module-cyclopts.condor.dag">
+<span id="dag-module-cyclopts-condor-dag"></span><h2>DAG Module &#8211; <a class="reference internal" href="#module-cyclopts.condor.dag" title="cyclopts.condor.dag"><tt class="xref py py-mod docutils literal"><span class="pre">cyclopts.condor.dag</span></tt></a><a class="headerlink" href="#module-cyclopts.condor.dag" title="Permalink to this headline">¶</a></h2>
+<p>This module defines methods to lauch DAGman Cyclopts jobs.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">author:</th><td class="field-body">Matthew Gidden &lt;matthew.gidden _at_ gmail.com&gt;</td>
+</tr>
+</tbody>
+</table>
+<dl class="function">
+<dt id="cyclopts.condor.dag.submit">
+<tt class="descclassname">cyclopts.condor.dag.</tt><tt class="descname">submit</tt><big>(</big><em>user</em>, <em>db</em>, <em>instids</em>, <em>module</em>, <em>cname</em>, <em>solvers</em>, <em>remotedir</em>, <em>host='submit-3.chtc.wisc.edu'</em>, <em>keyfile=None</em>, <em>verbose=False</em><big>)</big><a class="reference internal" href="../_modules/cyclopts/condor/dag.html#submit"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#cyclopts.condor.dag.submit" title="Permalink to this definition">¶</a></dt>
+<dd><p>Connects via SSH to a condor submit node, and executes a Cyclopts DAG
+run.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><p class="first"><strong>user</strong> : str</p>
+<blockquote>
+<div><p>the user on the condor submit host</p>
+</div></blockquote>
+<p><strong>db</strong> : str</p>
+<blockquote>
+<div><p>the problem instance database</p>
+</div></blockquote>
+<p><strong>instids</strong> : set</p>
+<blockquote>
+<div><p>the set of instances to run</p>
+</div></blockquote>
+<p><strong>module</strong> : str</p>
+<blockquote>
+<div><p>the ProblemFamily module</p>
+</div></blockquote>
+<p><strong>cname</strong> : str</p>
+<blockquote>
+<div><p>the ProblemFamily cname</p>
+</div></blockquote>
+<p><strong>solvers</strong> : list</p>
+<blockquote>
+<div><p>the solvers to use</p>
+</div></blockquote>
+<p><strong>remotedir</strong> : str</p>
+<blockquote>
+<div><p>the base run directory on the condor submit node, relative to 
+~/cyclopts-runs</p>
+</div></blockquote>
+<p><strong>host</strong> : str, optional</p>
+<blockquote>
+<div><p>the condor submit host</p>
+</div></blockquote>
+<p><strong>keyfile</strong> : str, optional</p>
+<blockquote>
+<div><p>the public key file</p>
+</div></blockquote>
+<p><strong>verbose</strong> : bool, optional</p>
+<blockquote class="last">
+<div><p>whether to print information regarding the submission process</p>
+</div></blockquote>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+</div>
+</div>
 
 
           </div>
@@ -81,16 +349,27 @@
         <div class="sphinxsidebarwrapper">
         <p class="logo"><a href="../index.html" title="index">
           <img class="logo" src="../_static/uni_logo.png" alt="Logo"/>
-        </a></p>
+        </a></p><div class="sphinxlocaltoc">
+    <h3><a href="../index.html">Table of Contents</a></h3>
+    <ul>
+<li><a class="reference internal" href="#">Condor Interaction Modules</a><ul>
+<li><a class="reference internal" href="#module-cyclopts.condor.utils">Utility Module &#8211; <tt class="docutils literal"><span class="pre">cyclopts.condor.utils</span></tt></a></li>
+<li><a class="reference internal" href="#module-cyclopts.condor.queue">Work Queue Module &#8211; <tt class="docutils literal"><span class="pre">cyclopts.condor.queue</span></tt></a></li>
+<li><a class="reference internal" href="#module-cyclopts.condor.dag">DAG Module &#8211; <tt class="docutils literal"><span class="pre">cyclopts.condor.dag</span></tt></a></li>
+</ul>
+</li>
+</ul>
+
+  </div>
   <div class="sphinxprev">
     <h4>Previous page</h4>
-    <p class="topless"><a href="params.html"
-                          title="Previous page">&larr; Parameter Definition Module &#8211; <tt class="docutils literal"><span class="pre">cyclopts.params</span></tt></a></p>
+    <p class="topless"><a href="tools.html"
+                          title="Previous page">&larr; Cyclopts Tools Module &#8211; <tt class="docutils literal"><span class="pre">cyclopts.tools</span></tt></a></p>
   </div>
   <div class="sphinxnext">
     <h4>Next page</h4>
-    <p class="topless"><a href="analysis.html"
-                          title="Next page">&rarr; Analysis Module &#8211; <tt class="docutils literal"><span class="pre">cyclopts.analysis</span></tt></a></p>
+    <p class="topless"><a href="exchange_family.html"
+                          title="Next page">&rarr; Exchange Family Module &#8211; <tt class="docutils literal"><span class="pre">cyclopts.exchange_family</span></tt></a></p>
   </div>
   <h3>This Page</h3>
   <ul class="this-page-menu">
@@ -129,10 +408,10 @@
           <a href="../np-modindex.html" title="Python Module Index"
              >modules</a> &nbsp; &nbsp;</li>
         <li class="right" >
-          <a href="analysis.html" title="Analysis Module – cyclopts.analysis"
+          <a href="exchange_family.html" title="Exchange Family Module – cyclopts.exchange_family"
              >next</a> &nbsp; &nbsp;</li>
         <li class="right" >
-          <a href="params.html" title="Parameter Definition Module – cyclopts.params"
+          <a href="tools.html" title="Cyclopts Tools Module – cyclopts.tools"
              >previous</a> &nbsp; &nbsp;</li>
     <li><a href="../index.html">Cyclopts 0.1.0 documentation</a> &raquo;</li>
 

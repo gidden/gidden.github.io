@@ -83,13 +83,32 @@
 <span class="kn">from</span> <span class="nn">signal</span> <span class="kn">import</span> <span class="n">alarm</span><span class="p">,</span> <span class="n">signal</span><span class="p">,</span> <span class="n">SIGALRM</span><span class="p">,</span> <span class="n">SIGKILL</span>
 <span class="kn">from</span> <span class="nn">subprocess</span> <span class="kn">import</span> <span class="n">PIPE</span><span class="p">,</span> <span class="n">Popen</span>
 <span class="kn">import</span> <span class="nn">getpass</span>
+<span class="kn">import</span> <span class="nn">importlib</span>
+<span class="kn">import</span> <span class="nn">itertools</span>
 
 <span class="kn">import</span> <span class="nn">cyclopts</span>
-<span class="kn">from</span> <span class="nn">cyclopts.params</span> <span class="kn">import</span> <span class="n">CONSTR_ARGS</span><span class="p">,</span> <span class="n">Param</span><span class="p">,</span> <span class="n">BoolParam</span><span class="p">,</span> <span class="n">SupConstrParam</span><span class="p">,</span> <span class="n">CoeffParam</span><span class="p">,</span> \
-    <span class="n">ReactorRequestSampler</span><span class="p">,</span> <span class="n">ReactorRequestBuilder</span> <span class="c">#, ReactorSupplySampler</span>
+<span class="kn">from</span> <span class="nn">cyclopts.params</span> <span class="kn">import</span> <span class="n">PARAM_CTOR_ARGS</span><span class="p">,</span> <span class="n">Param</span><span class="p">,</span> <span class="n">BoolParam</span><span class="p">,</span> <span class="n">SupConstrParam</span><span class="p">,</span> \
+    <span class="n">CoeffParam</span>
+
+<span class="n">FILTERS</span> <span class="o">=</span> <span class="n">t</span><span class="o">.</span><span class="n">Filters</span><span class="p">(</span><span class="n">complevel</span><span class="o">=</span><span class="mi">4</span><span class="p">)</span>
 
 <span class="n">cyclopts_remote_run_dir</span> <span class="o">=</span> <span class="s">&#39;cyclopts-runs&#39;</span>
 
+<div class="viewcode-block" id="Incrementer"><a class="viewcode-back" href="../../pyapi/tools.html#cyclopts.tools.Incrementer">[docs]</a><span class="k">class</span> <span class="nc">Incrementer</span><span class="p">(</span><span class="nb">object</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;A simple helper class to increment a value&quot;&quot;&quot;</span>
+    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">start</span> <span class="o">=</span> <span class="mi">0</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        start : int, optional</span>
+<span class="sd">            an initial value</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_val</span> <span class="o">=</span> <span class="n">start</span> <span class="o">-</span> <span class="mi">1</span>
+
+<div class="viewcode-block" id="Incrementer.next"><a class="viewcode-back" href="../../pyapi/tools.html#cyclopts.tools.Incrementer.next">[docs]</a>    <span class="k">def</span> <span class="nf">next</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Returns an incremented value&quot;&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_val</span> <span class="o">+=</span> <span class="mi">1</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_val</span>
+</div></div>
 <span class="k">class</span> <span class="nc">NotSpecified</span><span class="p">(</span><span class="nb">object</span><span class="p">):</span>
     <span class="sd">&quot;&quot;&quot;A helper class singleton for run control meaning that a &#39;real&#39; value</span>
 <span class="sd">    has not been given.&quot;&quot;&quot;</span>
@@ -209,6 +228,10 @@
 <span class="sd">    ----------</span>
 <span class="sd">    files : list or str</span>
 <span class="sd">        the files to parse</span>
+
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+<span class="sd">    rc : RunControl</span>
 <span class="sd">    &quot;&quot;&quot;</span>
     <span class="n">files</span> <span class="o">=</span> <span class="p">[</span><span class="n">files</span><span class="p">]</span> <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">files</span><span class="p">,</span> <span class="nb">basestring</span><span class="p">)</span> <span class="k">else</span> <span class="n">files</span>
     <span class="n">rc</span> <span class="o">=</span> <span class="n">RunControl</span><span class="p">()</span>
@@ -221,89 +244,13 @@
     <span class="k">return</span> <span class="n">rc</span>
 </div>
 <div class="viewcode-block" id="exec_file"><a class="viewcode-back" href="../../pyapi/tools.html#cyclopts.tools.exec_file">[docs]</a><span class="k">def</span> <span class="nf">exec_file</span><span class="p">(</span><span class="n">filename</span><span class="p">,</span> <span class="n">glb</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span> <span class="n">loc</span><span class="o">=</span><span class="bp">None</span><span class="p">):</span>
-    <span class="sd">&quot;&quot;&quot;A function equivalent to the Python 2.x execfile statement.&quot;&quot;&quot;</span>
+    <span class="sd">&quot;&quot;&quot;A function equivalent to the Python 2.x execfile statement. Taken from</span>
+<span class="sd">    xdress/utils.py&quot;&quot;&quot;</span>
     <span class="k">with</span> <span class="n">io</span><span class="o">.</span><span class="n">open</span><span class="p">(</span><span class="n">filename</span><span class="p">,</span> <span class="s">&#39;r&#39;</span><span class="p">)</span> <span class="k">as</span> <span class="n">f</span><span class="p">:</span>
         <span class="n">src</span> <span class="o">=</span> <span class="n">f</span><span class="o">.</span><span class="n">read</span><span class="p">()</span>
     <span class="k">exec</span><span class="p">(</span><span class="nb">compile</span><span class="p">(</span><span class="n">src</span><span class="p">,</span> <span class="n">filename</span><span class="p">,</span> <span class="s">&quot;exec&quot;</span><span class="p">),</span> <span class="n">glb</span><span class="p">,</span> <span class="n">loc</span><span class="p">)</span>
-        </div>
-<div class="viewcode-block" id="SamplerBuilder"><a class="viewcode-back" href="../../pyapi/tools.html#cyclopts.tools.SamplerBuilder">[docs]</a><span class="k">class</span> <span class="nc">SamplerBuilder</span><span class="p">(</span><span class="nb">object</span><span class="p">):</span>
-    <span class="sd">&quot;&quot;&quot;A helper class to build configure instances of parameter samplers</span>
-<span class="sd">    &quot;&quot;&quot;</span>
-    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">rc</span><span class="p">):</span>
-        <span class="n">pdict</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_get_param_dict</span><span class="p">(</span><span class="n">rc</span><span class="p">)</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">n_samplers</span> <span class="o">=</span> <span class="nb">reduce</span><span class="p">(</span><span class="n">operator</span><span class="o">.</span><span class="n">mul</span><span class="p">,</span> 
-                                 <span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">l</span><span class="p">)</span> <span class="k">for</span> <span class="n">_</span><span class="p">,</span> <span class="n">val</span> <span class="ow">in</span> <span class="n">pdict</span><span class="o">.</span><span class="n">iteritems</span><span class="p">()</span> \
-                                      <span class="k">for</span> <span class="n">l</span> <span class="ow">in</span> <span class="n">val</span><span class="p">),</span> <span class="mi">1</span><span class="p">)</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">params_it</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_param_gen</span><span class="p">(</span><span class="n">pdict</span><span class="p">)</span>
-        
-<div class="viewcode-block" id="SamplerBuilder.build"><a class="viewcode-back" href="../../pyapi/tools.html#cyclopts.tools.SamplerBuilder.build">[docs]</a>    <span class="k">def</span> <span class="nf">build</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
-        <span class="sd">&quot;&quot;&quot;Builds all permutations of samplers.</span>
-<span class="sd">        &quot;&quot;&quot;</span>
-        <span class="c">## for supply implementation</span>
-        <span class="c"># samplers = [ReactorRequestSampler() if params_dict[&#39;request&#39;] \</span>
-        <span class="c">#                 else ReactorSupplySampler() for range(n_samplers)]</span>
-        <span class="n">s_ctor</span> <span class="o">=</span> <span class="n">ReactorRequestSampler</span>
-        <span class="n">pairings</span> <span class="o">=</span> <span class="p">[[(</span><span class="n">name</span><span class="p">,</span> <span class="n">param</span><span class="p">)</span> <span class="k">for</span> <span class="n">param</span> <span class="ow">in</span> <span class="n">params</span><span class="p">]</span> <span class="k">for</span> <span class="n">name</span><span class="p">,</span> <span class="n">params</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">params_it</span><span class="p">]</span>
-        <span class="k">for</span> <span class="n">p</span> <span class="ow">in</span> <span class="n">product</span><span class="p">(</span><span class="o">*</span><span class="n">pairings</span><span class="p">):</span>
-            <span class="n">s</span> <span class="o">=</span> <span class="n">s_ctor</span><span class="p">()</span>
-            <span class="k">for</span> <span class="n">name</span><span class="p">,</span> <span class="n">param</span> <span class="ow">in</span> <span class="n">p</span><span class="p">:</span>
-                <span class="nb">setattr</span><span class="p">(</span><span class="n">s</span><span class="p">,</span> <span class="n">name</span><span class="p">,</span> <span class="n">param</span><span class="p">)</span>
-            <span class="k">if</span> <span class="n">s</span><span class="o">.</span><span class="n">valid</span><span class="p">():</span>
-                <span class="k">yield</span> <span class="n">s</span>
-        </div>
-    <span class="k">def</span> <span class="nf">_get_param_dict</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">rc</span><span class="p">):</span>
-        <span class="sd">&quot;&quot;&quot;Provides a dictionary of parameter names to all constructor arguments</span>
-<span class="sd">        for a resource exchange range of instances.</span>
-<span class="sd">        </span>
-<span class="sd">        Parameters</span>
-<span class="sd">        ----------</span>
-<span class="sd">        rc : RunControl</span>
-<span class="sd">            A RunControl object defined by the user&#39;s parsed rc file.</span>
-<span class="sd">        </span>
-<span class="sd">        Returns</span>
-<span class="sd">        -------</span>
-<span class="sd">        params_dict : dict</span>
-<span class="sd">            A dictionary whose keys are parameter names and values are lists of</span>
-<span class="sd">            ranges of constructor arguments.</span>
-<span class="sd">        &quot;&quot;&quot;</span>
-        <span class="n">params_dict</span> <span class="o">=</span> <span class="p">{}</span>
-        <span class="n">s</span> <span class="o">=</span> <span class="n">ReactorRequestSampler</span><span class="p">()</span> <span class="c"># only works for reactor requests for now</span>
-        <span class="k">for</span> <span class="n">k</span><span class="p">,</span> <span class="n">v</span> <span class="ow">in</span> <span class="n">rc</span><span class="o">.</span><span class="n">_dict</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
-            <span class="n">name</span> <span class="o">=</span> <span class="n">k</span>
-            <span class="n">attr</span> <span class="o">=</span> <span class="n">v</span>
-            <span class="k">if</span> <span class="nb">hasattr</span><span class="p">(</span><span class="n">s</span><span class="p">,</span> <span class="n">name</span><span class="p">):</span>
-                <span class="n">vals</span> <span class="o">=</span> <span class="p">[]</span>
-                <span class="n">args</span> <span class="o">=</span> <span class="n">CONSTR_ARGS</span><span class="p">[</span><span class="nb">type</span><span class="p">(</span><span class="nb">getattr</span><span class="p">(</span><span class="n">s</span><span class="p">,</span> <span class="n">name</span><span class="p">))]</span>
-                <span class="k">for</span> <span class="n">arg</span> <span class="ow">in</span> <span class="n">args</span><span class="p">:</span>
-                    <span class="k">if</span> <span class="n">arg</span> <span class="ow">in</span> <span class="n">attr</span><span class="p">:</span>
-                        <span class="n">vals</span> <span class="o">+=</span> <span class="p">[</span><span class="n">attr</span><span class="p">[</span><span class="n">arg</span><span class="p">]]</span>
-                <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">vals</span><span class="p">)</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">:</span>
-                    <span class="n">params_dict</span><span class="p">[</span><span class="n">name</span><span class="p">]</span> <span class="o">=</span> <span class="n">vals</span>
-            <span class="k">else</span><span class="p">:</span>
-                <span class="k">print</span><span class="p">(</span><span class="s">&quot;Found an entry named {0} that &quot;</span>
-                      <span class="s">&quot;is unknown to the parser.&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">k</span><span class="p">))</span>
-                
-        <span class="c"># for name in s.__dict__:</span>
-        <span class="c">#     if hasattr(rc, name):</span>
-        <span class="c">#         vals = []</span>
-        <span class="c">#         args = CONSTR_ARGS[type(getattr(s, name))]</span>
-        <span class="c">#         attr = getattr(rc, name)</span>
-        <span class="c">#         for arg in args:</span>
-        <span class="c">#             if arg in attr:</span>
-        <span class="c">#                 vals += [attr[arg]]</span>
-        <span class="c">#         if len(vals) &gt; 0:</span>
-        <span class="c">#             params_dict[name] = vals</span>
-        <span class="k">return</span> <span class="n">params_dict</span>
-
-    <span class="k">def</span> <span class="nf">_param_gen</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">params_dict</span><span class="p">):</span>
-        <span class="sd">&quot;&quot;&quot;Returns input for _add_subtree() given input for build()&quot;&quot;&quot;</span>
-        <span class="n">params_dict</span> <span class="o">=</span> <span class="p">{</span><span class="n">k</span><span class="p">:</span> <span class="p">[</span><span class="n">i</span> <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="n">product</span><span class="p">(</span><span class="o">*</span><span class="n">v</span><span class="p">)]</span> \
-                           <span class="k">for</span> <span class="n">k</span><span class="p">,</span> <span class="n">v</span> <span class="ow">in</span> <span class="n">params_dict</span><span class="o">.</span><span class="n">items</span><span class="p">()}</span>
-        <span class="n">s</span> <span class="o">=</span> <span class="n">ReactorRequestSampler</span><span class="p">()</span>
-        <span class="k">for</span> <span class="n">k</span><span class="p">,</span> <span class="n">v</span> <span class="ow">in</span> <span class="n">params_dict</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
-            <span class="k">yield</span> <span class="n">k</span><span class="p">,</span> <span class="p">[</span><span class="nb">type</span><span class="p">(</span><span class="nb">getattr</span><span class="p">(</span><span class="n">s</span><span class="p">,</span> <span class="n">k</span><span class="p">))(</span><span class="o">*</span><span class="n">args</span><span class="p">)</span> <span class="k">for</span> <span class="n">args</span> <span class="ow">in</span> <span class="n">v</span><span class="p">]</span>
 </div>
-<span class="k">def</span> <span class="nf">merge_leaf</span><span class="p">(</span><span class="n">node</span><span class="p">,</span> <span class="n">dest_file</span><span class="p">):</span>
+<span class="k">def</span> <span class="nf">_merge_leaf</span><span class="p">(</span><span class="n">node</span><span class="p">,</span> <span class="n">dest_file</span><span class="p">):</span>
     <span class="n">src</span> <span class="o">=</span> <span class="n">node</span>
     <span class="n">dest</span> <span class="o">=</span> <span class="n">dest_file</span><span class="o">.</span><span class="n">get_node</span><span class="p">(</span><span class="n">node</span><span class="o">.</span><span class="n">_v_pathname</span><span class="p">)</span>
     <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">node</span><span class="p">,</span> <span class="n">t</span><span class="o">.</span><span class="n">Table</span><span class="p">):</span>
@@ -318,7 +265,7 @@
             <span class="n">dest_row</span><span class="o">.</span><span class="n">append</span><span class="p">()</span>
         <span class="n">dest</span><span class="o">.</span><span class="n">flush</span><span class="p">()</span>
         
-<span class="k">def</span> <span class="nf">merge_node</span><span class="p">(</span><span class="n">node</span><span class="p">,</span> <span class="n">dest_file</span><span class="p">):</span>
+<span class="k">def</span> <span class="nf">_merge_node</span><span class="p">(</span><span class="n">node</span><span class="p">,</span> <span class="n">dest_file</span><span class="p">):</span>
     <span class="k">if</span> <span class="ow">not</span> <span class="n">dest_file</span><span class="o">.</span><span class="n">__contains__</span><span class="p">(</span><span class="n">node</span><span class="o">.</span><span class="n">_v_pathname</span><span class="p">):</span>
         <span class="n">node</span><span class="o">.</span><span class="n">_v_file</span><span class="o">.</span><span class="n">copy_node</span><span class="p">(</span>
             <span class="n">node</span><span class="o">.</span><span class="n">_v_pathname</span><span class="p">,</span> 
@@ -328,11 +275,11 @@
         <span class="k">return</span> 
 
     <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">node</span><span class="p">,</span> <span class="n">t</span><span class="o">.</span><span class="n">Leaf</span><span class="p">):</span>
-        <span class="n">merge_leaf</span><span class="p">(</span><span class="n">node</span><span class="p">,</span> <span class="n">dest_file</span><span class="p">)</span>
+        <span class="n">_merge_leaf</span><span class="p">(</span><span class="n">node</span><span class="p">,</span> <span class="n">dest_file</span><span class="p">)</span>
     <span class="k">else</span><span class="p">:</span>
         <span class="k">for</span> <span class="n">child</span> <span class="ow">in</span> <span class="n">node</span><span class="o">.</span><span class="n">_v_children</span><span class="p">:</span>
-            <span class="n">merge_node</span><span class="p">(</span><span class="n">node</span><span class="o">.</span><span class="n">_v_file</span><span class="o">.</span><span class="n">get_node</span><span class="p">(</span><span class="n">node</span><span class="o">.</span><span class="n">_v_pathname</span> <span class="o">+</span> <span class="s">&#39;/&#39;</span> <span class="o">+</span> <span class="n">child</span><span class="p">),</span> 
-                       <span class="n">dest_file</span><span class="p">)</span>
+            <span class="n">_merge_node</span><span class="p">(</span><span class="n">node</span><span class="o">.</span><span class="n">_v_file</span><span class="o">.</span><span class="n">get_node</span><span class="p">(</span><span class="n">node</span><span class="o">.</span><span class="n">_v_pathname</span> <span class="o">+</span> <span class="s">&#39;/&#39;</span> <span class="o">+</span> <span class="n">child</span><span class="p">),</span> 
+                        <span class="n">dest_file</span><span class="p">)</span>
             
 <div class="viewcode-block" id="combine"><a class="viewcode-back" href="../../pyapi/tools.html#cyclopts.tools.combine">[docs]</a><span class="k">def</span> <span class="nf">combine</span><span class="p">(</span><span class="n">files</span><span class="p">,</span> <span class="n">new_file</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span> <span class="n">clean</span><span class="o">=</span><span class="bp">False</span><span class="p">):</span>
     <span class="sd">&quot;&quot;&quot;Combines two or more databases with identical layout, writing their</span>
@@ -363,50 +310,24 @@
     <span class="n">aggdb</span> <span class="o">=</span> <span class="n">t</span><span class="o">.</span><span class="n">open_file</span><span class="p">(</span><span class="n">fname</span><span class="p">,</span> <span class="s">&#39;a&#39;</span><span class="p">)</span>
     <span class="k">for</span> <span class="n">f</span> <span class="ow">in</span> <span class="n">files</span><span class="p">:</span>
         <span class="n">db</span> <span class="o">=</span> <span class="n">t</span><span class="o">.</span><span class="n">open_file</span><span class="p">(</span><span class="n">f</span><span class="p">,</span> <span class="s">&#39;r&#39;</span><span class="p">)</span>
-        <span class="n">merge_node</span><span class="p">(</span><span class="n">db</span><span class="o">.</span><span class="n">root</span><span class="p">,</span> <span class="n">aggdb</span><span class="p">)</span>
+        <span class="n">_merge_node</span><span class="p">(</span><span class="n">db</span><span class="o">.</span><span class="n">root</span><span class="p">,</span> <span class="n">aggdb</span><span class="p">)</span>
         <span class="n">aggdb</span><span class="o">.</span><span class="n">flush</span><span class="p">()</span>
         <span class="n">db</span><span class="o">.</span><span class="n">close</span><span class="p">()</span>
         <span class="k">if</span> <span class="n">clean</span><span class="p">:</span>
             <span class="n">os</span><span class="o">.</span><span class="n">remove</span><span class="p">(</span><span class="n">f</span><span class="p">)</span>
     <span class="n">aggdb</span><span class="o">.</span><span class="n">close</span><span class="p">()</span>
 </div>
-<div class="viewcode-block" id="run"><a class="viewcode-back" href="../../pyapi/tools.html#cyclopts.tools.run">[docs]</a><span class="k">def</span> <span class="nf">run</span><span class="p">(</span><span class="n">args</span><span class="p">,</span> <span class="n">cwd</span> <span class="o">=</span> <span class="bp">None</span><span class="p">,</span> <span class="n">shell</span> <span class="o">=</span> <span class="bp">False</span><span class="p">,</span> <span class="n">kill_tree</span> <span class="o">=</span> <span class="bp">True</span><span class="p">,</span> <span class="n">timeout</span> <span class="o">=</span> <span class="o">-</span><span class="mi">1</span><span class="p">,</span> <span class="n">env</span> <span class="o">=</span> <span class="bp">None</span><span class="p">):</span>
-    <span class="sd">&#39;&#39;&#39;</span>
-<span class="sd">    Run a command with a timeout after which it will be forcibly</span>
-<span class="sd">    killed.</span>
-<span class="sd">    &#39;&#39;&#39;</span>
-    <span class="k">class</span> <span class="nc">Alarm</span><span class="p">(</span><span class="ne">Exception</span><span class="p">):</span>
-        <span class="k">pass</span>
-    <span class="k">def</span> <span class="nf">alarm_handler</span><span class="p">(</span><span class="n">signum</span><span class="p">,</span> <span class="n">frame</span><span class="p">):</span>
-        <span class="k">raise</span> <span class="n">Alarm</span>
-    <span class="n">p</span> <span class="o">=</span> <span class="n">Popen</span><span class="p">(</span><span class="n">args</span><span class="p">,</span> <span class="n">shell</span> <span class="o">=</span> <span class="n">shell</span><span class="p">,</span> <span class="n">cwd</span> <span class="o">=</span> <span class="n">cwd</span><span class="p">,</span> <span class="n">stdout</span> <span class="o">=</span> <span class="n">PIPE</span><span class="p">,</span> <span class="n">stderr</span> <span class="o">=</span> <span class="n">PIPE</span><span class="p">,</span> <span class="n">env</span> <span class="o">=</span> <span class="n">env</span><span class="p">)</span>
-    <span class="k">if</span> <span class="n">timeout</span> <span class="o">!=</span> <span class="o">-</span><span class="mi">1</span><span class="p">:</span>
-        <span class="n">signal</span><span class="p">(</span><span class="n">SIGALRM</span><span class="p">,</span> <span class="n">alarm_handler</span><span class="p">)</span>
-        <span class="n">alarm</span><span class="p">(</span><span class="n">timeout</span><span class="p">)</span>
-    <span class="k">try</span><span class="p">:</span>
-        <span class="n">stdout</span><span class="p">,</span> <span class="n">stderr</span> <span class="o">=</span> <span class="n">p</span><span class="o">.</span><span class="n">communicate</span><span class="p">()</span>
-        <span class="k">if</span> <span class="n">timeout</span> <span class="o">!=</span> <span class="o">-</span><span class="mi">1</span><span class="p">:</span>
-            <span class="n">alarm</span><span class="p">(</span><span class="mi">0</span><span class="p">)</span>
-    <span class="k">except</span> <span class="n">Alarm</span><span class="p">:</span>
-        <span class="n">pids</span> <span class="o">=</span> <span class="p">[</span><span class="n">p</span><span class="o">.</span><span class="n">pid</span><span class="p">]</span>
-        <span class="k">if</span> <span class="n">kill_tree</span><span class="p">:</span>
-            <span class="n">pids</span><span class="o">.</span><span class="n">extend</span><span class="p">(</span><span class="n">get_process_children</span><span class="p">(</span><span class="n">p</span><span class="o">.</span><span class="n">pid</span><span class="p">))</span>
-        <span class="k">for</span> <span class="n">pid</span> <span class="ow">in</span> <span class="n">pids</span><span class="p">:</span>
-            <span class="c"># process might have died before getting to this line</span>
-            <span class="c"># so wrap to avoid OSError: no such process</span>
-            <span class="k">try</span><span class="p">:</span> 
-                <span class="n">kill</span><span class="p">(</span><span class="n">pid</span><span class="p">,</span> <span class="n">SIGKILL</span><span class="p">)</span>
-            <span class="k">except</span> <span class="ne">OSError</span><span class="p">:</span>
-                <span class="k">pass</span>
-        <span class="k">return</span> <span class="o">-</span><span class="mi">9</span><span class="p">,</span> <span class="s">&#39;&#39;</span><span class="p">,</span> <span class="s">&#39;&#39;</span>
-    <span class="k">return</span> <span class="n">p</span><span class="o">.</span><span class="n">returncode</span><span class="p">,</span> <span class="n">stdout</span><span class="p">,</span> <span class="n">stderr</span>
-</div>
-<span class="k">def</span> <span class="nf">get_process_children</span><span class="p">(</span><span class="n">pid</span><span class="p">):</span>
+<div class="viewcode-block" id="get_process_children"><a class="viewcode-back" href="../../pyapi/tools.html#cyclopts.tools.get_process_children">[docs]</a><span class="k">def</span> <span class="nf">get_process_children</span><span class="p">(</span><span class="n">pid</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Return </span>
+<span class="sd">    ------</span>
+<span class="sd">    children : list of ints</span>
+<span class="sd">        all of a processes&#39; children</span>
+<span class="sd">    &quot;&quot;&quot;</span>
     <span class="n">p</span> <span class="o">=</span> <span class="n">Popen</span><span class="p">(</span><span class="s">&#39;ps --no-headers -o pid --ppid </span><span class="si">%d</span><span class="s">&#39;</span> <span class="o">%</span> <span class="n">pid</span><span class="p">,</span> <span class="n">shell</span> <span class="o">=</span> <span class="bp">True</span><span class="p">,</span>
               <span class="n">stdout</span> <span class="o">=</span> <span class="n">PIPE</span><span class="p">,</span> <span class="n">stderr</span> <span class="o">=</span> <span class="n">PIPE</span><span class="p">)</span>
     <span class="n">stdout</span><span class="p">,</span> <span class="n">stderr</span> <span class="o">=</span> <span class="n">p</span><span class="o">.</span><span class="n">communicate</span><span class="p">()</span>
     <span class="k">return</span> <span class="p">[</span><span class="nb">int</span><span class="p">(</span><span class="n">p</span><span class="p">)</span> <span class="k">for</span> <span class="n">p</span> <span class="ow">in</span> <span class="n">stdout</span><span class="o">.</span><span class="n">split</span><span class="p">()]</span>
-
+</div>
 <div class="viewcode-block" id="ssh_test_connect"><a class="viewcode-back" href="../../pyapi/tools.html#cyclopts.tools.ssh_test_connect">[docs]</a><span class="k">def</span> <span class="nf">ssh_test_connect</span><span class="p">(</span><span class="n">client</span><span class="p">,</span> <span class="n">host</span><span class="p">,</span> <span class="n">user</span><span class="p">,</span> <span class="n">keyfile</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span> <span class="n">auth</span><span class="o">=</span><span class="bp">True</span><span class="p">):</span>
     <span class="sd">&quot;&quot;&quot;Tests an ssh connection and returns success or failure thereof.</span>
 <span class="sd">    </span>
@@ -456,6 +377,151 @@
 </div>
 <span class="k">def</span> <span class="nf">uuidhex</span><span class="p">(</span><span class="nb">bytes</span><span class="o">=</span><span class="nb">bytes</span><span class="p">):</span>
     <span class="k">return</span> <span class="n">uuid</span><span class="o">.</span><span class="n">UUID</span><span class="p">(</span><span class="nb">bytes</span><span class="o">=</span><span class="nb">bytes</span><span class="p">)</span><span class="o">.</span><span class="n">hex</span>
+
+<div class="viewcode-block" id="memusg"><a class="viewcode-back" href="../../pyapi/tools.html#cyclopts.tools.memusg">[docs]</a><span class="k">def</span> <span class="nf">memusg</span><span class="p">(</span><span class="n">pid</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;in kb&quot;&quot;&quot;</span>
+    <span class="c"># could also use </span>
+    <span class="c"># resource.getrusage(resource.RUSAGE_SELF).ru_maxrss</span>
+    <span class="n">fname</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">sep</span><span class="p">,</span> <span class="s">&#39;proc&#39;</span><span class="p">,</span> <span class="nb">str</span><span class="p">(</span><span class="n">pid</span><span class="p">),</span> <span class="s">&#39;status&#39;</span><span class="p">)</span>
+    <span class="k">with</span> <span class="n">io</span><span class="o">.</span><span class="n">open</span><span class="p">(</span><span class="n">fname</span><span class="p">)</span> <span class="k">as</span> <span class="n">f</span><span class="p">:</span>
+        <span class="n">lines</span> <span class="o">=</span> <span class="n">f</span><span class="o">.</span><span class="n">readlines</span><span class="p">()</span>
+    <span class="k">return</span> <span class="nb">float</span><span class="p">(</span><span class="nb">next</span><span class="p">(</span><span class="n">l</span> <span class="k">for</span> <span class="n">l</span> <span class="ow">in</span> <span class="n">lines</span> <span class="k">if</span> <span class="n">l</span><span class="o">.</span><span class="n">startswith</span><span class="p">(</span><span class="s">&#39;VmSize&#39;</span><span class="p">))</span><span class="o">.</span><span class="n">split</span><span class="p">()[</span><span class="mi">1</span><span class="p">])</span>
+</div>
+<div class="viewcode-block" id="obj_info"><a class="viewcode-back" href="../../pyapi/tools.html#cyclopts.tools.obj_info">[docs]</a><span class="k">def</span> <span class="nf">obj_info</span><span class="p">(</span><span class="n">kind</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span> <span class="n">rcs</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span> <span class="n">args</span><span class="o">=</span><span class="bp">None</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Get information about an importable object</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    kind : str</span>
+<span class="sd">        the kind of object</span>
+<span class="sd">    rcs : list of RunControl objects or single object, optional</span>
+<span class="sd">        rcs are checked in order</span>
+<span class="sd">    args : argparse args, optional</span>
+<span class="sd">        CLI args</span>
+<span class="sd">    </span>
+<span class="sd">    Return</span>
+<span class="sd">    ------</span>
+<span class="sd">    info : tuple of package, module, and class names</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">mod</span><span class="p">,</span> <span class="n">cname</span><span class="p">,</span> <span class="n">pack</span> <span class="o">=</span> <span class="bp">None</span><span class="p">,</span> <span class="bp">None</span><span class="p">,</span> <span class="bp">None</span>
+
+    <span class="n">rcs</span> <span class="o">=</span> <span class="p">[</span><span class="n">rcs</span><span class="p">]</span> <span class="k">if</span> <span class="ow">not</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">rcs</span><span class="p">,</span> <span class="nb">list</span><span class="p">)</span> <span class="k">else</span> <span class="n">rcs</span>
+    <span class="n">sources</span> <span class="o">=</span> <span class="p">[</span><span class="n">args</span><span class="p">]</span> <span class="o">+</span> <span class="n">rcs</span> <span class="c"># try CLI first, then rcs in order</span>
+
+    <span class="k">for</span> <span class="n">source</span> <span class="ow">in</span> <span class="n">sources</span><span class="p">:</span>
+        <span class="k">if</span> <span class="n">source</span> <span class="ow">is</span> <span class="bp">None</span><span class="p">:</span>
+            <span class="k">continue</span>
+        
+        <span class="n">attr</span> <span class="o">=</span> <span class="s">&#39;{0}_package&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">kind</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">pack</span> <span class="ow">is</span> <span class="bp">None</span> <span class="ow">and</span> <span class="n">mod</span> <span class="ow">is</span> <span class="bp">None</span> <span class="ow">and</span> <span class="n">cname</span> <span class="ow">is</span> <span class="bp">None</span><span class="p">:</span>
+            <span class="k">if</span> <span class="nb">hasattr</span><span class="p">(</span><span class="n">source</span><span class="p">,</span> <span class="n">attr</span><span class="p">):</span>
+                <span class="n">pack</span> <span class="o">=</span> <span class="nb">getattr</span><span class="p">(</span><span class="n">source</span><span class="p">,</span> <span class="n">attr</span><span class="p">)</span>
+        
+        <span class="k">if</span> <span class="n">mod</span> <span class="ow">is</span> <span class="bp">None</span><span class="p">:</span>
+            <span class="n">attr</span> <span class="o">=</span> <span class="s">&#39;{0}_module&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">kind</span><span class="p">)</span>
+            <span class="k">if</span> <span class="nb">hasattr</span><span class="p">(</span><span class="n">source</span><span class="p">,</span> <span class="n">attr</span><span class="p">):</span>
+                <span class="n">mod</span> <span class="o">=</span> <span class="nb">getattr</span><span class="p">(</span><span class="n">source</span><span class="p">,</span> <span class="n">attr</span><span class="p">)</span>
+    
+        <span class="k">if</span> <span class="n">cname</span> <span class="ow">is</span> <span class="bp">None</span><span class="p">:</span>
+            <span class="n">attr</span> <span class="o">=</span> <span class="s">&#39;{0}_class&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">kind</span><span class="p">)</span>
+            <span class="k">if</span> <span class="nb">hasattr</span><span class="p">(</span><span class="n">source</span><span class="p">,</span> <span class="n">attr</span><span class="p">):</span>
+                <span class="n">cname</span> <span class="o">=</span> <span class="nb">getattr</span><span class="p">(</span><span class="n">source</span><span class="p">,</span> <span class="n">attr</span><span class="p">)</span>
+                
+    <span class="k">return</span> <span class="n">pack</span><span class="p">,</span> <span class="n">mod</span><span class="p">,</span> <span class="n">cname</span>
+    </div>
+<div class="viewcode-block" id="get_obj"><a class="viewcode-back" href="../../pyapi/tools.html#cyclopts.tools.get_obj">[docs]</a><span class="k">def</span> <span class="nf">get_obj</span><span class="p">(</span><span class="n">kind</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span> <span class="n">rcs</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span> <span class="n">args</span><span class="o">=</span><span class="bp">None</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Get an object of certain kind, e.g. species or family. Both the rc and</span>
+<span class="sd">    args argument will be searched for attributes named &lt;kind&gt;_package,</span>
+<span class="sd">    &lt;kind&gt;_module, and &lt;kind&gt;_cname. The package/module is then imported and an</span>
+<span class="sd">    instance of the cname is returned. The CLI is searched before the rcs.</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    kind : str</span>
+<span class="sd">        the kind of object</span>
+<span class="sd">    rcs : list of RunControl objects or single object, optional</span>
+<span class="sd">        rcs are checked in order</span>
+<span class="sd">    args : argparse args, optional</span>
+<span class="sd">        CLI args</span>
+
+<span class="sd">    Return</span>
+<span class="sd">    ------</span>
+<span class="sd">    inst : an object instance</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">pack</span><span class="p">,</span> <span class="n">mod</span><span class="p">,</span> <span class="n">cname</span> <span class="o">=</span> <span class="n">obj_info</span><span class="p">(</span><span class="n">kind</span><span class="o">=</span><span class="n">kind</span><span class="p">,</span> <span class="n">rcs</span><span class="o">=</span><span class="n">rcs</span><span class="p">,</span> <span class="n">args</span><span class="o">=</span><span class="n">args</span><span class="p">)</span>
+    
+    <span class="k">try</span><span class="p">:</span>
+        <span class="n">mod</span> <span class="o">=</span> <span class="n">importlib</span><span class="o">.</span><span class="n">import_module</span><span class="p">(</span><span class="n">mod</span><span class="p">,</span> <span class="n">package</span><span class="o">=</span><span class="n">pack</span><span class="p">)</span>
+    <span class="k">except</span> <span class="ne">AttributeError</span><span class="p">:</span>
+        <span class="k">raise</span> <span class="ne">RuntimeError</span><span class="p">(</span><span class="s">&#39;Could not find {0} module {1}. Make sure to add &#39;</span>
+                           <span class="s">&#39;a {0}_module entry to a run control file or the &#39;</span>
+                           <span class="s">&#39;CLI.&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">kind</span><span class="p">,</span> <span class="n">mod</span><span class="p">))</span>
+    
+    <span class="k">if</span> <span class="n">cname</span> <span class="ow">is</span> <span class="bp">None</span> <span class="ow">or</span> <span class="ow">not</span> <span class="nb">hasattr</span><span class="p">(</span><span class="n">mod</span><span class="p">,</span> <span class="n">cname</span><span class="p">):</span>
+        <span class="k">raise</span> <span class="ne">RuntimeError</span><span class="p">(</span><span class="s">&#39;Could not find {0} class {1}. Make sure to add &#39;</span>
+                           <span class="s">&#39;a {0}_class entry to a run control file or the &#39;</span>
+                           <span class="s">&#39;CLI.&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">kind</span><span class="p">,</span> <span class="n">cname</span><span class="p">))</span>
+    
+    <span class="n">inst</span> <span class="o">=</span> <span class="nb">getattr</span><span class="p">(</span><span class="n">mod</span><span class="p">,</span> <span class="n">cname</span><span class="p">)()</span> 
+    <span class="k">return</span> <span class="n">inst</span>
+</div>
+<div class="viewcode-block" id="collect_instids"><a class="viewcode-back" href="../../pyapi/tools.html#cyclopts.tools.collect_instids">[docs]</a><span class="k">def</span> <span class="nf">collect_instids</span><span class="p">(</span><span class="n">h5file</span><span class="p">,</span> <span class="n">path</span><span class="p">,</span> <span class="n">rc</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span> <span class="n">instids</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span> <span class="n">colname</span><span class="o">=</span><span class="s">&#39;instid&#39;</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Collects all instids as specified. </span>
+<span class="sd">    </span>
+<span class="sd">    If rc and instids is None, all ids found in the h5file&#39;s path are collected.</span>
+<span class="sd">    Otherwise, instids provided by the instid listing and the paramater space</span>
+<span class="sd">    defined by the run control `inst_queries` parameter are collected.</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    h5file : PyTables File object</span>
+<span class="sd">        the file to collect ids from</span>
+<span class="sd">    path : str</span>
+<span class="sd">        the path to a property table node</span>
+<span class="sd">    rc : RunControl object, optional</span>
+<span class="sd">        a run control object specifying a subset of instids to collect</span>
+<span class="sd">    instids : collection of uuids</span>
+<span class="sd">        explicit instids to collect</span>
+<span class="sd">    colname : str</span>
+<span class="sd">        the instance id column name</span>
+
+<span class="sd">    Return</span>
+<span class="sd">    ------</span>
+<span class="sd">    instids : set of uuids</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">instids</span> <span class="o">=</span> <span class="nb">set</span><span class="p">(</span><span class="n">uuid</span><span class="o">.</span><span class="n">UUID</span><span class="p">(</span><span class="n">x</span><span class="p">)</span> <span class="k">for</span> <span class="n">x</span> <span class="ow">in</span> <span class="n">instids</span><span class="p">)</span> <span class="k">if</span> <span class="n">instids</span> <span class="ow">is</span> <span class="ow">not</span> <span class="bp">None</span> <span class="k">else</span> <span class="nb">set</span><span class="p">()</span>
+    <span class="n">rc</span> <span class="o">=</span> <span class="n">rc</span> <span class="k">if</span> <span class="n">rc</span> <span class="ow">is</span> <span class="ow">not</span> <span class="bp">None</span> <span class="k">else</span> <span class="n">RunControl</span><span class="p">()</span>
+    <span class="n">instids</span> <span class="o">|=</span> <span class="nb">set</span><span class="p">(</span><span class="n">uuid</span><span class="o">.</span><span class="n">UUID</span><span class="p">(</span><span class="n">x</span><span class="p">)</span> <span class="k">for</span> <span class="n">x</span> <span class="ow">in</span> <span class="n">rc</span><span class="o">.</span><span class="n">inst_ids</span><span class="p">)</span> \
+        <span class="k">if</span> <span class="s">&#39;inst_ids&#39;</span> <span class="ow">in</span> <span class="n">rc</span> <span class="k">else</span> <span class="nb">set</span><span class="p">()</span>
+    
+    <span class="c"># inst queries are a mapping from instance table names to queryable</span>
+    <span class="c"># conditions, the result of which is a collection of instids that meet those</span>
+    <span class="c"># conditions</span>
+    <span class="n">h5node</span> <span class="o">=</span> <span class="n">h5file</span><span class="o">.</span><span class="n">get_node</span><span class="p">(</span><span class="n">path</span><span class="p">)</span>
+    <span class="n">conds</span> <span class="o">=</span> <span class="n">rc</span><span class="o">.</span><span class="n">inst_queries</span> <span class="k">if</span> <span class="s">&#39;inst_queries&#39;</span> <span class="ow">in</span> <span class="n">rc</span> <span class="k">else</span> <span class="p">[]</span>
+    <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">conds</span><span class="p">,</span> <span class="nb">basestring</span><span class="p">):</span>
+        <span class="n">conds</span> <span class="o">=</span> <span class="p">[</span><span class="n">conds</span><span class="p">]</span>
+    <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">conds</span><span class="p">)</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">:</span>
+        <span class="n">ops</span> <span class="o">=</span> <span class="n">conds</span><span class="p">[</span><span class="mi">1</span><span class="p">::</span><span class="mi">2</span><span class="p">]</span>
+        <span class="n">conds</span> <span class="o">=</span> <span class="p">[</span><span class="s">&#39;({0})&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">c</span><span class="p">)</span> <span class="k">if</span> \
+                     <span class="ow">not</span> <span class="n">c</span><span class="o">.</span><span class="n">lstrip</span><span class="p">()</span><span class="o">.</span><span class="n">startswith</span><span class="p">(</span><span class="s">&#39;(&#39;</span><span class="p">)</span> <span class="ow">and</span> \
+                     <span class="ow">not</span> <span class="n">c</span><span class="o">.</span><span class="n">rstrip</span><span class="p">()</span><span class="o">.</span><span class="n">endswith</span><span class="p">(</span><span class="s">&#39;)&#39;</span><span class="p">)</span> <span class="k">else</span> <span class="n">c</span> <span class="k">for</span> <span class="n">c</span> <span class="ow">in</span> <span class="n">conds</span><span class="p">[::</span><span class="mi">2</span><span class="p">]]</span>
+        <span class="n">cond</span> <span class="o">=</span> <span class="s">&#39; &#39;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span>
+            <span class="p">[</span><span class="s">&#39; &#39;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">i</span><span class="p">)</span> <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> \
+                 <span class="n">itertools</span><span class="o">.</span><span class="n">izip_longest</span><span class="p">(</span><span class="n">conds</span><span class="p">,</span> <span class="n">ops</span><span class="p">,</span> <span class="n">fillvalue</span><span class="o">=</span><span class="s">&#39;&#39;</span><span class="p">)])</span><span class="o">.</span><span class="n">strip</span><span class="p">()</span>
+        <span class="n">vals</span> <span class="o">=</span> <span class="p">[</span><span class="n">x</span><span class="p">[</span><span class="n">colname</span><span class="p">]</span> <span class="k">for</span> <span class="n">x</span> <span class="ow">in</span> <span class="n">h5node</span><span class="o">.</span><span class="n">where</span><span class="p">(</span><span class="n">cond</span><span class="p">)]</span>
+        <span class="n">vals</span> <span class="o">=</span> <span class="p">[</span><span class="n">x</span> <span class="o">+</span> <span class="s">&#39;</span><span class="se">\0</span><span class="s">&#39;</span> <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">x</span><span class="p">)</span> <span class="o">==</span> <span class="mi">15</span> <span class="k">else</span> <span class="n">x</span> <span class="k">for</span> <span class="n">x</span> <span class="ow">in</span> <span class="n">vals</span><span class="p">]</span>
+        <span class="n">instids</span> <span class="o">|=</span> <span class="nb">set</span><span class="p">(</span><span class="n">uuid</span><span class="o">.</span><span class="n">UUID</span><span class="p">(</span><span class="nb">bytes</span><span class="o">=</span><span class="n">x</span><span class="p">)</span> <span class="k">for</span> <span class="n">x</span> <span class="ow">in</span> <span class="n">vals</span><span class="p">)</span>
+        
+    <span class="c"># if no ids, then run everything</span>
+    <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">instids</span><span class="p">)</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
+        <span class="k">for</span> <span class="n">row</span> <span class="ow">in</span> <span class="n">h5node</span><span class="o">.</span><span class="n">iterrows</span><span class="p">():</span>
+            <span class="n">iid</span> <span class="o">=</span> <span class="n">row</span><span class="p">[</span><span class="n">colname</span><span class="p">]</span>
+            <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">iid</span><span class="p">)</span> <span class="o">==</span> <span class="mi">15</span><span class="p">:</span>
+                <span class="n">iid</span> <span class="o">+=</span> <span class="s">&#39;</span><span class="se">\0</span><span class="s">&#39;</span>
+            <span class="n">instids</span><span class="o">.</span><span class="n">add</span><span class="p">(</span><span class="n">uuid</span><span class="o">.</span><span class="n">UUID</span><span class="p">(</span><span class="nb">bytes</span><span class="o">=</span><span class="n">iid</span><span class="p">))</span>
+    
+    <span class="k">return</span> <span class="n">instids</span></div>
 </pre></div>
 
           </div>

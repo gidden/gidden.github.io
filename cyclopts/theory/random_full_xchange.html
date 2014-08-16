@@ -8,7 +8,7 @@
   <head>
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
     
-    <title>Python API &mdash; Cyclopts 0.1.0 documentation</title>
+    <title>A Full (Combined) Random Exchange &mdash; Cyclopts 0.1.0 documentation</title>
     
     <link rel="stylesheet" href="../_static/cloud.css" type="text/css" />
     <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
@@ -29,8 +29,8 @@
     <script type="text/javascript" src="../_static/jquery.cookie.js"></script>
     <script type="text/javascript" src="../_static/cloud.js"></script>
     <link rel="top" title="Cyclopts 0.1.0 documentation" href="../index.html" />
-    <link rel="next" title="Parameter Module – cyclopts.params" href="params.html" />
-    <link rel="prev" title="Configuring a Condor Submit Node" href="../submit_node.html" /> 
+    <link rel="up" title="Cyclopts Theory" href="main.html" />
+    <link rel="prev" title="Random Reactor Supply-Based Exchange" href="random_reactor_supply.html" /> 
         <meta name="viewport" content="width=device-width, initial-scale=1">
   </head>
   <body>
@@ -49,13 +49,11 @@
           <a href="../np-modindex.html" title="Python Module Index"
              >modules</a> &nbsp; &nbsp;</li>
         <li class="right" >
-          <a href="params.html" title="Parameter Module – cyclopts.params"
-             accesskey="N">next</a> &nbsp; &nbsp;</li>
-        <li class="right" >
-          <a href="../submit_node.html" title="Configuring a Condor Submit Node"
+          <a href="random_reactor_supply.html" title="Random Reactor Supply-Based Exchange"
              accesskey="P">previous</a> &nbsp; &nbsp;</li>
     <li><a href="../index.html">Cyclopts 0.1.0 documentation</a> &raquo;</li>
- 
+
+          <li><a href="main.html" accesskey="U">Cyclopts Theory</a> &raquo;</li> 
       </ul>
     </div>
     </div>
@@ -66,34 +64,41 @@
         <div class="bodywrapper">
           <div class="body">
             
-  <div class="section" id="python-api">
-<span id="pyapi"></span><h1>Python API<a class="headerlink" href="#python-api" title="Permalink to this headline">¶</a></h1>
-<div class="section" id="cyclopts-kernel-api">
-<h2>Cyclopts Kernel API<a class="headerlink" href="#cyclopts-kernel-api" title="Permalink to this headline">¶</a></h2>
-<p>This section covers the general Python API in Cyclopts.</p>
-<div class="toctree-wrapper compound">
-<ul>
-<li class="toctree-l1"><a class="reference internal" href="params.html">Parameter Module &#8211; <tt class="docutils literal"><span class="pre">cyclopts.params</span></tt></a></li>
-<li class="toctree-l1"><a class="reference internal" href="problems.html">Problem Definition Module &#8211; <tt class="docutils literal"><span class="pre">cyclopts.problems</span></tt></a></li>
-<li class="toctree-l1"><a class="reference internal" href="io.html">I/O Module &#8211; <tt class="docutils literal"><span class="pre">cyclopts.cyclopts_io</span></tt></a></li>
-<li class="toctree-l1"><a class="reference internal" href="tools.html">Cyclopts Tools Module &#8211; <tt class="docutils literal"><span class="pre">cyclopts.tools</span></tt></a></li>
-<li class="toctree-l1"><a class="reference internal" href="condor.html">Condor Interaction Modules</a><ul>
-<li class="toctree-l2"><a class="reference internal" href="condor.html#module-cyclopts.condor.utils">Utility Module &#8211; <tt class="docutils literal"><span class="pre">cyclopts.condor.utils</span></tt></a></li>
-<li class="toctree-l2"><a class="reference internal" href="condor.html#module-cyclopts.condor.queue">Work Queue Module &#8211; <tt class="docutils literal"><span class="pre">cyclopts.condor.queue</span></tt></a></li>
-<li class="toctree-l2"><a class="reference internal" href="condor.html#module-cyclopts.condor.dag">DAG Module &#8211; <tt class="docutils literal"><span class="pre">cyclopts.condor.dag</span></tt></a></li>
-</ul>
-</li>
-</ul>
+  <div class="section" id="a-full-combined-random-exchange">
+<h1>A Full (Combined) Random Exchange<a class="headerlink" href="#a-full-combined-random-exchange" title="Permalink to this headline">¶</a></h1>
+<p>The full exchange incorporates both the reactor requset parameters and the
+reactor supply parameters and adds a notion of repositories. In general, a
+repository is a back-end facility that bids on resources that could be used as
+advanced reactor fuel. As such, it ties both subexchanges together, requiring
+that they be solved as a larger exchange.</p>
+<p>The full exchange requires a small number of parameters be defined in addition
+to the reactor request and supply parameters. Only the number of repositories
+and number of back end facilities for which a to-repository node will be added
+is needed. All reactor assembly nodes are considered candidates for repository
+arcs, and such arcs are chosen according to the exchange&#8217;s exclusion
+probability.</p>
+<div class="section" id="number-of-repositories">
+<h2>number of repositories<a class="headerlink" href="#number-of-repositories" title="Permalink to this headline">¶</a></h2>
+<p>The number of repositories associated with the exchange.</p>
+<div class="section" id="distribution-candidacy">
+<h3>Distribution Candidacy<a class="headerlink" href="#distribution-candidacy" title="Permalink to this headline">¶</a></h3>
+<p>None</p>
+</div>
+<div class="section" id="theoretical-basis">
+<h3>Theoretical Basis<a class="headerlink" href="#theoretical-basis" title="Permalink to this headline">¶</a></h3>
+<p>The number of repositories is a fundamental parameter for full resource exchange.</p>
 </div>
 </div>
-<div class="section" id="cyclus-related-problem-api">
-<h2>Cyclus-Related Problem API<a class="headerlink" href="#cyclus-related-problem-api" title="Permalink to this headline">¶</a></h2>
-<p>This section covers the Cyclus-related Python API in Cyclopts.</p>
-<div class="toctree-wrapper compound">
-<ul>
-<li class="toctree-l1"><a class="reference internal" href="exchange_family.html">Exchange Family Module &#8211; <tt class="docutils literal"><span class="pre">cyclopts.exchange_family</span></tt></a></li>
-<li class="toctree-l1"><a class="reference internal" href="random_request_species.html">Random Request Species Module &#8211; <tt class="docutils literal"><span class="pre">cyclopts.random_request_species</span></tt></a></li>
-</ul>
+<div class="section" id="fraction-back-end-to-repo">
+<h2>fraction back-end to repo<a class="headerlink" href="#fraction-back-end-to-repo" title="Permalink to this headline">¶</a></h2>
+<p>The fraction of back-end suppliers that can also send resources to a repository.</p>
+<div class="section" id="id1">
+<h3>Distribution Candidacy<a class="headerlink" href="#id1" title="Permalink to this headline">¶</a></h3>
+<p>Likely discrete values of 0, 0.25, 0.5, 0.75, and 1.</p>
+</div>
+<div class="section" id="id2">
+<h3>Theoretical Basis<a class="headerlink" href="#id2" title="Permalink to this headline">¶</a></h3>
+<p>Some suppliers may want to send their supply to repositories or reactors.</p>
 </div>
 </div>
 </div>
@@ -109,9 +114,9 @@
         </a></p><div class="sphinxlocaltoc">
     <h3><a href="../index.html">Table of Contents</a></h3>
     <ul>
-<li><a class="reference internal" href="#">Python API</a><ul>
-<li><a class="reference internal" href="#cyclopts-kernel-api">Cyclopts Kernel API</a></li>
-<li><a class="reference internal" href="#cyclus-related-problem-api">Cyclus-Related Problem API</a></li>
+<li><a class="reference internal" href="#">A Full (Combined) Random Exchange</a><ul>
+<li><a class="reference internal" href="#number-of-repositories">number of repositories</a></li>
+<li><a class="reference internal" href="#fraction-back-end-to-repo">fraction back-end to repo</a></li>
 </ul>
 </li>
 </ul>
@@ -119,17 +124,12 @@
   </div>
   <div class="sphinxprev">
     <h4>Previous page</h4>
-    <p class="topless"><a href="../submit_node.html"
-                          title="Previous page">&larr; Configuring a Condor Submit Node</a></p>
-  </div>
-  <div class="sphinxnext">
-    <h4>Next page</h4>
-    <p class="topless"><a href="params.html"
-                          title="Next page">&rarr; Parameter Module &#8211; <tt class="docutils literal"><span class="pre">cyclopts.params</span></tt></a></p>
+    <p class="topless"><a href="random_reactor_supply.html"
+                          title="Previous page">&larr; Random Reactor Supply-Based Exchange</a></p>
   </div>
   <h3>This Page</h3>
   <ul class="this-page-menu">
-    <li><a href="../_sources/pyapi/main.txt"
+    <li><a href="../_sources/theory/random_full_xchange.txt"
            rel="nofollow">Show Source</a></li>
   </ul>
 <div id="searchbox" style="display: none">
@@ -164,13 +164,11 @@
           <a href="../np-modindex.html" title="Python Module Index"
              >modules</a> &nbsp; &nbsp;</li>
         <li class="right" >
-          <a href="params.html" title="Parameter Module – cyclopts.params"
-             >next</a> &nbsp; &nbsp;</li>
-        <li class="right" >
-          <a href="../submit_node.html" title="Configuring a Condor Submit Node"
+          <a href="random_reactor_supply.html" title="Random Reactor Supply-Based Exchange"
              >previous</a> &nbsp; &nbsp;</li>
     <li><a href="../index.html">Cyclopts 0.1.0 documentation</a> &raquo;</li>
- 
+
+          <li><a href="main.html" >Cyclopts Theory</a> &raquo;</li> 
       </ul>
     </div>
     </div>

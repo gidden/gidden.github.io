@@ -102,22 +102,55 @@ Problem Family.</div></blockquote>
 </div>
 <div class="section" id="implementing-a-new-problem-family">
 <h2>Implementing a New Problem Family<a class="headerlink" href="#implementing-a-new-problem-family" title="Permalink to this headline">¶</a></h2>
-<p>A problem family class must implement the following functions:</p>
+<p>A problem family class must implement the following methods:</p>
 <ul class="simple">
-<li><tt class="docutils literal"><span class="pre">record_instance</span></tt></li>
-<li><tt class="docutils literal"><span class="pre">read_instance</span></tt></li>
-<li><tt class="docutils literal"><span class="pre">exec_instance</span></tt></li>
-<li><tt class="docutils literal"><span class="pre">record_solution</span></tt></li>
+<li><tt class="docutils literal"><span class="pre">register_tables</span></tt></li>
+<li><tt class="docutils literal"><span class="pre">record_inst</span></tt></li>
+<li><tt class="docutils literal"><span class="pre">read_inst</span></tt></li>
+<li><tt class="docutils literal"><span class="pre">run_inst</span></tt></li>
+<li><tt class="docutils literal"><span class="pre">record_soln</span></tt></li>
+<li><tt class="docutils literal"><span class="pre">name</span></tt></li>
+<li><tt class="docutils literal"><span class="pre">property_table_name</span></tt></li>
 </ul>
 </div>
 <div class="section" id="implementing-a-new-problem-species">
 <h2>Implementing a New Problem Species<a class="headerlink" href="#implementing-a-new-problem-species" title="Permalink to this headline">¶</a></h2>
 <p>A problem species class must implement the following functions:</p>
 <ul class="simple">
+<li><tt class="docutils literal"><span class="pre">register_tables</span></tt></li>
 <li><tt class="docutils literal"><span class="pre">read_space</span></tt></li>
 <li><tt class="docutils literal"><span class="pre">record_point</span></tt></li>
-<li><tt class="docutils literal"><span class="pre">gen_instance</span></tt></li>
+<li><tt class="docutils literal"><span class="pre">points</span></tt></li>
+<li><tt class="docutils literal"><span class="pre">n_points</span></tt></li>
+<li><tt class="docutils literal"><span class="pre">gen_inst</span></tt></li>
+<li><tt class="docutils literal"><span class="pre">family</span></tt></li>
+<li><tt class="docutils literal"><span class="pre">name</span></tt></li>
 </ul>
+</div>
+<div class="section" id="workflow">
+<h2>Workflow<a class="headerlink" href="#workflow" title="Permalink to this headline">¶</a></h2>
+<p>After implementing a custom problem family and species, the Cyclopts workflow is
+as follows.</p>
+<ul class="simple">
+<li>Write a parameter space run control file</li>
+<li><tt class="docutils literal"><span class="pre">cyclopts</span> <span class="pre">convert</span></tt> the space into instances</li>
+<li>either<ul>
+<li><tt class="docutils literal"><span class="pre">cyclopts</span> <span class="pre">exec</span></tt> the instances locally or</li>
+<li><tt class="docutils literal"><span class="pre">cyclopts</span> <span class="pre">condor-submit</span></tt> them, wait for their completion, and
+<tt class="docutils literal"><span class="pre">cyclopts</span> <span class="pre">condor-collect</span></tt> the results</li>
+</ul>
+</li>
+<li><tt class="docutils literal"><span class="pre">cyclopts</span> <span class="pre">combine</span></tt> the input and output databases</li>
+<li>analyze the results</li>
+</ul>
+</div>
+<div class="section" id="tips">
+<h2>Tips<a class="headerlink" href="#tips" title="Permalink to this headline">¶</a></h2>
+<p>Having to declare the family/species module and class names on the command line
+or in every run control file can be rather annoying. You can set global run
+control parameters by adding a <tt class="docutils literal"><span class="pre">~/.cyclopts.rc</span></tt> file to your system. If no
+other class or module entries are found in either the CLI or declared run
+control file, this location is searched.</p>
 </div>
 </div>
 
@@ -136,6 +169,8 @@ Problem Family.</div></blockquote>
 <li><a class="reference internal" href="#nomenclature">Nomenclature</a></li>
 <li><a class="reference internal" href="#implementing-a-new-problem-family">Implementing a New Problem Family</a></li>
 <li><a class="reference internal" href="#implementing-a-new-problem-species">Implementing a New Problem Species</a></li>
+<li><a class="reference internal" href="#workflow">Workflow</a></li>
+<li><a class="reference internal" href="#tips">Tips</a></li>
 </ul>
 </li>
 </ul>

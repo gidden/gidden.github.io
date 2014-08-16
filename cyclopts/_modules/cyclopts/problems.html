@@ -1,0 +1,375 @@
+
+
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>cyclopts.problems &mdash; Cyclopts 0.1.0 documentation</title>
+    
+    <link rel="stylesheet" href="../../_static/cloud.css" type="text/css" />
+    <link rel="stylesheet" href="../../_static/pygments.css" type="text/css" />
+    <link rel="stylesheet" href="//fonts.googleapis.com/css?family=Noticia+Text|Open+Sans|Droid+Sans+Mono" type="text/css" />
+    
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    '../../',
+        VERSION:     '0.1.0',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="../../_static/jquery.js"></script>
+    <script type="text/javascript" src="../../_static/underscore.js"></script>
+    <script type="text/javascript" src="../../_static/doctools.js"></script>
+    <script type="text/javascript" src="../../_static/jquery.cookie.js"></script>
+    <script type="text/javascript" src="../../_static/cloud.js"></script>
+    <link rel="top" title="Cyclopts 0.1.0 documentation" href="../../index.html" />
+    <link rel="up" title="Module code" href="../index.html" /> 
+        <meta name="viewport" content="width=device-width, initial-scale=1">
+  </head>
+  <body>
+    <div class="relbar-top">
+        
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../../genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="../../py-modindex.html" title="Python Module Index"
+             >modules</a> &nbsp; &nbsp;</li>
+        <li class="right" >
+          <a href="../../np-modindex.html" title="Python Module Index"
+             >modules</a> &nbsp; &nbsp;</li>
+    <li><a href="../../index.html">Cyclopts 0.1.0 documentation</a> &raquo;</li>
+
+          <li><a href="../index.html" accesskey="U">Module code</a> &raquo;</li> 
+      </ul>
+    </div>
+    </div>
+  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body">
+            
+  <h1>Source code for cyclopts.problems</h1><div class="highlight"><pre>
+<span class="sd">&quot;&quot;&quot;This module provides base classes for Problem Families, Species, and Solvers.</span>
+
+<span class="sd">:author: Matthew Gidden &lt;matthew.gidden _at_ gmail.com&gt;</span>
+<span class="sd">&quot;&quot;&quot;</span>
+
+<span class="kn">from</span> <span class="nn">cyclopts._cproblem</span> <span class="kn">import</span> <span class="o">*</span>
+
+<div class="viewcode-block" id="ProblemFamily"><a class="viewcode-back" href="../../pyapi/problems.html#cyclopts.problems.ProblemFamily">[docs]</a><span class="k">class</span> <span class="nc">ProblemFamily</span><span class="p">(</span><span class="nb">object</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;A class representing families of problems that share the same</span>
+<span class="sd">    structure.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">pass</span>
+
+    <span class="nd">@property</span>
+<div class="viewcode-block" id="ProblemFamily.name"><a class="viewcode-back" href="../../pyapi/problems.html#cyclopts.problems.ProblemFamily.name">[docs]</a>    <span class="k">def</span> <span class="nf">name</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Derived classes should implement this function, returning the name of</span>
+<span class="sd">        the family</span>
+<span class="sd">               </span>
+<span class="sd">        Returns</span>
+<span class="sd">        -------</span>
+<span class="sd">        name : string</span>
+<span class="sd">            The name of this family</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">raise</span> <span class="ne">NotImplementedError</span>
+</div>
+    <span class="nd">@property</span>            
+<div class="viewcode-block" id="ProblemFamily.table_prefix"><a class="viewcode-back" href="../../pyapi/problems.html#cyclopts.problems.ProblemFamily.table_prefix">[docs]</a>    <span class="k">def</span> <span class="nf">table_prefix</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Returns the HDF5 group location for tables of this family&quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="s">&#39;/{0}/{1}&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="s">&#39;Family&#39;</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">name</span><span class="p">)</span>
+</div>
+    <span class="nd">@property</span>            
+<div class="viewcode-block" id="ProblemFamily.property_table_name"><a class="viewcode-back" href="../../pyapi/problems.html#cyclopts.problems.ProblemFamily.property_table_name">[docs]</a>    <span class="k">def</span> <span class="nf">property_table_name</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Derived classes must implement this function and return the name of</span>
+<span class="sd">        the table associated with aggregate instance properties</span>
+
+<span class="sd">        Returns</span>
+<span class="sd">        -------</span>
+<span class="sd">        name : string</span>
+<span class="sd">            The name of this family&#39;s instance property table</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">raise</span> <span class="ne">NotImplementedError</span>
+</div>
+<div class="viewcode-block" id="ProblemFamily.register_tables"><a class="viewcode-back" href="../../pyapi/problems.html#cyclopts.problems.ProblemFamily.register_tables">[docs]</a>    <span class="k">def</span> <span class="nf">register_tables</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">h5file</span><span class="p">,</span> <span class="n">prefix</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Derived classes must implement this function and return their list of</span>
+<span class="sd">        tables</span>
+<span class="sd">        </span>
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        h5file : PyTables File</span>
+<span class="sd">            the hdf5 file</span>
+<span class="sd">        prefix : string</span>
+<span class="sd">            the absolute path to the group for tables of this family</span>
+
+<span class="sd">        Returns</span>
+<span class="sd">        -------</span>
+<span class="sd">        tables : list of cyclopts_io.Tables</span>
+<span class="sd">            All tables that could be written to by this species.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">raise</span> <span class="ne">NotImplementedError</span>
+</div>
+<div class="viewcode-block" id="ProblemFamily.record_inst"><a class="viewcode-back" href="../../pyapi/problems.html#cyclopts.problems.ProblemFamily.record_inst">[docs]</a>    <span class="k">def</span> <span class="nf">record_inst</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">inst</span><span class="p">,</span> <span class="n">inst_uuid</span><span class="p">,</span> <span class="n">param_uuid</span><span class="p">,</span> <span class="n">species</span><span class="p">,</span> <span class="n">tables</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Derived classes must implement this function.</span>
+<span class="sd">        </span>
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        inst : tuple or other</span>
+<span class="sd">            A representation of a problem instance</span>
+<span class="sd">        inst_uuid : uuid</span>
+<span class="sd">            The uuid of the instance</span>
+<span class="sd">        param_uuid : uuid</span>
+<span class="sd">            The uuid of the point in parameter space</span>
+<span class="sd">        species : str</span>
+<span class="sd">            The name of the species that generated this instance</span>
+<span class="sd">        tables : list of cyclopts_io.Table</span>
+<span class="sd">            The tables that can be written to</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">raise</span> <span class="ne">NotImplementedError</span>
+</div>
+<div class="viewcode-block" id="ProblemFamily.record_soln"><a class="viewcode-back" href="../../pyapi/problems.html#cyclopts.problems.ProblemFamily.record_soln">[docs]</a>    <span class="k">def</span> <span class="nf">record_soln</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">soln</span><span class="p">,</span> <span class="n">soln_uuid</span><span class="p">,</span> <span class="n">inst</span><span class="p">,</span> <span class="n">inst_uuid</span><span class="p">,</span> <span class="n">tables</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Derived classes must implement this function to return a list of</span>
+<span class="sd">        </span>
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        soln : ProbSolution or similar</span>
+<span class="sd">            A representation of a problem solution</span>
+<span class="sd">        soln_uuid : uuid</span>
+<span class="sd">            The uuid of the solution</span>
+<span class="sd">        inst : tuple or other</span>
+<span class="sd">            A representation of a problem instance</span>
+<span class="sd">        inst_uuid : uuid</span>
+<span class="sd">            The uuid of the instance</span>
+<span class="sd">        tables : list of cyclopts_io.Table</span>
+<span class="sd">            The tables that can be written to</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">raise</span> <span class="ne">NotImplementedError</span>
+</div>
+<div class="viewcode-block" id="ProblemFamily.read_inst"><a class="viewcode-back" href="../../pyapi/problems.html#cyclopts.problems.ProblemFamily.read_inst">[docs]</a>    <span class="k">def</span> <span class="nf">read_inst</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">uuid</span><span class="p">,</span> <span class="n">tables</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Derived classes must implement this function to return a tuple</span>
+<span class="sd">        instance structures that can be provided to the run_inst function.</span>
+<span class="sd">          </span>
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        uuid : uuid</span>
+<span class="sd">            The uuid of the instance to read</span>
+<span class="sd">        tables : list of cyclopts_io.Table</span>
+<span class="sd">            The tables that can be written to</span>
+
+<span class="sd">        Returns</span>
+<span class="sd">        -------</span>
+<span class="sd">        inst : tuple or other</span>
+<span class="sd">            A representation of a problem instance</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">raise</span> <span class="ne">NotImplementedError</span>
+</div>
+<div class="viewcode-block" id="ProblemFamily.run_inst"><a class="viewcode-back" href="../../pyapi/problems.html#cyclopts.problems.ProblemFamily.run_inst">[docs]</a>    <span class="k">def</span> <span class="nf">run_inst</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">inst</span><span class="p">,</span> <span class="n">solver</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Derived classes must implement this function to take a tuple instance</span>
+<span class="sd">        structures provided by the exec_inst function and return a ProblemResult</span>
+<span class="sd">        or similar object.</span>
+<span class="sd">        </span>
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        inst : tuple or other</span>
+<span class="sd">            A representation of a problem instance</span>
+<span class="sd">        solver : ProbSolver or similar</span>
+<span class="sd">            A representation of a problem solver</span>
+
+<span class="sd">        Returns</span>
+<span class="sd">        -------</span>
+<span class="sd">        soln : ProbSolution or similar</span>
+<span class="sd">            A representation of a problem solution</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">raise</span> <span class="ne">NotImplementedError</span>
+</div></div>
+<div class="viewcode-block" id="ProblemSpecies"><a class="viewcode-back" href="../../pyapi/problems.html#cyclopts.problems.ProblemSpecies">[docs]</a><span class="k">class</span> <span class="nc">ProblemSpecies</span><span class="p">(</span><span class="nb">object</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;A class represnting species of problems that share the same parameter</span>
+<span class="sd">    space and ProblemFamiliy.&quot;&quot;&quot;</span>
+
+    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">pass</span>
+
+    <span class="nd">@property</span>
+<div class="viewcode-block" id="ProblemSpecies.family"><a class="viewcode-back" href="../../pyapi/problems.html#cyclopts.problems.ProblemSpecies.family">[docs]</a>    <span class="k">def</span> <span class="nf">family</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Derived classes must implement this function and return and instance</span>
+<span class="sd">        of this species&#39; family</span>
+<span class="sd">       </span>
+<span class="sd">        Returns</span>
+<span class="sd">        -------</span>
+<span class="sd">        family : ProblemFamily or similar</span>
+<span class="sd">            An instance of this species&#39; family</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">raise</span> <span class="ne">NotImplementedError</span>
+</div>
+    <span class="nd">@property</span>
+<div class="viewcode-block" id="ProblemSpecies.name"><a class="viewcode-back" href="../../pyapi/problems.html#cyclopts.problems.ProblemSpecies.name">[docs]</a>    <span class="k">def</span> <span class="nf">name</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Derived classes should implement this function, returning the name of</span>
+<span class="sd">        the species</span>
+<span class="sd">               </span>
+<span class="sd">        Returns</span>
+<span class="sd">        -------</span>
+<span class="sd">        name : string</span>
+<span class="sd">            The name of this species</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">raise</span> <span class="ne">NotImplementedError</span>
+</div>
+    <span class="nd">@property</span>            
+<div class="viewcode-block" id="ProblemSpecies.table_prefix"><a class="viewcode-back" href="../../pyapi/problems.html#cyclopts.problems.ProblemSpecies.table_prefix">[docs]</a>    <span class="k">def</span> <span class="nf">table_prefix</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Returns the HDF5 group location for tables of this species&quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="s">&#39;/{0}/{1}&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="s">&#39;Species&#39;</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">name</span><span class="p">)</span>
+</div>
+<div class="viewcode-block" id="ProblemSpecies.register_tables"><a class="viewcode-back" href="../../pyapi/problems.html#cyclopts.problems.ProblemSpecies.register_tables">[docs]</a>    <span class="k">def</span> <span class="nf">register_tables</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">h5file</span><span class="p">,</span> <span class="n">prefix</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Derived classes must implement this function and return their list of</span>
+<span class="sd">        tables</span>
+<span class="sd">        </span>
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        h5file : PyTables File</span>
+<span class="sd">            the hdf5 file</span>
+<span class="sd">        prefix : string</span>
+<span class="sd">            the absolute path to the group for tables of this species</span>
+
+<span class="sd">        Returns</span>
+<span class="sd">        -------</span>
+<span class="sd">        tables : list of cyclopts_io.Tables</span>
+<span class="sd">            All tables that could be written to by this species.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">raise</span> <span class="ne">NotImplementedError</span>
+</div>
+<div class="viewcode-block" id="ProblemSpecies.read_space"><a class="viewcode-back" href="../../pyapi/problems.html#cyclopts.problems.ProblemSpecies.read_space">[docs]</a>    <span class="k">def</span> <span class="nf">read_space</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">space_dict</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Derived classes must implement this function.</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        space_dict : dict</span>
+<span class="sd">            A dictionary container resulting from the reading in of a run </span>
+<span class="sd">            control file</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">raise</span> <span class="ne">NotImplementedError</span>
+</div>
+    <span class="nd">@property</span>
+<div class="viewcode-block" id="ProblemSpecies.n_points"><a class="viewcode-back" href="../../pyapi/problems.html#cyclopts.problems.ProblemSpecies.n_points">[docs]</a>    <span class="k">def</span> <span class="nf">n_points</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Derived classes must implement this function returning the number of</span>
+<span class="sd">        points in its parameter space.</span>
+<span class="sd">        </span>
+<span class="sd">        Returns</span>
+<span class="sd">        -------</span>
+<span class="sd">        n : int</span>
+<span class="sd">            The total number of points in the parameter space</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">raise</span> <span class="ne">NotImplementedError</span>
+    </div>
+<div class="viewcode-block" id="ProblemSpecies.points"><a class="viewcode-back" href="../../pyapi/problems.html#cyclopts.problems.ProblemSpecies.points">[docs]</a>    <span class="k">def</span> <span class="nf">points</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Derived classes must implement this function returning a</span>
+<span class="sd">        representation of a point in its parameter space to be used by other</span>
+<span class="sd">        class member functions.</span>
+<span class="sd">        </span>
+<span class="sd">        Returns</span>
+<span class="sd">        -------</span>
+<span class="sd">        point_generator : generator</span>
+<span class="sd">            A generator for representation of a point in parameter space to be </span>
+<span class="sd">            used by this species</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">raise</span> <span class="ne">NotImplementedError</span>    
+</div>
+<div class="viewcode-block" id="ProblemSpecies.record_point"><a class="viewcode-back" href="../../pyapi/problems.html#cyclopts.problems.ProblemSpecies.record_point">[docs]</a>    <span class="k">def</span> <span class="nf">record_point</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">point</span><span class="p">,</span> <span class="n">param_uuid</span><span class="p">,</span> <span class="n">tables</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Derived classes must implement this function, recording information</span>
+<span class="sd">        about a parameter point in the appropriate tables.</span>
+<span class="sd">        </span>
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        point : tuple or other</span>
+<span class="sd">            A representation of a point in parameter space</span>
+<span class="sd">        param_uuid : uuid</span>
+<span class="sd">            The uuid of the point in parameter space</span>
+<span class="sd">        tables : list of cyclopts_io.Table</span>
+<span class="sd">            The tables that can be written to</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">raise</span> <span class="ne">NotImplementedError</span>
+</div>
+<div class="viewcode-block" id="ProblemSpecies.gen_inst"><a class="viewcode-back" href="../../pyapi/problems.html#cyclopts.problems.ProblemSpecies.gen_inst">[docs]</a>    <span class="k">def</span> <span class="nf">gen_inst</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">point</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Derived classes must implement this function, returning a</span>
+<span class="sd">        representation of a problem instance.</span>
+<span class="sd">        </span>
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        point : tuple or other</span>
+<span class="sd">            A representation of a point in parameter space</span>
+<span class="sd">           </span>
+<span class="sd">        Returns</span>
+<span class="sd">        -------</span>
+<span class="sd">        inst : tuple or other</span>
+<span class="sd">            A representation of a problem instance to be used by this species&#39; </span>
+<span class="sd">            family</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">raise</span> <span class="ne">NotImplementedError</span>
+    </div></div>
+</pre></div>
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar">
+        <div class="sphinxsidebarwrapper">
+        <p class="logo"><a href="../../index.html" title="index">
+          <img class="logo" src="../../_static/uni_logo.png" alt="Logo"/>
+        </a></p>
+<div id="searchbox" style="display: none">
+  <h3>Quick search</h3>
+    <form class="search" action="../../search.html" method="get">
+      <input type="text" name="q" />
+      <input type="submit" value="Go" />
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+    <p class="searchtip" style="font-size: 90%">
+    Enter search terms or a module, class or function name.
+    </p>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="relbar-bottom">
+        
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../../genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="../../py-modindex.html" title="Python Module Index"
+             >modules</a> &nbsp; &nbsp;</li>
+        <li class="right" >
+          <a href="../../np-modindex.html" title="Python Module Index"
+             >modules</a> &nbsp; &nbsp;</li>
+    <li><a href="../../index.html">Cyclopts 0.1.0 documentation</a> &raquo;</li>
+
+          <li><a href="../index.html" >Module code</a> &raquo;</li> 
+      </ul>
+    </div>
+    </div>
+
+    <div class="footer">
+        &copy; Copyright 2014, Matthew J. Gidden.
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.2.2.
+    </div>
+    <!-- cloud_sptheme 1.4 -->
+  </body>
+</html>
