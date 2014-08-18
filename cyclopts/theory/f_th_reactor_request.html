@@ -8,7 +8,7 @@
   <head>
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
     
-    <title>A Full (Combined) Random Exchange &mdash; Cyclopts 0.0.5 documentation</title>
+    <title>Fast/Thermal Reactor Request-Based Exchange &mdash; Cyclopts 0.0.5 documentation</title>
     
     <link rel="stylesheet" href="../_static/cloud.css" type="text/css" />
     <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
@@ -30,8 +30,7 @@
     <script type="text/javascript" src="../_static/cloud.js"></script>
     <link rel="top" title="Cyclopts 0.0.5 documentation" href="../index.html" />
     <link rel="up" title="Cyclopts Theory" href="main.html" />
-    <link rel="next" title="Fast/Thermal Reactor Request-Based Exchange" href="f_th_reactor_request.html" />
-    <link rel="prev" title="Random Reactor Supply-Based Exchange" href="random_reactor_supply.html" /> 
+    <link rel="prev" title="A Full (Combined) Random Exchange" href="random_full_xchange.html" /> 
         <meta name="viewport" content="width=device-width, initial-scale=1">
   </head>
   <body>
@@ -50,10 +49,7 @@
           <a href="../np-modindex.html" title="Python Module Index"
              >modules</a> &nbsp; &nbsp;</li>
         <li class="right" >
-          <a href="f_th_reactor_request.html" title="Fast/Thermal Reactor Request-Based Exchange"
-             accesskey="N">next</a> &nbsp; &nbsp;</li>
-        <li class="right" >
-          <a href="random_reactor_supply.html" title="Random Reactor Supply-Based Exchange"
+          <a href="random_full_xchange.html" title="A Full (Combined) Random Exchange"
              accesskey="P">previous</a> &nbsp; &nbsp;</li>
     <li><a href="../index.html">Cyclopts 0.0.5 documentation</a> &raquo;</li>
 
@@ -68,42 +64,65 @@
         <div class="bodywrapper">
           <div class="body">
             
-  <div class="section" id="a-full-combined-random-exchange">
-<h1>A Full (Combined) Random Exchange<a class="headerlink" href="#a-full-combined-random-exchange" title="Permalink to this headline">¶</a></h1>
-<p>The full exchange incorporates both the reactor requset parameters and the
-reactor supply parameters and adds a notion of repositories. In general, a
-repository is a back-end facility that bids on resources that could be used as
-advanced reactor fuel. As such, it ties both subexchanges together, requiring
-that they be solved as a larger exchange.</p>
-<p>The full exchange requires a small number of parameters be defined in addition
-to the reactor request and supply parameters. Only the number of repositories
-and number of back end facilities for which a to-repository node will be added
-is needed. All reactor assembly nodes are considered candidates for repository
-arcs, and such arcs are chosen according to the exchange&#8217;s exclusion
-probability.</p>
-<div class="section" id="number-of-repositories">
-<h2>number of repositories<a class="headerlink" href="#number-of-repositories" title="Permalink to this headline">¶</a></h2>
-<p>The number of repositories associated with the exchange.</p>
-<div class="section" id="distribution-candidacy">
-<h3>Distribution Candidacy<a class="headerlink" href="#distribution-candidacy" title="Permalink to this headline">¶</a></h3>
-<p>None</p>
+  <div class="section" id="fast-thermal-reactor-request-based-exchange">
+<h1>Fast/Thermal Reactor Request-Based Exchange<a class="headerlink" href="#fast-thermal-reactor-request-based-exchange" title="Permalink to this headline">¶</a></h1>
+<p>The primary criticism agaisnt a random assignment of commodities, preference
+coefficients, and constraint coefficients is that using domain-specific models
+provides specific structure to a given formulation. This problem species is
+designed to target a specific set of cases that focus randomness in the
+domain-related values and defines domain-specific translations from those values
+to the associated coefficients.</p>
+<div class="section" id="model-fidelity">
+<h2>Model Fidelity<a class="headerlink" href="#model-fidelity" title="Permalink to this headline">¶</a></h2>
+<p>Furthermore, this species is specifically targeted at investigating the effects
+of model fidelity on a given formulation. Eight different fidelity &#8220;levels&#8221; have
+been defined in three categories.</p>
+<table border="1" class="docutils">
+<colgroup>
+<col width="30%" />
+<col width="70%" />
+</colgroup>
+<thead valign="bottom">
+<tr class="row-odd"><th class="head">Category</th>
+<th class="head">Subcategory</th>
+</tr>
+</thead>
+<tbody valign="top">
+<tr class="row-even"><td>Facility Models</td>
+<td><ul class="first last simple">
+<li>Reactor Requests (batch/assem)</li>
+<li>Supply Constraints (inv/inv + process)</li>
+</ul>
+</td>
+</tr>
+<tr class="row-odd"><td>Fuel Cycle</td>
+<td><ul class="first last simple">
+<li>Once-Through</li>
+<li>UOX + MOX F/Th Recycle</li>
+<li>UOX + MOX F/Th Recycle + Thorium F Recycle</li>
+</ul>
+</td>
+</tr>
+<tr class="row-even"><td>Geospatial</td>
+<td><ul class="first last simple">
+<li>None</li>
+<li>Coarse</li>
+<li>Fine</li>
+</ul>
+</td>
+</tr>
+</tbody>
+</table>
 </div>
-<div class="section" id="theoretical-basis">
-<h3>Theoretical Basis<a class="headerlink" href="#theoretical-basis" title="Permalink to this headline">¶</a></h3>
-<p>The number of repositories is a fundamental parameter for full resource exchange.</p>
-</div>
-</div>
-<div class="section" id="fraction-back-end-to-repo">
-<h2>fraction back-end to repo<a class="headerlink" href="#fraction-back-end-to-repo" title="Permalink to this headline">¶</a></h2>
-<p>The fraction of back-end suppliers that can also send resources to a repository.</p>
-<div class="section" id="id1">
-<h3>Distribution Candidacy<a class="headerlink" href="#id1" title="Permalink to this headline">¶</a></h3>
-<p>Likely discrete values of 0, 0.25, 0.5, 0.75, and 1.</p>
-</div>
-<div class="section" id="id2">
-<h3>Theoretical Basis<a class="headerlink" href="#id2" title="Permalink to this headline">¶</a></h3>
-<p>Some suppliers may want to send their supply to repositories or reactors.</p>
-</div>
+<div class="section" id="commodities">
+<h2>Commodities<a class="headerlink" href="#commodities" title="Permalink to this headline">¶</a></h2>
+<p>There are four possible commodities based on the fuel cycle fidelity modeled:</p>
+<ul class="simple">
+<li>enriched UOX</li>
+<li>fast MOX</li>
+<li>thermal MOX</li>
+<li>fast ThOX</li>
+</ul>
 </div>
 </div>
 
@@ -118,9 +137,9 @@ probability.</p>
         </a></p><div class="sphinxlocaltoc">
     <h3><a href="../index.html">Table of Contents</a></h3>
     <ul>
-<li><a class="reference internal" href="#">A Full (Combined) Random Exchange</a><ul>
-<li><a class="reference internal" href="#number-of-repositories">number of repositories</a></li>
-<li><a class="reference internal" href="#fraction-back-end-to-repo">fraction back-end to repo</a></li>
+<li><a class="reference internal" href="#">Fast/Thermal Reactor Request-Based Exchange</a><ul>
+<li><a class="reference internal" href="#model-fidelity">Model Fidelity</a></li>
+<li><a class="reference internal" href="#commodities">Commodities</a></li>
 </ul>
 </li>
 </ul>
@@ -128,17 +147,12 @@ probability.</p>
   </div>
   <div class="sphinxprev">
     <h4>Previous page</h4>
-    <p class="topless"><a href="random_reactor_supply.html"
-                          title="Previous page">&larr; Random Reactor Supply-Based Exchange</a></p>
-  </div>
-  <div class="sphinxnext">
-    <h4>Next page</h4>
-    <p class="topless"><a href="f_th_reactor_request.html"
-                          title="Next page">&rarr; Fast/Thermal Reactor Request-Based Exchange</a></p>
+    <p class="topless"><a href="random_full_xchange.html"
+                          title="Previous page">&larr; A Full (Combined) Random Exchange</a></p>
   </div>
   <h3>This Page</h3>
   <ul class="this-page-menu">
-    <li><a href="../_sources/theory/random_full_xchange.txt"
+    <li><a href="../_sources/theory/f_th_reactor_request.txt"
            rel="nofollow">Show Source</a></li>
   </ul>
 <div id="searchbox" style="display: none">
@@ -173,10 +187,7 @@ probability.</p>
           <a href="../np-modindex.html" title="Python Module Index"
              >modules</a> &nbsp; &nbsp;</li>
         <li class="right" >
-          <a href="f_th_reactor_request.html" title="Fast/Thermal Reactor Request-Based Exchange"
-             >next</a> &nbsp; &nbsp;</li>
-        <li class="right" >
-          <a href="random_reactor_supply.html" title="Random Reactor Supply-Based Exchange"
+          <a href="random_full_xchange.html" title="A Full (Combined) Random Exchange"
              >previous</a> &nbsp; &nbsp;</li>
     <li><a href="../index.html">Cyclopts 0.0.5 documentation</a> &raquo;</li>
 
