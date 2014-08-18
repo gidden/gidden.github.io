@@ -17,7 +17,6 @@ Furthermore, this species is specifically targeted at investigating the effects
 of model fidelity on a given formulation. Eight different fidelity "levels" have
 been defined in three categories.
 
-
 ===================  =====================================
 Category             Subcategory
 ===================  =====================================
@@ -48,3 +47,35 @@ There are four possible commodities based on the fuel cycle fidelity modeled:
 * thermal MOX
 * fast ThOX
 
+
+Facility Models
+---------------
+
+Reactors
+++++++++
+
+request enrichment and commod_{i, j}
+
+enr per request
+
+recycled fraction for thermal reactors
+
+Supporting Facilities
++++++++++++++++++++++
+
+conversion functions, rhs equation
+
+Fuel Cycles
+-----------
+
+which facilties and commodies exist where
+
+Geospatial Assignment
+---------------------
+
+binning, region/inst proxy, preference function
+
+Preference Determination
+------------------------
+
+qual-to-prox ratio, preference function
