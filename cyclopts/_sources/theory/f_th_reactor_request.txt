@@ -50,6 +50,21 @@ There are four possible commodities based on the fuel cycle fidelity modeled:
 Facilities
 ---------------
 
+In order to allow for rapid instance generation, surrogate models of facilties
+must be used. Surrogate models simplify the decision making that would normally
+occur in agent archetypes. The goal of using surrogate models is provide
+instances generally domain-valid structure.
+
+Material
+++++++++
+
+All surrogate facility models require a notion of materials. Because simplicity
+is required, materials have two properties: a commodity and fertile
+enrichment. Certain commodities are fungible, e.g., fast and thermal
+plutonium. Fungible commodities are delineated by preference assignment and
+supplier process coefficients, both of which described in the following
+sections.
+
 Reactors
 ++++++++
 
