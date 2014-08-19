@@ -76,13 +76,13 @@ recycled fraction for thermal reactors
 
 .. table:: Commodity-Preference Mapping for Reactor Types
 
-============  ===== ===== ===== =====
-Reactor Type  EU    Th Pu F Pu  F Th
-============  ===== ===== ===== =====
-Thermal       1     2     0.5   N/A
-F Pu          N/A   0.5   1     0.25
-F Th          N/A   0.25  0.5   1
-============  ===== ===== ===== =====
+    ============  ===== ===== ===== =====
+    Reactor Type  EU    Th Pu F Pu  F Th
+    ============  ===== ===== ===== =====
+    Thermal       1     2     0.5   N/A
+    F Pu          N/A   0.5   1     0.25
+    F Th          N/A   0.25  0.5   1
+    ============  ===== ===== ===== =====
 
 
 Supporting Facilities
