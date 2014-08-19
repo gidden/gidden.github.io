@@ -74,6 +74,15 @@ enr per request
 
 recycled fraction for thermal reactors
 
+============  ===== ===== ===== =====
+Reactor Type  EU    Th Pu F Pu  F Th
+============  ===== ===== ===== =====
+Thermal       1     2     0.5   N/A
+F Pu          N/A   0.5   1     0.25
+F Th          N/A   0.25  0.5   1
+============  ===== ===== ===== =====
+
+
 Supporting Facilities
 +++++++++++++++++++++
 
