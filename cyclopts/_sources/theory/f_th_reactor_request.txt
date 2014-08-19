@@ -74,6 +74,8 @@ enr per request
 
 recycled fraction for thermal reactors
 
+.. table:: Commodity-Preference Mapping for Reactor Types
+
 ============  ===== ===== ===== =====
 Reactor Type  EU    Th Pu F Pu  F Th
 ============  ===== ===== ===== =====
