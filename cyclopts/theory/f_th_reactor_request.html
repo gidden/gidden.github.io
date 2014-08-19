@@ -88,7 +88,7 @@ been defined in three categories.</p>
 </tr>
 </thead>
 <tbody valign="top">
-<tr class="row-even"><td>Facility Models</td>
+<tr class="row-even"><td>Facilities</td>
 <td><ul class="first last simple">
 <li>Reactor Requests (batch/assem)</li>
 <li>Supply Constraints (inv/inv + process)</li>
@@ -124,8 +124,8 @@ been defined in three categories.</p>
 <li>fast ThOX</li>
 </ul>
 </div>
-<div class="section" id="facility-models">
-<h2>Facility Models<a class="headerlink" href="#facility-models" title="Permalink to this headline">¶</a></h2>
+<div class="section" id="facilities">
+<h2>Facilities<a class="headerlink" href="#facilities" title="Permalink to this headline">¶</a></h2>
 <div class="section" id="reactors">
 <h3>Reactors<a class="headerlink" href="#reactors" title="Permalink to this headline">¶</a></h3>
 <p>request enrichment and commod_{i, j}</p>
@@ -139,15 +139,95 @@ been defined in three categories.</p>
 </div>
 <div class="section" id="fuel-cycles">
 <h2>Fuel Cycles<a class="headerlink" href="#fuel-cycles" title="Permalink to this headline">¶</a></h2>
-<p>which facilties and commodies exist where</p>
+<p>More commodities are required to model more complex fuel cycles. Similarly, as
+more fungible commodities are added a given instance of the GFCTP becomes more
+complex. This species of the GFCTP can add fuel cycle, and therefore commodity,
+complexity in three steps.</p>
+<div class="section" id="once-through">
+<h3>Once Through<a class="headerlink" href="#once-through" title="Permalink to this headline">¶</a></h3>
+<p>The least complex fuel cycle is the Once Through (OT) fuel cycle. Reactors
+request enriched uranium, and supporting facilities are represented by
+Enrichment Fuel Fabricators.</p>
+<div class="section" id="parameters">
+<h4>Parameters<a class="headerlink" href="#parameters" title="Permalink to this headline">¶</a></h4>
+<p>None</p>
+</div>
+</div>
+<div class="section" id="recycle">
+<h3>Recycle<a class="headerlink" href="#recycle" title="Permalink to this headline">¶</a></h3>
+<p>Next, a Recycle (R) scenario is considered. Thermal and fast reactors are
+included, and a ratio between the two is set as a parameter. Supporting
+facilities include Enrichment, Thermal, and Fast Fuel Fabricators. The amount of
+thermal reactors requests that can be satisfied by recycled fuel is set as a
+parameter.</p>
+<div class="section" id="id1">
+<h4>Parameters<a class="headerlink" href="#id1" title="Permalink to this headline">¶</a></h4>
+<blockquote>
+<div><p><img class="math" src="../_images/math/4eb02e5de51af086c11119923eccffa3f18c3483.png" alt="f_{t, f}"/> : the fraction of thermal reactors to fast reactors</p>
+<p><img class="math" src="../_images/math/beee44085dd6dd373147256a54bdc10cded37843.png" alt="f_{re}"/> : the fraction of thermal reactor requests that can be met
+with recycled fuel</p>
+</div></blockquote>
+</div>
+<div class="section" id="questions">
+<h4>Questions<a class="headerlink" href="#questions" title="Permalink to this headline">¶</a></h4>
+<ul class="simple">
+<li>Should suppliers be treated similarly to reactors (i.e., <img class="math" src="../_images/math/4eb02e5de51af086c11119923eccffa3f18c3483.png" alt="f_{t, f}"/>)?
+This increases the parameter space by <img class="math" src="../_images/math/baa709da88ecdd56290056e3c38fabe588997875.png" alt="n - 1"/> dimensions.</li>
+</ul>
+</div>
+</div>
+<div class="section" id="recycle-thorium">
+<h3>Recycle + Thorium<a class="headerlink" href="#recycle-thorium" title="Permalink to this headline">¶</a></h3>
+<p>Finally, a fuel cycle with a thorium breeder reactor is modeled. Building on the
+R scenario, the Recycle + Thorium (RTh) adds an additional fast reactor model
+that prefers Thorium-based recycled fuel. The fraction of fast reactors that are
+Thorium-based is set as a parameter. Additionally, a Thorium Fast Fuel
+Fabricator is added to the pool of suppliers.</p>
+<div class="section" id="id2">
+<h4>Parameters<a class="headerlink" href="#id2" title="Permalink to this headline">¶</a></h4>
+<blockquote>
+<div><img class="math" src="../_images/math/cbaa3678793ef633c91f111de14bdf54d2ce8112.png" alt="f_{th, pu}"/> : the fraction of fast reactors that are Thorium-based</div></blockquote>
+</div>
+</div>
 </div>
 <div class="section" id="geospatial-assignment">
 <h2>Geospatial Assignment<a class="headerlink" href="#geospatial-assignment" title="Permalink to this headline">¶</a></h2>
-<p>binning, region/inst proxy, preference function</p>
+<p>Geospatial values can be assigned in either a coarse or fine fashion. In both
+cases, a location proxy is assigned uniformly, e.g., on <img class="math" src="../_images/math/4aa068473bb8b505e6fb77dd71042441a1f265ba.png" alt="[0,
+1]"/>. Locations are binned, representing regions. If coarse, only regional
+relationships are taken into account; if fine, regional relationships are taken
+into account as well as total proximity.</p>
+<p>Once geospatial values are assigned, they can then affect preferences. A
+surrogate model function is required, and one suggestion is</p>
+<div class="math">
+<p><img src="../_images/math/6122ead49d5fb210f76fd05dea1016e40e566e85.png" alt="p_{l}(i, j) = \delta_{l} \frac{\exp(- | reg_{i} - reg_{j} | ) + \delta_{fine} \exp(- \| loc_{i} - loc_{j} \| )}{1 + \delta_{fine}}"/></p>
+</div><div class="section" id="id3">
+<h3>Parameters<a class="headerlink" href="#id3" title="Permalink to this headline">¶</a></h3>
+<blockquote>
+<div><p><img class="math" src="../_images/math/ee76a8c007848650346760c7fccea5d60d5cc1e7.png" alt="\delta_{l}"/> : whether to include a location preference</p>
+<p><img class="math" src="../_images/math/477dcdf44a28cb70d07bd4259df5443fcff01521.png" alt="\delta_{fine}"/> : whether to include a fine location proxy</p>
+<p><img class="math" src="../_images/math/43b9085cb9140aae11fbbef4f25e40b87e73e3c6.png" alt="n_{reg}"/> : the number of regions</p>
+</div></blockquote>
+</div>
+<div class="section" id="surrogate-models">
+<h3>Surrogate Models<a class="headerlink" href="#surrogate-models" title="Permalink to this headline">¶</a></h3>
+<blockquote>
+<div><img class="math" src="../_images/math/abc39f9cf0284156a1892a386cd0775e58382eb6.png" alt="p_{l}(i, j)"/> : location-based preference</div></blockquote>
+</div>
 </div>
 <div class="section" id="preference-determination">
 <h2>Preference Determination<a class="headerlink" href="#preference-determination" title="Permalink to this headline">¶</a></h2>
-<p>qual-to-prox ratio, preference function</p>
+<p>Given that facilities have preference assignments based on commodity matching
+and, optionally, a valid question is whether the formulation is affected by
+their relative magnitude. Therefore a final parameter is added to determine the
+total preference</p>
+<div class="math">
+<p><img src="../_images/math/aefc66ad8f2b0de687abb085bdbf6a51663ee35c.png" alt="p(i, j) = p_{c}(i, j) + r_{l, c} p_{l}(i, j)"/></p>
+</div><div class="section" id="id4">
+<h3>Parameters<a class="headerlink" href="#id4" title="Permalink to this headline">¶</a></h3>
+<blockquote>
+<div><img class="math" src="../_images/math/e417cf8cfe2deccb5f9efea63f059f89554aa073.png" alt="r_{l, c}"/> : the importance ratio of location to commodity types</div></blockquote>
+</div>
 </div>
 </div>
 
@@ -165,7 +245,7 @@ been defined in three categories.</p>
 <li><a class="reference internal" href="#">Fast/Thermal Reactor Request-Based Exchange</a><ul>
 <li><a class="reference internal" href="#model-fidelity">Model Fidelity</a></li>
 <li><a class="reference internal" href="#commodities">Commodities</a></li>
-<li><a class="reference internal" href="#facility-models">Facility Models</a></li>
+<li><a class="reference internal" href="#facilities">Facilities</a></li>
 <li><a class="reference internal" href="#fuel-cycles">Fuel Cycles</a></li>
 <li><a class="reference internal" href="#geospatial-assignment">Geospatial Assignment</a></li>
 <li><a class="reference internal" href="#preference-determination">Preference Determination</a></li>

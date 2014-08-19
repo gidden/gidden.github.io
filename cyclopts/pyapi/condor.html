@@ -208,7 +208,7 @@ error handling and returns only once the command has been completed.</p>
 </table>
 <dl class="function">
 <dt id="cyclopts.condor.queue.submit">
-<tt class="descclassname">cyclopts.condor.queue.</tt><tt class="descname">submit</tt><big>(</big><em>user</em>, <em>db</em>, <em>instids</em>, <em>module</em>, <em>cname</em>, <em>solvers</em>, <em>remotedir</em>, <em>host='submit-3.chtc.wisc.edu'</em>, <em>keyfile=None</em>, <em>nodes=None</em>, <em>port='5422'</em>, <em>verbose=False</em><big>)</big><a class="reference internal" href="../_modules/cyclopts/condor/queue.html#submit"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#cyclopts.condor.queue.submit" title="Permalink to this definition">¶</a></dt>
+<tt class="descclassname">cyclopts.condor.queue.</tt><tt class="descname">submit</tt><big>(</big><em>user</em>, <em>db</em>, <em>instids</em>, <em>module</em>, <em>cname</em>, <em>solvers</em>, <em>remotedir</em>, <em>log=False</em>, <em>host='submit-3.chtc.wisc.edu'</em>, <em>keyfile=None</em>, <em>nodes=None</em>, <em>port='5422'</em>, <em>verbose=False</em><big>)</big><a class="reference internal" href="../_modules/cyclopts/condor/queue.html#submit"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#cyclopts.condor.queue.submit" title="Permalink to this definition">¶</a></dt>
 <dd><p>Connects via SSH to a condor submit node, and executes a Cyclopts Work
 Queue run.</p>
 <table class="docutils field-list" frame="void" rules="none">
@@ -243,6 +243,10 @@ Queue run.</p>
 <blockquote>
 <div><p>the base run directory on the condor submit node, relative to 
 ~/cyclopts-runs</p>
+</div></blockquote>
+<p><strong>log</strong> : bool</p>
+<blockquote>
+<div><p>whether or not to keep worker/queue logs</p>
 </div></blockquote>
 <p><strong>host</strong> : str, optional</p>
 <blockquote>

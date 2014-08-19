@@ -179,10 +179,10 @@
 <span class="n">submit_cmd</span> <span class="o">=</span> <span class="s">&quot;&quot;&quot;</span>
 <span class="s">mkdir -p {remotedir} &amp;&amp; cd {remotedir} &amp;&amp;</span>
 <span class="s">tar -xf {tarfile} &amp;&amp; rm {tarfile} &amp;&amp; cd {cddir} &amp;&amp; </span>
-<span class="s">nohup python -u launch_master.py port={port} user={user} nids={nids} indb={indb} nodes={nodes} &amp;&gt; launch_master.out &amp;</span>
+<span class="s">nohup python -u launch_master.py port={port} user={user} nids={nids} indb={indb} nodes={nodes} --log={log} &amp;&gt; launch_master.out &amp;</span>
 <span class="s">&quot;&quot;&quot;</span>
 
-<span class="k">def</span> <span class="nf">_submit</span><span class="p">(</span><span class="n">client</span><span class="p">,</span> <span class="n">remotedir</span><span class="p">,</span> <span class="n">tarname</span><span class="p">,</span> <span class="n">nids</span><span class="p">,</span> <span class="n">indb</span><span class="p">,</span>
+<span class="k">def</span> <span class="nf">_submit</span><span class="p">(</span><span class="n">client</span><span class="p">,</span> <span class="n">remotedir</span><span class="p">,</span> <span class="n">tarname</span><span class="p">,</span> <span class="n">nids</span><span class="p">,</span> <span class="n">indb</span><span class="p">,</span> <span class="n">log</span><span class="o">=</span><span class="bp">False</span><span class="p">,</span>
             <span class="n">port</span><span class="o">=</span><span class="s">&#39;5422&#39;</span><span class="p">,</span> <span class="n">user</span><span class="o">=</span><span class="s">&#39;gidden&#39;</span><span class="p">,</span> <span class="n">nodes</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span> <span class="n">verbose</span><span class="o">=</span><span class="bp">False</span><span class="p">):</span>
     <span class="sd">&quot;&quot;&quot;Performs a condor Work Queue sumbission on a client using a tarball of all</span>
 <span class="sd">    submission-related data.</span>
@@ -197,6 +197,10 @@
 <span class="sd">        the name of the tarfile</span>
 <span class="sd">    nids : int</span>
 <span class="sd">        the number of ids being run</span>
+<span class="sd">    indb : str</span>
+<span class="sd">        the name of the input database</span>
+<span class="sd">    log : bool</span>
+<span class="sd">        whether or not to keep worker/queue logs</span>
 <span class="sd">    port : str, optional</span>
 <span class="sd">        the port for the workers and master to communicate on</span>
 <span class="sd">    user : str, optional</span>
@@ -226,12 +230,13 @@
 
     <span class="n">cmd</span> <span class="o">=</span> <span class="n">submit_cmd</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">tarfile</span><span class="o">=</span><span class="n">tarname</span><span class="p">,</span> <span class="n">cddir</span><span class="o">=</span><span class="n">cddir</span><span class="p">,</span> 
                             <span class="n">remotedir</span><span class="o">=</span><span class="n">remotedir</span><span class="p">,</span> <span class="n">port</span><span class="o">=</span><span class="n">port</span><span class="p">,</span> <span class="n">user</span><span class="o">=</span><span class="n">user</span><span class="p">,</span> 
-                            <span class="n">nids</span><span class="o">=</span><span class="n">nids</span><span class="p">,</span> <span class="n">indb</span><span class="o">=</span><span class="n">indb</span><span class="p">,</span> <span class="n">nodes</span><span class="o">=</span><span class="s">&quot;,&quot;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">nodes</span><span class="p">))</span>    
+                            <span class="n">nids</span><span class="o">=</span><span class="n">nids</span><span class="p">,</span> <span class="n">indb</span><span class="o">=</span><span class="n">indb</span><span class="p">,</span> <span class="n">log</span><span class="o">=</span><span class="n">log</span><span class="p">,</span> 
+                            <span class="n">nodes</span><span class="o">=</span><span class="s">&quot;,&quot;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">nodes</span><span class="p">))</span>    
     <span class="k">print</span><span class="p">(</span><span class="s">&quot;Remotely executing &#39;{0}&#39;&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">cmd</span><span class="p">))</span>
     <span class="n">stdin</span><span class="p">,</span> <span class="n">stdout</span><span class="p">,</span> <span class="n">stderr</span> <span class="o">=</span> <span class="n">client</span><span class="o">.</span><span class="n">exec_command</span><span class="p">(</span><span class="n">cmd</span><span class="p">)</span>
     <span class="k">return</span> <span class="n">stdout</span><span class="o">.</span><span class="n">channel</span><span class="o">.</span><span class="n">recv_exit_status</span><span class="p">()</span>
 
-<div class="viewcode-block" id="submit"><a class="viewcode-back" href="../../../pyapi/condor.html#cyclopts.condor.queue.submit">[docs]</a><span class="k">def</span> <span class="nf">submit</span><span class="p">(</span><span class="n">user</span><span class="p">,</span> <span class="n">db</span><span class="p">,</span> <span class="n">instids</span><span class="p">,</span> <span class="n">module</span><span class="p">,</span> <span class="n">cname</span><span class="p">,</span> <span class="n">solvers</span><span class="p">,</span> <span class="n">remotedir</span><span class="p">,</span> 
+<div class="viewcode-block" id="submit"><a class="viewcode-back" href="../../../pyapi/condor.html#cyclopts.condor.queue.submit">[docs]</a><span class="k">def</span> <span class="nf">submit</span><span class="p">(</span><span class="n">user</span><span class="p">,</span> <span class="n">db</span><span class="p">,</span> <span class="n">instids</span><span class="p">,</span> <span class="n">module</span><span class="p">,</span> <span class="n">cname</span><span class="p">,</span> <span class="n">solvers</span><span class="p">,</span> <span class="n">remotedir</span><span class="p">,</span> <span class="n">log</span><span class="o">=</span><span class="bp">False</span><span class="p">,</span>
            <span class="n">host</span><span class="o">=</span><span class="s">&quot;submit-3.chtc.wisc.edu&quot;</span><span class="p">,</span> <span class="n">keyfile</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span> 
            <span class="n">nodes</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span>
            <span class="n">port</span><span class="o">=</span><span class="s">&#39;5422&#39;</span><span class="p">,</span> <span class="n">verbose</span><span class="o">=</span><span class="bp">False</span><span class="p">):</span>
@@ -255,6 +260,8 @@
 <span class="sd">    remotedir : str</span>
 <span class="sd">        the base run directory on the condor submit node, relative to </span>
 <span class="sd">        ~/cyclopts-runs</span>
+<span class="sd">    log : bool</span>
+<span class="sd">        whether or not to keep worker/queue logs</span>
 <span class="sd">    host : str, optional</span>
 <span class="sd">        the condor submit host</span>
 <span class="sd">    keyfile : str, optional</span>
@@ -278,7 +285,7 @@
     <span class="n">client</span><span class="o">.</span><span class="n">connect</span><span class="p">(</span><span class="n">host</span><span class="p">,</span> <span class="n">username</span><span class="o">=</span><span class="n">user</span><span class="p">,</span> <span class="n">key_filename</span><span class="o">=</span><span class="n">keyfile</span><span class="p">,</span> <span class="n">password</span><span class="o">=</span><span class="n">pw</span><span class="p">)</span>
     
     <span class="n">rtn</span> <span class="o">=</span> <span class="n">_submit</span><span class="p">(</span><span class="n">client</span><span class="p">,</span> <span class="n">tools</span><span class="o">.</span><span class="n">cyclopts_remote_run_dir</span><span class="p">,</span> <span class="n">localtar</span><span class="p">,</span> 
-                  <span class="nb">len</span><span class="p">(</span><span class="n">instids</span><span class="p">),</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">basename</span><span class="p">(</span><span class="n">db</span><span class="p">),</span> <span class="n">nodes</span><span class="o">=</span><span class="n">nodes</span><span class="p">,</span>
+                  <span class="nb">len</span><span class="p">(</span><span class="n">instids</span><span class="p">),</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">basename</span><span class="p">(</span><span class="n">db</span><span class="p">),</span> <span class="n">log</span><span class="o">=</span><span class="n">log</span><span class="p">,</span> <span class="n">nodes</span><span class="o">=</span><span class="n">nodes</span><span class="p">,</span>
                   <span class="n">port</span><span class="o">=</span><span class="n">port</span><span class="p">,</span> <span class="n">verbose</span><span class="o">=</span><span class="n">verbose</span><span class="p">)</span>
     <span class="n">client</span><span class="o">.</span><span class="n">close</span><span class="p">()</span>
     <span class="k">if</span> <span class="n">verbose</span><span class="p">:</span>
