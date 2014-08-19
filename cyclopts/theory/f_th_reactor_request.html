@@ -133,7 +133,7 @@ instances generally domain-valid structure.</p>
 <div class="section" id="material">
 <h3>Material<a class="headerlink" href="#material" title="Permalink to this headline">¶</a></h3>
 <p>All surrogate facility models require a notion of materials. Because simplicity
-is required, materials have two properties: a commodity and fertile
+is required, materials have two properties: a commodity and fissile
 enrichment. Certain commodities are fungible, e.g., fast and thermal
 plutonium. Fungible commodities are delineated by preference assignment and
 supplier process coefficients, both of which described in the following
@@ -141,24 +141,130 @@ sections.</p>
 </div>
 <div class="section" id="reactors">
 <h3>Reactors<a class="headerlink" href="#reactors" title="Permalink to this headline">¶</a></h3>
-<p>request enrichment and commod_{i, j}</p>
-<p>enr per request</p>
-<p>recycled fraction for thermal reactors</p>
+<p>Two types of reactors are used: thermal and fast. Thermal reactors are
+simplified models of <a class="reference external" href="https://aris.iaea.org/sites/core.html">AP-1000</a>
+reactors, and fast reactors are simplified models of <a class="reference external" href="http://www-pub.iaea.org/books/IAEABooks/7609/Liquid-Metal-Cooled-Reactors-Experience-in-Design-and-Operation">BN-600</a>
+reactors.</p>
+<p>Using the dimensions in the following table, one can estimate that the AP-1000
+core volume is approximately 12.5 times larger than the BN-600 core. The
+remainder of this section will assume BN-600 reactor cores have size unity and
+AP-1000 cores have size 12.5, respectively, and that fuel density is
+approximately equivalent.</p>
+<table border="1" class="docutils">
+<caption>Active Core Dimensions</caption>
+<colgroup>
+<col width="20%" />
+<col width="38%" />
+<col width="43%" />
+</colgroup>
+<thead valign="bottom">
+<tr class="row-odd"><th class="head">Reactor</th>
+<th class="head">Core Height (m)</th>
+<th class="head">Core Diameter (m)</th>
+</tr>
+</thead>
+<tbody valign="top">
+<tr class="row-even"><td>AP1000</td>
+<td>4.27</td>
+<td>3.04</td>
+</tr>
+<tr class="row-odd"><td>BN600</td>
+<td>0.75</td>
+<td>2.05</td>
+</tr>
+</tbody>
+</table>
+<p>A further simplifying assumption is that both reactor types will reload
+<img class="math" src="../_images/math/5a95342e952acacedea40e8a0641cd7e7a9b1678.png" alt="\frac{1}{4}"/> of their core at any given timestep (as has been assumbed
+for <a class="reference external" href="www.tandfonline.com/doi/pdf/10.1080/18811248.2011.9711744">other</a> BN-600
+analyses).</p>
+<p>Under these assumptions, each fast reactor will request 1 unit of fuel and each
+thermal reactor will request 12.5 units of fuel. Each may be further binned into
+smaller quantities to more accurately model assemblies.</p>
+<div class="section" id="thermal-reactors">
+<h4>Thermal Reactors<a class="headerlink" href="#thermal-reactors" title="Permalink to this headline">¶</a></h4>
+<p>Thermal reactors are capable of using either UOX or recycled MOX, and have
+preferences over the commodities as described below. Fissile isotope enrichments
+can vary from reactor to reator and from assembly to assembly within a
+reactor. Accordingly, a surrogate model of enrichment preference is used,
+randomly selective an enrichment within a viable range. Furthermore, because MOX
+fuel is backfilled by another istopically fertile material, it is assumed that a
+MOX request is approximately <a class="reference external" href="http://www.world-nuclear.org/info/Nuclear-Fuel-Cycle/Fuel-Recycling/Mixed-Oxide-Fuel-MOX/">10%</a>
+of a UOX request. The MOX enrichment range is based off <a class="reference external" href="www-pub.iaea.org/MTCD/publications/PDF/TRS415_web.pdf">IAEA estimates</a>.</p>
+<table border="1" class="docutils">
+<caption>Thermal Reactor Requst Surrogate Model Summary</caption>
+<colgroup>
+<col width="22%" />
+<col width="37%" />
+<col width="41%" />
+</colgroup>
+<thead valign="bottom">
+<tr class="row-odd"><th class="head">Commodity</th>
+<th class="head">Enrichment Range</th>
+<th class="head">Relative Request Size</th>
+</tr>
+</thead>
+<tbody valign="top">
+<tr class="row-even"><td>UOX</td>
+<td><img class="math" src="../_images/math/8ce0d5239eab59ba6fc69e5c2a8d1d29b9ac0759.png" alt="[3.5, 5.5]"/></td>
+<td>1</td>
+</tr>
+<tr class="row-odd"><td>Th &amp; F MOX</td>
+<td><img class="math" src="../_images/math/a8473871b230bf5d44a1db40db2bd32e13a2d825.png" alt="[55, 65]"/></td>
+<td>0.1</td>
+</tr>
+</tbody>
+</table>
+</div>
+<div class="section" id="fast-reactor">
+<h4>Fast Reactor<a class="headerlink" href="#fast-reactor" title="Permalink to this headline">¶</a></h4>
+<p>Fast reactors come in two flavors based on the fuel cycle being modeled:
+MOX-preferring reactors and ThOX-preferring reactors. Enrichment ranges are
+similarly based off plutonium fissile enrichment values in the above IAEA
+report. It is assumed that the Plutonium oxide in MOX takes up ~20% of the total
+mass.</p>
+<table border="1" class="docutils">
+<caption>Fast Reactor Requst Surrogate Model Summary</caption>
+<colgroup>
+<col width="30%" />
+<col width="33%" />
+<col width="37%" />
+</colgroup>
+<thead valign="bottom">
+<tr class="row-odd"><th class="head">Commodity</th>
+<th class="head">Enrichment Range</th>
+<th class="head">Relative Request Size</th>
+</tr>
+</thead>
+<tbody valign="top">
+<tr class="row-even"><td>UOX</td>
+<td><img class="math" src="../_images/math/8a87aab30b0563559f25a5e73580f932d2239048.png" alt="[15, 20]"/></td>
+<td>1</td>
+</tr>
+<tr class="row-odd"><td>Th &amp; F MOX, ThOX</td>
+<td><img class="math" src="../_images/math/a8473871b230bf5d44a1db40db2bd32e13a2d825.png" alt="[55, 65]"/></td>
+<td>0.2</td>
+</tr>
+</tbody>
+</table>
+</div>
+<div class="section" id="commodity-preferences">
+<h4>Commodity Preferences<a class="headerlink" href="#commodity-preferences" title="Permalink to this headline">¶</a></h4>
 <table border="1" class="docutils">
 <caption>Commodity-Preference Mapping for Reactor Types</caption>
 <colgroup>
-<col width="38%" />
-<col width="16%" />
-<col width="16%" />
-<col width="16%" />
-<col width="16%" />
+<col width="30%" />
+<col width="18%" />
+<col width="18%" />
+<col width="18%" />
+<col width="18%" />
 </colgroup>
 <thead valign="bottom">
 <tr class="row-odd"><th class="head">Reactor Type</th>
-<th class="head">EU</th>
-<th class="head">Th Pu</th>
-<th class="head">F Pu</th>
-<th class="head">F Th</th>
+<th class="head">EUOX</th>
+<th class="head">Th MOX</th>
+<th class="head">F MOX</th>
+<th class="head">F ThOX</th>
 </tr>
 </thead>
 <tbody valign="top">
@@ -168,14 +274,14 @@ sections.</p>
 <td>0.5</td>
 <td>N/A</td>
 </tr>
-<tr class="row-odd"><td>F Pu</td>
-<td>N/A</td>
+<tr class="row-odd"><td>F MOX</td>
+<td>0.1</td>
 <td>0.5</td>
 <td>1</td>
 <td>0.25</td>
 </tr>
-<tr class="row-even"><td>F Th</td>
-<td>N/A</td>
+<tr class="row-even"><td>F ThOX</td>
+<td>0.1</td>
 <td>0.25</td>
 <td>0.5</td>
 <td>1</td>
@@ -183,9 +289,68 @@ sections.</p>
 </tbody>
 </table>
 </div>
+<div class="section" id="questions">
+<h4>Questions<a class="headerlink" href="#questions" title="Permalink to this headline">¶</a></h4>
+<ul class="simple">
+<li>What critiques are there regarding the commodity-preference mapping?</li>
+<li>What critiques are there regarding reactory enrichment generation?</li>
+</ul>
+</div>
+</div>
 <div class="section" id="supporting-facilities">
 <h3>Supporting Facilities<a class="headerlink" href="#supporting-facilities" title="Permalink to this headline">¶</a></h3>
-<p>conversion functions, rhs equation</p>
+<p>The supporting facilities represent the separations and fuel fabrications
+processes for each fuel type. Supporting facilities are the suppliers in the
+reactor request case, and therefore must provide supply constraints. The
+supporting facility surrogate models have an inventory constraint and possibly a
+process constraint, depending on the fidelity level used.</p>
+<p>Both constraints must have an associated conversion function, that takes a
+surrogate material, i.e., an enrichment and quantity.</p>
+<div class="section" id="uox-supplier">
+<h4>UOX Supplier<a class="headerlink" href="#uox-supplier" title="Permalink to this headline">¶</a></h4>
+<p>The UOX supplier has well-known conversion functions, where basic additional
+parameters, e.g., feed and tails assays, can be safely assumed</p>
+<div class="math">
+<p><img src="../_images/math/70ea55378285948e09deafe39a18f5c51fca534a.png" alt="conv_{inv}(\epsilon, q) = NatU(\epsilon, q)
+
+conv_{proc}(\epsilon, q) = SWU(\epsilon, q)"/></p>
+</div></div>
+<div class="section" id="mox-and-thox-suppliers">
+<h4>MOX and ThOX Suppliers<a class="headerlink" href="#mox-and-thox-suppliers" title="Permalink to this headline">¶</a></h4>
+<p>Due to the lack of commercially viable, well documented fast reactor fuel
+suppliers, a simple linear surrogate model is assumed for an inventory
+constraint. There are many possible process surrogate models that could be used,
+such as heat production or radiotoxicity.</p>
+<div class="math">
+<p><img src="../_images/math/43fe7cc2a9e328431b0ac1aa66458c1f647d5291.png" alt="conv_{inv}(\epsilon, q) = \epsilon q
+
+conv_{proc}(\epsilon, q) = Dose(\epsilon, q)"/></p>
+</div></div>
+<div class="section" id="supplier-constraint-rhs-values">
+<h4>Supplier Constraint RHS Values<a class="headerlink" href="#supplier-constraint-rhs-values" title="Permalink to this headline">¶</a></h4>
+<p>From the formulation point of view, interesting cases arise when either
+constraint is dominated by the other and when neither is dominant. Furthermore,
+instanes should be investigated in which supply is generally constrained and
+when it is not. In order to accomplish these goals, the supply constraint values
+are formulated as follows</p>
+<div class="math">
+<p><img src="../_images/math/07a7021840fd54a70cad7fc32c55490dbcee6aff.png" alt="S_{inv} = f_{demand} \frac{demand}{conv_{inv}(\bar{\epsilon}, demand)}
+
+S_{proc} = S_{inv} \frac{conv_{inv}(\bar{\epsilon}, demand)}{conv_{proc}(\bar{\epsilon}, demand)} f_{inv, proc}"/></p>
+</div><div class="section" id="parameters">
+<h5>Parameters<a class="headerlink" href="#parameters" title="Permalink to this headline">¶</a></h5>
+<blockquote>
+<div><p><img class="math" src="../_images/math/8e1f9fe68fa2ad49e1b221640e95900aa83366d9.png" alt="f_{demand}"/> : the fraction of demand that should be supplied</p>
+<p><img class="math" src="../_images/math/fe2276c92b40a80f4eb0ca4e6a998c005e74bb54.png" alt="f_{inv, proc}"/> : the relative supply of inventory to process</p>
+</div></blockquote>
+</div>
+</div>
+<div class="section" id="id2">
+<h4>Questions<a class="headerlink" href="#id2" title="Permalink to this headline">¶</a></h4>
+<ul class="simple">
+<li>What process conversion function for fast reactors makes the most sense?</li>
+</ul>
+</div>
 </div>
 </div>
 <div class="section" id="fuel-cycles">
@@ -199,8 +364,8 @@ complexity in three steps.</p>
 <p>The least complex fuel cycle is the Once Through (OT) fuel cycle. Reactors
 request enriched uranium, and supporting facilities are represented by
 Enrichment Fuel Fabricators.</p>
-<div class="section" id="parameters">
-<h4>Parameters<a class="headerlink" href="#parameters" title="Permalink to this headline">¶</a></h4>
+<div class="section" id="id3">
+<h4>Parameters<a class="headerlink" href="#id3" title="Permalink to this headline">¶</a></h4>
 <p>None</p>
 </div>
 </div>
@@ -210,17 +375,18 @@ Enrichment Fuel Fabricators.</p>
 included, and a ratio between the two is set as a parameter. Supporting
 facilities include Enrichment, Thermal, and Fast Fuel Fabricators. The amount of
 thermal reactors requests that can be satisfied by recycled fuel is set as a
-parameter.</p>
-<div class="section" id="id1">
-<h4>Parameters<a class="headerlink" href="#id1" title="Permalink to this headline">¶</a></h4>
+parameter. The fraction is capped at <img class="math" src="../_images/math/e43406db23a07fb474445b2ebb065650d414f2bc.png" alt="\frac{1}{3}"/>, in line with current
+French LWR refueling practices.</p>
+<div class="section" id="id4">
+<h4>Parameters<a class="headerlink" href="#id4" title="Permalink to this headline">¶</a></h4>
 <blockquote>
 <div><p><img class="math" src="../_images/math/4eb02e5de51af086c11119923eccffa3f18c3483.png" alt="f_{t, f}"/> : the fraction of thermal reactors to fast reactors</p>
-<p><img class="math" src="../_images/math/beee44085dd6dd373147256a54bdc10cded37843.png" alt="f_{re}"/> : the fraction of thermal reactor requests that can be met
-with recycled fuel</p>
+<p><img class="math" src="../_images/math/1ef8f5600aca65014e179ce473d1687a2af9bc36.png" alt="f_{re} \in [0, \frac{1}{3}]"/> : the fraction of thermal reactor
+requests that can be met with recycled fuel</p>
 </div></blockquote>
 </div>
-<div class="section" id="questions">
-<h4>Questions<a class="headerlink" href="#questions" title="Permalink to this headline">¶</a></h4>
+<div class="section" id="id5">
+<h4>Questions<a class="headerlink" href="#id5" title="Permalink to this headline">¶</a></h4>
 <ul class="simple">
 <li>Should suppliers be treated similarly to reactors (i.e., <img class="math" src="../_images/math/4eb02e5de51af086c11119923eccffa3f18c3483.png" alt="f_{t, f}"/>)?
 This increases the parameter space by <img class="math" src="../_images/math/baa709da88ecdd56290056e3c38fabe588997875.png" alt="n - 1"/> dimensions.</li>
@@ -234,8 +400,8 @@ R scenario, the Recycle + Thorium (RTh) adds an additional fast reactor model
 that prefers Thorium-based recycled fuel. The fraction of fast reactors that are
 Thorium-based is set as a parameter. Additionally, a Thorium Fast Fuel
 Fabricator is added to the pool of suppliers.</p>
-<div class="section" id="id2">
-<h4>Parameters<a class="headerlink" href="#id2" title="Permalink to this headline">¶</a></h4>
+<div class="section" id="id6">
+<h4>Parameters<a class="headerlink" href="#id6" title="Permalink to this headline">¶</a></h4>
 <blockquote>
 <div><img class="math" src="../_images/math/cbaa3678793ef633c91f111de14bdf54d2ce8112.png" alt="f_{th, pu}"/> : the fraction of fast reactors that are Thorium-based</div></blockquote>
 </div>
@@ -252,8 +418,8 @@ into account as well as total proximity.</p>
 surrogate model function is required, and one suggestion is</p>
 <div class="math">
 <p><img src="../_images/math/6122ead49d5fb210f76fd05dea1016e40e566e85.png" alt="p_{l}(i, j) = \delta_{l} \frac{\exp(- | reg_{i} - reg_{j} | ) + \delta_{fine} \exp(- \| loc_{i} - loc_{j} \| )}{1 + \delta_{fine}}"/></p>
-</div><div class="section" id="id3">
-<h3>Parameters<a class="headerlink" href="#id3" title="Permalink to this headline">¶</a></h3>
+</div><div class="section" id="id7">
+<h3>Parameters<a class="headerlink" href="#id7" title="Permalink to this headline">¶</a></h3>
 <blockquote>
 <div><p><img class="math" src="../_images/math/ee76a8c007848650346760c7fccea5d60d5cc1e7.png" alt="\delta_{l}"/> : whether to include a location preference</p>
 <p><img class="math" src="../_images/math/477dcdf44a28cb70d07bd4259df5443fcff01521.png" alt="\delta_{fine}"/> : whether to include a fine location proxy</p>
@@ -274,8 +440,8 @@ their relative magnitude. Therefore a final parameter is added to determine the
 total preference</p>
 <div class="math">
 <p><img src="../_images/math/aefc66ad8f2b0de687abb085bdbf6a51663ee35c.png" alt="p(i, j) = p_{c}(i, j) + r_{l, c} p_{l}(i, j)"/></p>
-</div><div class="section" id="id4">
-<h3>Parameters<a class="headerlink" href="#id4" title="Permalink to this headline">¶</a></h3>
+</div><div class="section" id="id8">
+<h3>Parameters<a class="headerlink" href="#id8" title="Permalink to this headline">¶</a></h3>
 <blockquote>
 <div><img class="math" src="../_images/math/e417cf8cfe2deccb5f9efea63f059f89554aa073.png" alt="r_{l, c}"/> : the importance ratio of location to commodity types</div></blockquote>
 </div>

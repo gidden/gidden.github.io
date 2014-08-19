@@ -59,7 +59,7 @@ Material
 ++++++++
 
 All surrogate facility models require a notion of materials. Because simplicity
-is required, materials have two properties: a commodity and fertile
+is required, materials have two properties: a commodity and fissile
 enrichment. Certain commodities are fungible, e.g., fast and thermal
 plutonium. Fungible commodities are delineated by preference assignment and
 supplier process coefficients, both of which described in the following
@@ -68,27 +68,161 @@ sections.
 Reactors
 ++++++++
 
-request enrichment and commod_{i, j}
+Two types of reactors are used: thermal and fast. Thermal reactors are
+simplified models of `AP-1000 <https://aris.iaea.org/sites/core.html>`_
+reactors, and fast reactors are simplified models of `BN-600
+<http://www-pub.iaea.org/books/IAEABooks/7609/Liquid-Metal-Cooled-Reactors-Experience-in-Design-and-Operation>`_
+reactors.
 
-enr per request
+Using the dimensions in the following table, one can estimate that the AP-1000
+core volume is approximately 12.5 times larger than the BN-600 core. The
+remainder of this section will assume BN-600 reactor cores have size unity and
+AP-1000 cores have size 12.5, respectively, and that fuel density is
+approximately equivalent.
 
-recycled fraction for thermal reactors
+.. table:: Active Core Dimensions
+
+    ======== =============== =================
+    Reactor  Core Height (m) Core Diameter (m)
+    ======== =============== =================
+    AP1000   4.27            3.04
+    BN600    0.75            2.05
+    ======== =============== =================
+
+A further simplifying assumption is that both reactor types will reload
+:math:`\frac{1}{4}` of their core at any given timestep (as has been assumbed
+for `other <www.tandfonline.com/doi/pdf/10.1080/18811248.2011.9711744>`_ BN-600
+analyses). 
+
+Under these assumptions, each fast reactor will request 1 unit of fuel and each
+thermal reactor will request 12.5 units of fuel. Each may be further binned into
+smaller quantities to more accurately model assemblies.
+
+Thermal Reactors
+~~~~~~~~~~~~~~~~
+
+Thermal reactors are capable of using either UOX or recycled MOX, and have
+preferences over the commodities as described below. Fissile isotope enrichments
+can vary from reactor to reator and from assembly to assembly within a
+reactor. Accordingly, a surrogate model of enrichment preference is used,
+randomly selective an enrichment within a viable range. Furthermore, because MOX
+fuel is backfilled by another istopically fertile material, it is assumed that a
+MOX request is approximately `10%
+<http://www.world-nuclear.org/info/Nuclear-Fuel-Cycle/Fuel-Recycling/Mixed-Oxide-Fuel-MOX/>`_
+of a UOX request. The MOX enrichment range is based off `IAEA estimates
+<www-pub.iaea.org/MTCD/publications/PDF/TRS415_web.pdf>`_.
+
+.. table:: Thermal Reactor Requst Surrogate Model Summary
+
+    ===========    =================== ==============
+    Commodity      Enrichment Range    Relative Request Size
+    ===========    =================== ==============
+    UOX            :math:`[3.5, 5.5]`  1
+    Th & F MOX     :math:`[55, 65]`    0.1
+    ===========    =================== ==============
+
+Fast Reactor
+~~~~~~~~~~~~
+
+Fast reactors come in two flavors based on the fuel cycle being modeled:
+MOX-preferring reactors and ThOX-preferring reactors. Enrichment ranges are
+similarly based off plutonium fissile enrichment values in the above IAEA
+report. It is assumed that the Plutonium oxide in MOX takes up ~20% of the total
+mass.
+
+.. table:: Fast Reactor Requst Surrogate Model Summary
+
+    =================    =================== ==============
+    Commodity            Enrichment Range    Relative Request Size
+    =================    =================== ==============
+    UOX                  :math:`[15, 20]`    1 
+    Th & F MOX, ThOX     :math:`[55, 65]`    0.2
+    =================    =================== ==============
+    
+Commodity Preferences
+~~~~~~~~~~~~~~~~~~~~~
 
 .. table:: Commodity-Preference Mapping for Reactor Types
 
-    ============  ===== ===== ===== =====
-    Reactor Type  EU    Th Pu F Pu  F Th
-    ============  ===== ===== ===== =====
-    Thermal       1     2     0.5   N/A
-    F Pu          N/A   0.5   1     0.25
-    F Th          N/A   0.25  0.5   1
-    ============  ===== ===== ===== =====
+    ============  ======= ======= ======= =======
+    Reactor Type  EUOX    Th MOX  F MOX   F ThOX
+    ============  ======= ======= ======= =======
+    Thermal       1       2       0.5     N/A
+    F MOX         0.1     0.5     1       0.25
+    F ThOX        0.1     0.25    0.5     1
+    ============  ======= ======= ======= =======
+
+Questions
+~~~~~~~~~
+
+* What critiques are there regarding the commodity-preference mapping?
+* What critiques are there regarding reactory enrichment generation?
 
 
 Supporting Facilities
 +++++++++++++++++++++
 
-conversion functions, rhs equation
+The supporting facilities represent the separations and fuel fabrications
+processes for each fuel type. Supporting facilities are the suppliers in the
+reactor request case, and therefore must provide supply constraints. The
+supporting facility surrogate models have an inventory constraint and possibly a
+process constraint, depending on the fidelity level used.
+
+Both constraints must have an associated conversion function, that takes a
+surrogate material, i.e., an enrichment and quantity.
+
+UOX Supplier
+~~~~~~~~~~~~
+
+The UOX supplier has well-known conversion functions, where basic additional
+parameters, e.g., feed and tails assays, can be safely assumed
+
+.. math::
+
+    conv_{inv}(\epsilon, q) = NatU(\epsilon, q)
+
+    conv_{proc}(\epsilon, q) = SWU(\epsilon, q)
+
+MOX and ThOX Suppliers
+~~~~~~~~~~~~~~~~~~~~~~
+
+Due to the lack of commercially viable, well documented fast reactor fuel
+suppliers, a simple linear surrogate model is assumed for an inventory
+constraint. There are many possible process surrogate models that could be used,
+such as heat production or radiotoxicity.
+
+.. math::
+
+    conv_{inv}(\epsilon, q) = \epsilon q
+
+    conv_{proc}(\epsilon, q) = Dose(\epsilon, q)
+
+Supplier Constraint RHS Values
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+From the formulation point of view, interesting cases arise when either
+constraint is dominated by the other and when neither is dominant. Furthermore,
+instanes should be investigated in which supply is generally constrained and
+when it is not. In order to accomplish these goals, the supply constraint values
+are formulated as follows
+
+.. math::
+
+    S_{inv} = f_{demand} \frac{demand}{conv_{inv}(\bar{\epsilon}, demand)}
+
+    S_{proc} = S_{inv} \frac{conv_{inv}(\bar{\epsilon}, demand)}{conv_{proc}(\bar{\epsilon}, demand)} f_{inv, proc}
+
+Parameters
+::::::::::
+
+    :math:`f_{demand}` : the fraction of demand that should be supplied
+
+    :math:`f_{inv, proc}` : the relative supply of inventory to process
+
+Questions
+~~~~~~~~~
+
+* What process conversion function for fast reactors makes the most sense?
 
 Fuel Cycles
 -----------
@@ -117,15 +251,16 @@ Next, a Recycle (R) scenario is considered. Thermal and fast reactors are
 included, and a ratio between the two is set as a parameter. Supporting
 facilities include Enrichment, Thermal, and Fast Fuel Fabricators. The amount of
 thermal reactors requests that can be satisfied by recycled fuel is set as a
-parameter.
+parameter. The fraction is capped at :math:`\frac{1}{3}`, in line with current
+French LWR refueling practices.
 
 Parameters
 ~~~~~~~~~~
 
     :math:`f_{t, f}` : the fraction of thermal reactors to fast reactors
 
-    :math:`f_{re}` : the fraction of thermal reactor requests that can be met
-    with recycled fuel
+    :math:`f_{re} \in [0, \frac{1}{3}]` : the fraction of thermal reactor
+    requests that can be met with recycled fuel
 
 Questions
 ~~~~~~~~~
