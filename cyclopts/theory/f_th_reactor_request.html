@@ -345,7 +345,14 @@ S_{proc} = S_{inv} \frac{conv_{inv}(\bar{\epsilon}, demand)}{conv_{proc}(\bar{\e
 <h5>Parameters<a class="headerlink" href="#parameters" title="Permalink to this headline">¶</a></h5>
 <blockquote>
 <div><p><img class="math" src="../_images/math/8e1f9fe68fa2ad49e1b221640e95900aa83366d9.png" alt="f_{demand}"/> : the fraction of demand that should be supplied</p>
-<p><img class="math" src="../_images/math/fe2276c92b40a80f4eb0ca4e6a998c005e74bb54.png" alt="f_{inv, proc}"/> : the relative supply of inventory to process</p>
+<p><img class="math" src="../_images/math/fe2276c92b40a80f4eb0ca4e6a998c005e74bb54.png" alt="f_{inv, proc}"/> : the ratio of the inventory RHS to the process RHS</p>
+</div></blockquote>
+</div>
+<div class="section" id="surrogate-models">
+<h5>Surrogate Models<a class="headerlink" href="#surrogate-models" title="Permalink to this headline">¶</a></h5>
+<blockquote>
+<div><p><img class="math" src="../_images/math/2ec0f224f5cfe42c3d91724d49a4e5e29d3a5f7d.png" alt="conv_{inv}(\epsilon, q)"/> : an inventory-based constraint</p>
+<p><img class="math" src="../_images/math/ff0aa0b6e0036bbe00b7d2ce2b0bd0b8e502234e.png" alt="conv_{process}(\epsilon, q)"/> : an process-based constraint</p>
 </div></blockquote>
 </div>
 </div>
@@ -430,8 +437,8 @@ surrogate model function is required, and one suggestion is</p>
 <p><img class="math" src="../_images/math/43b9085cb9140aae11fbbef4f25e40b87e73e3c6.png" alt="n_{reg}"/> : the number of regions</p>
 </div></blockquote>
 </div>
-<div class="section" id="surrogate-models">
-<h3>Surrogate Models<a class="headerlink" href="#surrogate-models" title="Permalink to this headline">¶</a></h3>
+<div class="section" id="id8">
+<h3>Surrogate Models<a class="headerlink" href="#id8" title="Permalink to this headline">¶</a></h3>
 <blockquote>
 <div><img class="math" src="../_images/math/abc39f9cf0284156a1892a386cd0775e58382eb6.png" alt="p_{l}(i, j)"/> : location-based preference</div></blockquote>
 </div>
@@ -444,8 +451,8 @@ the formulation is affected by their relative magnitude. Therefore a final
 parameter is added to determine the total preference</p>
 <div class="math">
 <p><img src="../_images/math/aefc66ad8f2b0de687abb085bdbf6a51663ee35c.png" alt="p(i, j) = p_{c}(i, j) + r_{l, c} p_{l}(i, j)"/></p>
-</div><div class="section" id="id8">
-<h3>Parameters<a class="headerlink" href="#id8" title="Permalink to this headline">¶</a></h3>
+</div><div class="section" id="id9">
+<h3>Parameters<a class="headerlink" href="#id9" title="Permalink to this headline">¶</a></h3>
 <blockquote>
 <div><img class="math" src="../_images/math/e417cf8cfe2deccb5f9efea63f059f89554aa073.png" alt="r_{l, c}"/> : the importance ratio of location to commodity types</div></blockquote>
 </div>
