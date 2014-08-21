@@ -1,0 +1,305 @@
+
+
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>Fast/Thermal Reactor Supply-Based Exchange &mdash; Cyclopts 0.0.5 documentation</title>
+    
+    <link rel="stylesheet" href="../_static/cloud.css" type="text/css" />
+    <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
+    <link rel="stylesheet" href="//fonts.googleapis.com/css?family=Noticia+Text|Open+Sans|Droid+Sans+Mono" type="text/css" />
+    
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    '../',
+        VERSION:     '0.0.5',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="../_static/jquery.js"></script>
+    <script type="text/javascript" src="../_static/underscore.js"></script>
+    <script type="text/javascript" src="../_static/doctools.js"></script>
+    <script type="text/javascript" src="../_static/jquery.cookie.js"></script>
+    <script type="text/javascript" src="../_static/cloud.js"></script>
+    <link rel="top" title="Cyclopts 0.0.5 documentation" href="../index.html" />
+    <link rel="up" title="Cyclopts Theory" href="main.html" />
+    <link rel="prev" title="Fast/Thermal Reactor Request-Based Exchange" href="f_th_reactor_request.html" /> 
+        <meta name="viewport" content="width=device-width, initial-scale=1">
+  </head>
+  <body>
+    <div class="relbar-top">
+        
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="../py-modindex.html" title="Python Module Index"
+             >modules</a> &nbsp; &nbsp;</li>
+        <li class="right" >
+          <a href="../np-modindex.html" title="Python Module Index"
+             >modules</a> &nbsp; &nbsp;</li>
+        <li class="right" >
+          <a href="f_th_reactor_request.html" title="Fast/Thermal Reactor Request-Based Exchange"
+             accesskey="P">previous</a> &nbsp; &nbsp;</li>
+    <li><a href="../index.html">Cyclopts 0.0.5 documentation</a> &raquo;</li>
+
+          <li><a href="main.html" accesskey="U">Cyclopts Theory</a> &raquo;</li> 
+      </ul>
+    </div>
+    </div>
+  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body">
+            
+  <div class="section" id="fast-thermal-reactor-supply-based-exchange">
+<h1>Fast/Thermal Reactor Supply-Based Exchange<a class="headerlink" href="#fast-thermal-reactor-supply-based-exchange" title="Permalink to this headline">¶</a></h1>
+<p>The primary difference between the request and supply-based cases is that the
+commodity assignment of assemblies is known, rather than being decided by the
+outcome of the exchange. The supply-based exchange decides which supporting
+facilities will receive used fuel.</p>
+<p>The levels of fidelity modeled will mirror the request-based case:</p>
+<table border="1" class="docutils">
+<colgroup>
+<col width="30%" />
+<col width="70%" />
+</colgroup>
+<thead valign="bottom">
+<tr class="row-odd"><th class="head">Category</th>
+<th class="head">Subcategory</th>
+</tr>
+</thead>
+<tbody valign="top">
+<tr class="row-even"><td>Facilities</td>
+<td><ul class="first last simple">
+<li>Reactor Requests (batch/assem)</li>
+<li>Supply Constraints (inv/inv + process)</li>
+</ul>
+</td>
+</tr>
+<tr class="row-odd"><td>Fuel Cycle</td>
+<td><ul class="first last simple">
+<li>Once-Through</li>
+<li>UOX + MOX F/Th Recycle</li>
+<li>UOX + MOX F/Th Recycle + Thorium F Recycle</li>
+</ul>
+</td>
+</tr>
+<tr class="row-even"><td>Geospatial</td>
+<td><ul class="first last simple">
+<li>None</li>
+<li>Coarse</li>
+<li>Fine</li>
+</ul>
+</td>
+</tr>
+</tbody>
+</table>
+<div class="section" id="commodities">
+<h2>Commodities<a class="headerlink" href="#commodities" title="Permalink to this headline">¶</a></h2>
+<p>The same commodities will be used as in the request case.</p>
+</div>
+<div class="section" id="facilities">
+<h2>Facilities<a class="headerlink" href="#facilities" title="Permalink to this headline">¶</a></h2>
+<div class="section" id="reactors">
+<h3>Reactors<a class="headerlink" href="#reactors" title="Permalink to this headline">¶</a></h3>
+<p>Reactors representing AP-1000 and BN-600-like generating units will be used to
+determine used fuel supply. In order to simplify the generation of supply, each
+reactor is assumed to be fueled by its preferred commodity with a randomly
+chosen initial enrichment.</p>
+<div class="section" id="parameters">
+<h4>Parameters<a class="headerlink" href="#parameters" title="Permalink to this headline">¶</a></h4>
+<blockquote>
+<div><p><img class="math" src="../_images/math/4eb02e5de51af086c11119923eccffa3f18c3483.png" alt="f_{t, f}"/> : the ratio of thermal reactors to fast reactors</p>
+<p><img class="math" src="../_images/math/31b95349a1f94178b38544abb0f965980a111f41.png" alt="f_{mox} \in [0, \frac{1}{3}]"/> : the fraction of thermal reactor
+used fuel that is MOX</p>
+<p><img class="math" src="../_images/math/cbaa3678793ef633c91f111de14bdf54d2ce8112.png" alt="f_{th, pu}"/> : the ratio of Thorium to Plutonium-based fast reactors</p>
+</div></blockquote>
+</div>
+</div>
+<div class="section" id="supporting-facilities">
+<h3>Supporting Facilities<a class="headerlink" href="#supporting-facilities" title="Permalink to this headline">¶</a></h3>
+<p>Four types of supportin facilities will be modeled:</p>
+<ul class="simple">
+<li>Thermal Recycle</li>
+<li>Fast MOX Recycle</li>
+<li>Fast ThOX Recycle</li>
+<li>Repository</li>
+</ul>
+<div class="section" id="constraint-coefficients">
+<h4>Constraint Coefficients<a class="headerlink" href="#constraint-coefficients" title="Permalink to this headline">¶</a></h4>
+<p>In the low-fidelity version, each facility type will have a linear conversion constraint</p>
+<div class="math">
+<p><img src="../_images/math/3c49bb5ce578ac301ffa4b4b78628734c206da90.png" alt="conv_{inv}(\epsilon, q) = \epsilon q"/></p>
+</div><p>For higher model fideltiy, a heat-generation process constraint is added</p>
+<div class="math">
+<p><img src="../_images/math/933df6624e117dc58c62580e4485078b8aa0ba92.png" alt="conv_{proc}(\epsilon, q) = Heat(\epsilon, q)"/></p>
+</div></div>
+<div class="section" id="constraint-rhs">
+<h4>Constraint RHS<a class="headerlink" href="#constraint-rhs" title="Permalink to this headline">¶</a></h4>
+<p>The constraint RHS values will be determined in the same manner as in the
+request case.</p>
+</div>
+<div class="section" id="commodity-preferences">
+<h4>Commodity Preferences<a class="headerlink" href="#commodity-preferences" title="Permalink to this headline">¶</a></h4>
+<p>Preferences are assigned to facility types based on the fuels they would prefer
+to process. It is assumed that facilities would prefer to process undesireable
+fuels over shutting down. Further, it is assumed that any processing facility
+can process used UOX. Finally, it is assumed that there is a incentive for
+material to be sent to processing facilities over repositories.</p>
+<table border="1" class="docutils">
+<caption>Commodity-Preference Mapping for Supporting Facility Types</caption>
+<colgroup>
+<col width="39%" />
+<col width="15%" />
+<col width="15%" />
+<col width="15%" />
+<col width="15%" />
+</colgroup>
+<thead valign="bottom">
+<tr class="row-odd"><th class="head">Facility Type</th>
+<th class="head">EUOX</th>
+<th class="head">Th MOX</th>
+<th class="head">F MOX</th>
+<th class="head">F ThOX</th>
+</tr>
+</thead>
+<tbody valign="top">
+<tr class="row-even"><td>Thermal Recycle</td>
+<td>1</td>
+<td>1</td>
+<td>0.5</td>
+<td>N/A</td>
+</tr>
+<tr class="row-odd"><td>Fast MOX Recycle</td>
+<td>1</td>
+<td>0.5</td>
+<td>1</td>
+<td>N/A</td>
+</tr>
+<tr class="row-even"><td>Fast ThOX Recycle</td>
+<td>1</td>
+<td>N/A</td>
+<td>N/A</td>
+<td>1</td>
+</tr>
+<tr class="row-odd"><td>Repository</td>
+<td>0.1</td>
+<td>0.1</td>
+<td>0.1</td>
+<td>0.1</td>
+</tr>
+</tbody>
+</table>
+</div>
+<div class="section" id="id1">
+<h4>Parameters<a class="headerlink" href="#id1" title="Permalink to this headline">¶</a></h4>
+<blockquote>
+<div><p><img class="math" src="../_images/math/fc977697899952602bdaae986e25f1793d01b0a4.png" alt="f_{repository}"/> : the ratio of repositories to other supporting
+facilities</p>
+<p><img class="math" src="../_images/math/4eb02e5de51af086c11119923eccffa3f18c3483.png" alt="f_{t, f}"/> : the ratio of thermal recycle facilities to fast recycle
+facilities</p>
+<p><img class="math" src="../_images/math/d6d94573101c1f4e40f6c6583a9316656e969a3a.png" alt="f_{mox, th}"/> : the ratio of MOX fast recycle facilities to ThOX fast
+recycle facilities</p>
+</div></blockquote>
+</div>
+<div class="section" id="questions">
+<h4>Questions<a class="headerlink" href="#questions" title="Permalink to this headline">¶</a></h4>
+<ul class="simple">
+<li>What heat proxy should be used?</li>
+<li>Do preferences match reality? Would every facility want to process UOX?</li>
+</ul>
+</div>
+</div>
+</div>
+</div>
+
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar">
+        <div class="sphinxsidebarwrapper">
+        <p class="logo"><a href="../index.html" title="index">
+          <img class="logo" src="../_static/uni_logo.png" alt="Logo"/>
+        </a></p><div class="sphinxlocaltoc">
+    <h3><a href="../index.html">Table of Contents</a></h3>
+    <ul>
+<li><a class="reference internal" href="#">Fast/Thermal Reactor Supply-Based Exchange</a><ul>
+<li><a class="reference internal" href="#commodities">Commodities</a></li>
+<li><a class="reference internal" href="#facilities">Facilities</a></li>
+</ul>
+</li>
+</ul>
+
+  </div>
+  <div class="sphinxprev">
+    <h4>Previous page</h4>
+    <p class="topless"><a href="f_th_reactor_request.html"
+                          title="Previous page">&larr; Fast/Thermal Reactor Request-Based Exchange</a></p>
+  </div>
+  <h3>This Page</h3>
+  <ul class="this-page-menu">
+    <li><a href="../_sources/theory/f_th_reactor_supply.txt"
+           rel="nofollow">Show Source</a></li>
+  </ul>
+<div id="searchbox" style="display: none">
+  <h3>Quick search</h3>
+    <form class="search" action="../search.html" method="get">
+      <input type="text" name="q" />
+      <input type="submit" value="Go" />
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+    <p class="searchtip" style="font-size: 90%">
+    Enter search terms or a module, class or function name.
+    </p>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="relbar-bottom">
+        
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="../py-modindex.html" title="Python Module Index"
+             >modules</a> &nbsp; &nbsp;</li>
+        <li class="right" >
+          <a href="../np-modindex.html" title="Python Module Index"
+             >modules</a> &nbsp; &nbsp;</li>
+        <li class="right" >
+          <a href="f_th_reactor_request.html" title="Fast/Thermal Reactor Request-Based Exchange"
+             >previous</a> &nbsp; &nbsp;</li>
+    <li><a href="../index.html">Cyclopts 0.0.5 documentation</a> &raquo;</li>
+
+          <li><a href="main.html" >Cyclopts Theory</a> &raquo;</li> 
+      </ul>
+    </div>
+    </div>
+
+    <div class="footer">
+        &copy; Copyright 2014, Matthew J. Gidden.
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.2.2.
+    </div>
+    <!-- cloud_sptheme 1.4 -->
+  </body>
+</html>
