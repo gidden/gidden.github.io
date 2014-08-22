@@ -188,8 +188,7 @@ analyses).</p>
 thermal reactor will request 12.5 units of fuel. Each may be further binned into
 smaller quantities to more accurately model assemblies.</p>
 <p>As a rough approximation using the figures from active core size, and assuming
-that a single AP-1000 fuel assembly holds [450
-kg](<a class="reference external" href="http://books.google.com/books/about/Nuclear_Engineering_Handbook.html?id=EMy2OyUrqbUC">http://books.google.com/books/about/Nuclear_Engineering_Handbook.html?id=EMy2OyUrqbUC</a>)
+that a single AP-1000 fuel assembly holds <a class="reference external" href="http://books.google.com/books/about/Nuclear_Engineering_Handbook.html?id=EMy2OyUrqbUC">450 kg</a>
 of Uranium, a unit of fuel is roughly</p>
 <div class="math">
 <p><img src="../_images/math/8ecc52ac8209e3a6bde71424729075760469e87c.png" alt="\frac{450 \frac{kg}{assembly} * 157 assemblies * \frac{1}{4} core}{12.5 units} = 1.4 \frac{tonnes}{fuel unit}"/></p>
@@ -358,26 +357,26 @@ suppliers, a simple linear surrogate model is assumed for an inventory
 constraint. There are many possible process surrogate models that could be used,
 such as heat production or radiotoxicity; however, each of these requires a
 detailed isotopic composition to be relevant. Accordingly, a simple throughput
-constraint is considered.</p>
+constraint is considered, assuming a relative request size (from above)
+<img class="math" src="../_images/math/bd5831ebc14fa711ea0324897747545afcd3fdd0.png" alt="r_q"/>.</p>
 <div class="math">
-<p><img src="../_images/math/d372c08f6d13c1bd9fb8a99babfdb39261968dbf.png" alt="conv_{inv}(\epsilon, q) = \epsilon q
+<p><img src="../_images/math/22a2b179e76f97632db4aefd9229280aee5f4fac.png" alt="conv_{inv}(\epsilon, q) = \epsilon q
 
-conv_{proc}(\epsilon, q) = \frac{q}{rel_request_size}"/></p>
+conv_{proc}(\epsilon, q) = \frac{q}{r_q}"/></p>
 </div></div>
 <div class="section" id="supplier-constraint-rhs-values">
 <h4>Supplier Constraint RHS Values<a class="headerlink" href="#supplier-constraint-rhs-values" title="Permalink to this headline">¶</a></h4>
 <p>Supporting facilities have a nominal throughput capacity. The proposed Eagle
-Rock Enrichment Plant
-(purports)[<a class="reference external" href="http://www.areva.com/EN/operations-779/the-eagle-rock-project-construction-of-an-enrichment-plant-in-the-united-states.html">http://www.areva.com/EN/operations-779/the-eagle-rock-project-construction-of-an-enrichment-plant-in-the-united-states.html</a>]
+Rock Enrichment Plant <a class="reference external" href="http://www.areva.com/EN/operations-779/the-eagle-rock-project-construction-of-an-enrichment-plant-in-the-united-states.html">purports</a>
 to have a capacity of 3.5M SWU per year. From previous conversations with
 industry representatives, a reasonable size for a processing plant is 800 tonnes
 per year.</p>
 <p>Assuming a monthly time step and a request basis of a single unit of fuel, the
 process constraint RHS are determined as</p>
 <div class="math">
-<p><img src="../_images/math/9843237097cf25703e7629fc48718ad94a6ecc80.png" alt="S_{proc, SWU} = \frac{3.5e6 \frac{SWU}{year}}{12 {month}{year} * fuel unit} = ~210 \frac{SWU}{month * fuel unit}
+<p><img src="../_images/math/e6dc1bf031ebd8398719299cb7021082a6c0fb49.png" alt="S_{proc, SWU} = \frac{3.5e6 \frac{SWU}{year}}{12 \frac{month}{year} * fuel unit} = ~210 \frac{SWU}{month * fuel unit}
 
-S_{proc, recycle} = \frac{800 \frac{t}{year}}{12 {month}{year} * fuel unit} = ~47 \frac{t}{month * fuel unit}"/></p>
+S_{proc, recycle} = \frac{800 \frac{t}{year}}{12 \frac{month}{year} * fuel unit} = ~47 \frac{t}{month * fuel unit}"/></p>
 </div><p>From the formulation point of view, interesting cases arise when either
 constraint is dominated by the other and when neither is dominant. Furthermore,
 instanes should be investigated in which supply is generally constrained and
