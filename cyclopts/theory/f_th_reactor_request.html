@@ -309,7 +309,12 @@ mass.</p>
 <li>functional form effects (e.g., linear vs. exp) could be added</li>
 </ul>
 </li>
-<li>What critiques are there regarding reactory enrichment generation?</li>
+<li>What critiques are there regarding reactory enrichment generation?<ul>
+<li>start simple with one enrichment per reactor, a possible upgrade is to
+introduce 2 or 3 bins around an average enrichment to emulate enrichment
+zones</li>
+</ul>
+</li>
 </ul>
 </div>
 </div>
@@ -392,7 +397,7 @@ when it is not.</p>
 <p>In order to accomplish these goals, the supply constraint values
 are formulated as follows</p>
 <div class="math">
-\[S_{proc}, given\]\[S_{inv} = \frac{S_{proc} f_{inv, proc} conv_{proc}(\bar{\epsilon}, 1)}{conv_{inv}(\bar{\epsilon}, 1)}\]</div>
+\[S_{proc}, given\]\[S_{inv} = S_{proc} f_{inv, proc} \frac{conv_{proc}(\bar{\epsilon}, 1)}{conv_{inv}(\bar{\epsilon}, 1)}\]</div>
 <div class="section" id="parameters">
 <h5>Parameters<a class="headerlink" href="#parameters" title="Permalink to this headline">¶</a></h5>
 <blockquote>
