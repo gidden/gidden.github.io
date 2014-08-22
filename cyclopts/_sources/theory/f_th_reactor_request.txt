@@ -178,6 +178,9 @@ Questions
 
 * What critiques are there regarding reactory enrichment generation?
 
+  - start simple with one enrichment per reactor, a possible upgrade is to
+    introduce 2 or 3 bins around an average enrichment to emulate enrichment
+    zones
 
 Supporting Facilities
 +++++++++++++++++++++
