@@ -85,7 +85,6 @@ facilities will receive used fuel.</p>
 <tr class="row-even"><td>Facilities</td>
 <td><ul class="first last simple">
 <li>Reactor Requests (batch/assem)</li>
-<li>Supply Constraints (inv/inv + process)</li>
 </ul>
 </td>
 </tr>
@@ -97,7 +96,7 @@ facilities will receive used fuel.</p>
 </ul>
 </td>
 </tr>
-<tr class="row-even"><td>Geospatial</td>
+<tr class="row-even"><td>Location</td>
 <td><ul class="first last simple">
 <li>None</li>
 <li>Coarse</li>
@@ -143,9 +142,9 @@ used fuel that is MOX</p>
 <p>In the low-fidelity version, each facility type will have a linear conversion constraint</p>
 <div class="math">
 <p><img src="../_images/math/3c49bb5ce578ac301ffa4b4b78628734c206da90.png" alt="conv_{inv}(\epsilon, q) = \epsilon q"/></p>
-</div><p>For higher model fideltiy, a heat-generation process constraint is added</p>
+</div><p>A process constraint is added as in the request case</p>
 <div class="math">
-<p><img src="../_images/math/933df6624e117dc58c62580e4485078b8aa0ba92.png" alt="conv_{proc}(\epsilon, q) = Heat(\epsilon, q)"/></p>
+<p><img src="../_images/math/5a5d6d0f5aa0d0107e78668e8279925c4b8ef8e2.png" alt="conv_{proc}(\epsilon, q) = q"/></p>
 </div></div>
 <div class="section" id="constraint-rhs">
 <h4>Constraint RHS<a class="headerlink" href="#constraint-rhs" title="Permalink to this headline">¶</a></h4>
@@ -184,13 +183,13 @@ material to be sent to processing facilities over repositories.</p>
 <td>N/A</td>
 </tr>
 <tr class="row-odd"><td>Fast MOX Recycle</td>
-<td>1</td>
+<td>0.5</td>
 <td>0.5</td>
 <td>1</td>
 <td>N/A</td>
 </tr>
 <tr class="row-even"><td>Fast ThOX Recycle</td>
-<td>1</td>
+<td>0.5</td>
 <td>N/A</td>
 <td>N/A</td>
 <td>1</td>
@@ -215,18 +214,11 @@ facilities</p>
 recycle facilities</p>
 </div></blockquote>
 </div>
-<div class="section" id="questions">
-<h4>Questions<a class="headerlink" href="#questions" title="Permalink to this headline">¶</a></h4>
-<ul class="simple">
-<li>What heat proxy should be used?</li>
-<li>Do preferences match reality? Would every facility want to process UOX?</li>
-</ul>
 </div>
 </div>
-</div>
-<div class="section" id="geospatial-assignment">
-<h2>Geospatial Assignment<a class="headerlink" href="#geospatial-assignment" title="Permalink to this headline">¶</a></h2>
-<p>Geospatial considerations will be handled in the same manner as the request
+<div class="section" id="location-assignment">
+<h2>Location Assignment<a class="headerlink" href="#location-assignment" title="Permalink to this headline">¶</a></h2>
+<p>Location considerations will be handled in the same manner as the request
 case.</p>
 </div>
 </div>
@@ -245,7 +237,7 @@ case.</p>
 <li><a class="reference internal" href="#">Fast/Thermal Reactor Supply-Based Exchange</a><ul>
 <li><a class="reference internal" href="#commodities">Commodities</a></li>
 <li><a class="reference internal" href="#facilities">Facilities</a></li>
-<li><a class="reference internal" href="#geospatial-assignment">Geospatial Assignment</a></li>
+<li><a class="reference internal" href="#location-assignment">Location Assignment</a></li>
 </ul>
 </li>
 </ul>
