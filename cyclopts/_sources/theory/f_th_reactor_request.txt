@@ -111,7 +111,7 @@ of Uranium, a unit of fuel is roughly
 
 .. math::
 
-   \frac{450 \frac{kg}{assembly} * 157 assemblies * \frac{1}{4} core}{12.5 units} = 1.4 \frac{tonnes}{fuel unit}
+   \frac{450 \frac{kg}{assembly} * 157 assemblies * \frac{1}{4} core}{12.5 units} = ~1.4 \frac{tonnes}{fuel unit}
 
 Again one fuel unit is approximately equal to a quarter of a BN-600 reactor core.
 
@@ -219,34 +219,52 @@ Due to the lack of commercially viable, well documented fast reactor fuel
 suppliers, a simple linear surrogate model is assumed for an inventory
 constraint. There are many possible process surrogate models that could be used,
 such as heat production or radiotoxicity; however, each of these requires a
-detailed isotopic composition to be relevant. Accordingly, a simple throughput
-constraint is considered, assuming a relative request size (from above)
-:math:`r_q`.
+detailed isotopic composition to be relevant. Per the current `IAEA practice
+<http://ec.europa.eu/dgs/jrc/downloads/jrc_20100615_safeguards_heinonen.pdf>`_,
+and extrapolating the same effect for reprocessing U-233, a factor,
+:math:`f_{commod}`, of 100 is added for for Plutonium and Thorium-based
+commodities.
 
 .. math::
 
     conv_{inv}(\epsilon, q) = \epsilon q
 
-    conv_{proc}(\epsilon, q) = \frac{q}{r_q}
+    f_{commod} = 
+    \begin{cases}
+    1,& \text{if UOX}\\
+    100,              & \text{otherwise}
+    \end{cases}
+
+    conv_{proc}(\epsilon, q, commod) = q f_{commod}
 
 Supplier Constraint RHS Values
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 Supporting facilities have a nominal throughput capacity. The proposed Eagle
 Rock Enrichment Plant `purports
-<http://www.areva.com/EN/operations-779/the-eagle-rock-project-construction-of-an-enrichment-plant-in-the-united-states.html>`_
-to have a capacity of 3.5M SWU per year. From previous conversations with
-industry representatives, a reasonable size for a processing plant is 800 tonnes
-per year.
+<http://us.areva.com/EN/home-203/eagle-rock-enrichment-facility.html>`_ to have
+a capacity of 3.3M SWU per year, which is enough to support 25 reactors. This
+work assumes a new facility could serve 25 thermal reactors requesting an
+average enrichment. From previous conversations with industry representatives, a
+reasonable size for a processing plant is 800 tonnes per year, which is similar
+to `Rokkassho
+<http://ec.europa.eu/dgs/jrc/downloads/jrc_20100615_safeguards_heinonen.pdf>`_. With
+the factor of 100 discussed above, a 800 t U/ 8 t Pu facility could service
+on the order of 2-3 fast reactors.
 
-Assuming a monthly time step and a request basis of a single unit of fuel, the
-process constraint RHS are determined as
+Using the following assumptions
+
+* enrichment facilities primarily service thermal reactors
+* an exchange represents a monthly timestep
+* requests are based on a single unit of fuel (rather than kilograms, etc.)
 
 .. math::
 
-   S_{proc, SWU} = \frac{3.5e6 \frac{SWU}{year}}{12 \frac{month}{year} * fuel unit} = ~210 \frac{SWU}{month * fuel unit} 
+   SWU_{lwr} = SWU(\bar{\epsilon}, 12.5 * fuel unit) = ~1.1e5
 
-   S_{proc, recycle} = \frac{800 \frac{t}{year}}{12 \frac{month}{year} * fuel unit} = ~47 \frac{t}{month * fuel unit} 
+   S_{proc, SWU} = \frac{25 SWU_{lwr}}{12 \frac{month}{year}} = ~2.3e5 \frac{SWU}{month} 
+
+   S_{proc, recycle} = \frac{800 \frac{t}{year}}{12 \frac{month}{year} * 1.4 \frac{t}{fuel unit}} = ~47 \frac{fuel unit}{month} 
 
 From the formulation point of view, interesting cases arise when either
 constraint is dominated by the other and when neither is dominant. Furthermore,
