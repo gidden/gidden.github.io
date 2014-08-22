@@ -187,6 +187,13 @@ analyses).</p>
 <p>Under these assumptions, each fast reactor will request 1 unit of fuel and each
 thermal reactor will request 12.5 units of fuel. Each may be further binned into
 smaller quantities to more accurately model assemblies.</p>
+<p>As a rough approximation using the figures from active core size, and assuming
+that a single AP-1000 fuel assembly holds [450
+kg](<a class="reference external" href="http://books.google.com/books/about/Nuclear_Engineering_Handbook.html?id=EMy2OyUrqbUC">http://books.google.com/books/about/Nuclear_Engineering_Handbook.html?id=EMy2OyUrqbUC</a>)
+of Uranium, a unit of fuel is roughly</p>
+<div class="math">
+<p><img src="../_images/math/8ecc52ac8209e3a6bde71424729075760469e87c.png" alt="\frac{450 \frac{kg}{assembly} * 157 assemblies * \frac{1}{4} core}{12.5 units} = 1.4 \frac{tonnes}{fuel unit}"/></p>
+</div><p>Again one fuel unit is approximately equal to a quarter of a BN-600 reactor core.</p>
 <div class="section" id="thermal-reactors">
 <h4>Thermal Reactors<a class="headerlink" href="#thermal-reactors" title="Permalink to this headline">¶</a></h4>
 <p>Thermal reactors are capable of using either UOX or recycled MOX, and have
@@ -298,7 +305,10 @@ mass.</p>
 <div class="section" id="questions">
 <h4>Questions<a class="headerlink" href="#questions" title="Permalink to this headline">¶</a></h4>
 <ul class="simple">
-<li>What critiques are there regarding the commodity-preference mapping?</li>
+<li>What critiques are there regarding the commodity-preference mapping?<ul>
+<li>functional form effects (e.g., linear vs. exp) could be added</li>
+</ul>
+</li>
 <li>What critiques are there regarding reactory enrichment generation?</li>
 </ul>
 </div>
@@ -314,8 +324,28 @@ process constraint, depending on the fidelity level used.</p>
 surrogate material, i.e., an enrichment and quantity.</p>
 <div class="section" id="uox-supplier">
 <h4>UOX Supplier<a class="headerlink" href="#uox-supplier" title="Permalink to this headline">¶</a></h4>
-<p>The UOX supplier has well-known conversion functions, where basic additional
-parameters, e.g., feed and tails assays, can be safely assumed</p>
+<p>The UOX supplier has basic parameters, e.g., feed and tails assays, can be
+safely assumed as follows</p>
+<table border="1" class="docutils">
+<colgroup>
+<col width="61%" />
+<col width="39%" />
+</colgroup>
+<thead valign="bottom">
+<tr class="row-odd"><th class="head">Parameter</th>
+<th class="head">Value</th>
+</tr>
+</thead>
+<tbody valign="top">
+<tr class="row-even"><td>feed assay</td>
+<td>0.711</td>
+</tr>
+<tr class="row-odd"><td>tails assay</td>
+<td>0.3</td>
+</tr>
+</tbody>
+</table>
+<p>The conversion functions are also well known.</p>
 <div class="math">
 <p><img src="../_images/math/70ea55378285948e09deafe39a18f5c51fca534a.png" alt="conv_{inv}(\epsilon, q) = NatU(\epsilon, q)
 
@@ -330,34 +360,38 @@ such as heat production or radiotoxicity; however, each of these requires a
 detailed isotopic composition to be relevant. Accordingly, a simple throughput
 constraint is considered.</p>
 <div class="math">
-<p><img src="../_images/math/90a625bbe44dda7351961193bb52524e5c6b2f74.png" alt="conv_{inv}(\epsilon, q) = \epsilon q
+<p><img src="../_images/math/d372c08f6d13c1bd9fb8a99babfdb39261968dbf.png" alt="conv_{inv}(\epsilon, q) = \epsilon q
 
-conv_{proc}(\epsilon, q) = q"/></p>
+conv_{proc}(\epsilon, q) = \frac{q}{rel_request_size}"/></p>
 </div></div>
 <div class="section" id="supplier-constraint-rhs-values">
 <h4>Supplier Constraint RHS Values<a class="headerlink" href="#supplier-constraint-rhs-values" title="Permalink to this headline">¶</a></h4>
-<p>From the formulation point of view, interesting cases arise when either
+<p>Supporting facilities have a nominal throughput capacity. The proposed Eagle
+Rock Enrichment Plant
+(purports)[<a class="reference external" href="http://www.areva.com/EN/operations-779/the-eagle-rock-project-construction-of-an-enrichment-plant-in-the-united-states.html">http://www.areva.com/EN/operations-779/the-eagle-rock-project-construction-of-an-enrichment-plant-in-the-united-states.html</a>]
+to have a capacity of 3.5M SWU per year. From previous conversations with
+industry representatives, a reasonable size for a processing plant is 800 tonnes
+per year.</p>
+<p>Assuming a monthly time step and a request basis of a single unit of fuel, the
+process constraint RHS are determined as</p>
+<div class="math">
+<p><img src="../_images/math/9843237097cf25703e7629fc48718ad94a6ecc80.png" alt="S_{proc, SWU} = \frac{3.5e6 \frac{SWU}{year}}{12 {month}{year} * fuel unit} = ~210 \frac{SWU}{month * fuel unit}
+
+S_{proc, recycle} = \frac{800 \frac{t}{year}}{12 {month}{year} * fuel unit} = ~47 \frac{t}{month * fuel unit}"/></p>
+</div><p>From the formulation point of view, interesting cases arise when either
 constraint is dominated by the other and when neither is dominant. Furthermore,
 instanes should be investigated in which supply is generally constrained and
-when it is not. In order to accomplish these goals, the supply constraint values
+when it is not.</p>
+<p>In order to accomplish these goals, the supply constraint values
 are formulated as follows</p>
 <div class="math">
-<p><img src="../_images/math/07a7021840fd54a70cad7fc32c55490dbcee6aff.png" alt="S_{inv} = f_{demand} \frac{demand}{conv_{inv}(\bar{\epsilon}, demand)}
+<p><img src="../_images/math/47ad836241402b5ec04f800bade21d93eff0327f.png" alt="S_{proc}, given
 
-S_{proc} = S_{inv} \frac{conv_{inv}(\bar{\epsilon}, demand)}{conv_{proc}(\bar{\epsilon}, demand)} f_{inv, proc}"/></p>
+S_{inv} = \frac{S_{proc} f_{inv, proc} conv_{proc}(\bar{\epsilon}, 1)}{conv_{inv}(\bar{\epsilon}, 1)}"/></p>
 </div><div class="section" id="parameters">
 <h5>Parameters<a class="headerlink" href="#parameters" title="Permalink to this headline">¶</a></h5>
 <blockquote>
-<div><p><img class="math" src="../_images/math/8e1f9fe68fa2ad49e1b221640e95900aa83366d9.png" alt="f_{demand}"/> : the fraction of demand that should be supplied</p>
-<p><img class="math" src="../_images/math/fe2276c92b40a80f4eb0ca4e6a998c005e74bb54.png" alt="f_{inv, proc}"/> : the ratio of the inventory RHS to the process RHS</p>
-</div></blockquote>
-</div>
-<div class="section" id="surrogate-models">
-<h5>Surrogate Models<a class="headerlink" href="#surrogate-models" title="Permalink to this headline">¶</a></h5>
-<blockquote>
-<div><p><img class="math" src="../_images/math/2ec0f224f5cfe42c3d91724d49a4e5e29d3a5f7d.png" alt="conv_{inv}(\epsilon, q)"/> : an inventory-based constraint</p>
-<p><img class="math" src="../_images/math/ff0aa0b6e0036bbe00b7d2ce2b0bd0b8e502234e.png" alt="conv_{process}(\epsilon, q)"/> : an process-based constraint</p>
-</div></blockquote>
+<div><img class="math" src="../_images/math/fe2276c92b40a80f4eb0ca4e6a998c005e74bb54.png" alt="f_{inv, proc}"/> : the ratio of the inventory RHS to the process RHS</div></blockquote>
 </div>
 </div>
 </div>
@@ -392,14 +426,8 @@ French LWR refueling practices.</p>
 <div><p><img class="math" src="../_images/math/4eb02e5de51af086c11119923eccffa3f18c3483.png" alt="f_{t, f}"/> : the ratio of thermal reactors to fast reactors</p>
 <p><img class="math" src="../_images/math/31b95349a1f94178b38544abb0f965980a111f41.png" alt="f_{mox} \in [0, \frac{1}{3}]"/> : the fraction of thermal reactor
 requests that can be met with recycled fuel</p>
+<p><img class="math" src="../_images/math/aaf3ceb1617eea5cbda13ea2835c5956f9031ec1.png" alt="f_{s, r}"/> : the ratio of primary suppliers to their primary requesters</p>
 </div></blockquote>
-</div>
-<div class="section" id="id4">
-<h4>Questions<a class="headerlink" href="#id4" title="Permalink to this headline">¶</a></h4>
-<ul class="simple">
-<li>Should suppliers be treated similarly to reactors (i.e., <img class="math" src="../_images/math/4eb02e5de51af086c11119923eccffa3f18c3483.png" alt="f_{t, f}"/>)?
-This increases the parameter space by <img class="math" src="../_images/math/baa709da88ecdd56290056e3c38fabe588997875.png" alt="n - 1"/> dimensions.</li>
-</ul>
 </div>
 </div>
 <div class="section" id="recycle-thorium">
@@ -409,8 +437,8 @@ R scenario, the Recycle + Thorium (RTh) adds an additional fast reactor model
 that prefers Thorium-based recycled fuel. The fraction of fast reactors that are
 Thorium-based is set as a parameter. Additionally, a Thorium Fast Fuel
 Fabricator is added to the pool of suppliers.</p>
-<div class="section" id="id5">
-<h4>Parameters<a class="headerlink" href="#id5" title="Permalink to this headline">¶</a></h4>
+<div class="section" id="id4">
+<h4>Parameters<a class="headerlink" href="#id4" title="Permalink to this headline">¶</a></h4>
 <blockquote>
 <div><img class="math" src="../_images/math/cbaa3678793ef633c91f111de14bdf54d2ce8112.png" alt="f_{th, pu}"/> : the ratio of Thorium to Plutonium-based fast reactors</div></blockquote>
 </div>
@@ -427,16 +455,16 @@ into account as well as total proximity.</p>
 surrogate model function is required, and one suggestion is</p>
 <div class="math">
 <p><img src="../_images/math/6122ead49d5fb210f76fd05dea1016e40e566e85.png" alt="p_{l}(i, j) = \delta_{l} \frac{\exp(- | reg_{i} - reg_{j} | ) + \delta_{fine} \exp(- \| loc_{i} - loc_{j} \| )}{1 + \delta_{fine}}"/></p>
-</div><div class="section" id="id6">
-<h3>Parameters<a class="headerlink" href="#id6" title="Permalink to this headline">¶</a></h3>
+</div><div class="section" id="id5">
+<h3>Parameters<a class="headerlink" href="#id5" title="Permalink to this headline">¶</a></h3>
 <blockquote>
 <div><p><img class="math" src="../_images/math/ee76a8c007848650346760c7fccea5d60d5cc1e7.png" alt="\delta_{l}"/> : whether to include a location preference</p>
 <p><img class="math" src="../_images/math/477dcdf44a28cb70d07bd4259df5443fcff01521.png" alt="\delta_{fine}"/> : whether to include a fine location proxy</p>
 <p><img class="math" src="../_images/math/43b9085cb9140aae11fbbef4f25e40b87e73e3c6.png" alt="n_{reg}"/> : the number of regions</p>
 </div></blockquote>
 </div>
-<div class="section" id="id7">
-<h3>Surrogate Models<a class="headerlink" href="#id7" title="Permalink to this headline">¶</a></h3>
+<div class="section" id="surrogate-models">
+<h3>Surrogate Models<a class="headerlink" href="#surrogate-models" title="Permalink to this headline">¶</a></h3>
 <blockquote>
 <div><img class="math" src="../_images/math/abc39f9cf0284156a1892a386cd0775e58382eb6.png" alt="p_{l}(i, j)"/> : location-based preference</div></blockquote>
 </div>
@@ -449,8 +477,8 @@ the formulation is affected by their relative magnitude. Therefore a final
 parameter is added to determine the total preference</p>
 <div class="math">
 <p><img src="../_images/math/aefc66ad8f2b0de687abb085bdbf6a51663ee35c.png" alt="p(i, j) = p_{c}(i, j) + r_{l, c} p_{l}(i, j)"/></p>
-</div><div class="section" id="id8">
-<h3>Parameters<a class="headerlink" href="#id8" title="Permalink to this headline">¶</a></h3>
+</div><div class="section" id="id6">
+<h3>Parameters<a class="headerlink" href="#id6" title="Permalink to this headline">¶</a></h3>
 <blockquote>
 <div><img class="math" src="../_images/math/e417cf8cfe2deccb5f9efea63f059f89554aa073.png" alt="r_{l, c}"/> : the importance ratio of location to commodity types</div></blockquote>
 </div>
