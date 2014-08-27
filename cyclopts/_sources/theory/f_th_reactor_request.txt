@@ -394,15 +394,6 @@ Parameter Summary
 
 All of the parameters that can be set for this species are listed below:
 
-.. table:: Active Core Dimensions
-
-    ======== =============== =================
-    Reactor  Core Height (m) Core Diameter (m)
-    ======== =============== =================
-    AP1000   4.27            3.04
-    BN600    0.75            2.05
-    ======== =============== =================
-
 .. table:: Structured Request Species Parameters
 
     ===================== ================================================================== ==========================
