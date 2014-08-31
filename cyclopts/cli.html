@@ -77,19 +77,16 @@
 
 positional arguments:
   {convert,exec,condor-submit,condor-collect,condor-rm,cde,combine,dump}
-    convert             Convert a parameter space defined by an input run
-                        control file into an HDF5 database for a Cyclopts
-                        execution run.
-    exec                Executes a parameter sweep as defined by the input
-                        database and other command line arguments.
+    convert             Convert a parameter space defined by an input run control file
+                        into an HDF5 database for a Cyclopts execution run.
+    exec                Executes a parameter sweep as defined by the input database and
+                        other command line arguments.
     condor-submit       Submits a job to condor, retrieves output when it has
                         completed, and cleans up the condor user space after.
     condor-collect      Collects a condor submission&#39;s output.
     condor-rm           Removes processes on condor for a user.
-    cde                 Updates the Cyclopts CDE tarfile on a Condor submit
-                        node.
-    combine             Combines a collection of databases, merging their
-                        content.
+    cde                 Updates the Cyclopts CDE tarfile on a Condor submit node.
+    combine             Combines a collection of databases, merging their content.
     dump                Dumps information about an instance database.
 
 optional arguments:
@@ -99,28 +96,26 @@ optional arguments:
 <ul>
 <li><p class="first"><tt class="docutils literal"><span class="pre">cyclopts</span> <span class="pre">convert</span> <span class="pre">-h</span></tt></p>
 <div class="highlight-text"><div class="highlight"><pre>usage: Cyclopts convert [-h] [--cycrc CYCRC] [--species_module SPECIES_MODULE]
-                        [--species_class SPECIES_CLASS] [--rc RC] [--db DB]
-                        [-n NINST] [--count] [-v] [--debug] [-u UPDATE_FREQ]
+                        [--species_class SPECIES_CLASS] [--rc RC] [--db DB] [-n NINST]
+                        [--count] [-v] [--debug] [-u UPDATE_FREQ]
 
 optional arguments:
   -h, --help            show this help message and exit
-  --cycrc CYCRC         A global run control file, defaults to
-                        $HOME/.cyclopts.rc useful for declaring global
-                        family/species information.
+  --cycrc CYCRC         A global run control file, defaults to $HOME/.cyclopts.rc
+                        useful for declaring global family/species information.
   --species_module SPECIES_MODULE
                         The module for the problem species
   --species_class SPECIES_CLASS
                         The problem species class
   --rc RC               The run control file to use that defines a continguous
                         parameter space.
-  --db DB               The HDF5 file to dump converted parameter space points
-                        to. This file can later be used an input to an execute
-                        run.
+  --db DB               The HDF5 file to dump converted parameter space points to. This
+                        file can later be used an input to an execute run.
   -n NINST, --ninstances NINST
-                        The number of problem instances to generate per point
-                        in parameter space.
-  --count               Only read in the run control file and count the number
-                        of possible samplers that will be created.
+                        The number of problem instances to generate per point in
+                        parameter space.
+  --count               Only read in the run control file and count the number of
+                        possible samplers that will be created.
   -v, --verbose         Print verbose output during the conversion process.
   --debug               Use objgraph and pdb to debug the conversion process.
   -u UPDATE_FREQ, --update-freq UPDATE_FREQ
@@ -132,58 +127,53 @@ optional arguments:
 <div class="highlight-text"><div class="highlight"><pre>usage: Cyclopts exec [-h] [--cycrc CYCRC] [--family_module FAMILY_MODULE]
                      [--family_class FAMILY_CLASS] [--db DB]
                      [--solvers [SOLVERS [SOLVERS ...]]]
-                     [--instids [INSTIDS [INSTIDS ...]]] [--rc RC]
-                     [--outdb OUTDB] [--conds CONDS] [-v]
+                     [--instids [INSTIDS [INSTIDS ...]]] [--rc RC] [--outdb OUTDB]
+                     [--conds CONDS] [-v]
 
 optional arguments:
   -h, --help            show this help message and exit
-  --cycrc CYCRC         A global run control file, defaults to
-                        $HOME/.cyclopts.rc useful for declaring global
-                        family/species information.
+  --cycrc CYCRC         A global run control file, defaults to $HOME/.cyclopts.rc
+                        useful for declaring global family/species information.
   --family_module FAMILY_MODULE
                         The module for the problem family
   --family_class FAMILY_CLASS
                         The problem family class
-  --db DB               An HDF5 Cyclopts database (e.g., the result of
-                        &#39;cyclopts convert&#39;).
+  --db DB               An HDF5 Cyclopts database (e.g., the result of &#39;cyclopts
+                        convert&#39;).
   --solvers [SOLVERS [SOLVERS ...]]
                         A list of which solvers to use.
   --instids [INSTIDS [INSTIDS ...]]
                         A list of instids (as UUID hex strings) to run.
-  --rc RC               The run control file, which allows idetification of a
-                        subset of input to run.
-  --outdb OUTDB         An optional database to write results to. By default,
-                        the database given by the --db flag is use.
-  --conds CONDS         A dictionary representation of execution conditions.
-                        This CLI argument can be used instead of placing them
-                        in an RC file.
+  --rc RC               The run control file, which allows idetification of a subset of
+                        input to run.
+  --outdb OUTDB         An optional database to write results to. By default, the
+                        database given by the --db flag is use.
+  --conds CONDS         A dictionary representation of execution conditions. This CLI
+                        argument can be used instead of placing them in an RC file.
   -v, --verbose         Print verbose output during execution.
 </pre></div>
 </div>
 </li>
 <li><p class="first"><tt class="docutils literal"><span class="pre">cyclopts</span> <span class="pre">condor-submit</span> <span class="pre">-h</span></tt></p>
-<div class="highlight-text"><div class="highlight"><pre>usage: Cyclopts condor-submit [-h] [--cycrc CYCRC]
-                              [--family_module FAMILY_MODULE]
-                              [--family_class FAMILY_CLASS] [--rc RC]
-                              [--db DB] [--instids [INSTIDS [INSTIDS ...]]]
-                              [--solvers [SOLVERS [SOLVERS ...]]] [-u USER]
-                              [-t HOST] [--keyfile KEYFILE] [-d REMOTEDIR]
-                              [-k {dag,queue}] [--log] [-p PORT]
-                              [--nodes [NODES [NODES ...]]] [-v]
+<div class="highlight-text"><div class="highlight"><pre>usage: Cyclopts condor-submit [-h] [--cycrc CYCRC] [--family_module FAMILY_MODULE]
+                              [--family_class FAMILY_CLASS] [--rc RC] [--db DB]
+                              [--instids [INSTIDS [INSTIDS ...]]]
+                              [--solvers [SOLVERS [SOLVERS ...]]] [-u USER] [-t HOST]
+                              [--keyfile KEYFILE] [-d REMOTEDIR] [-k {dag,queue}]
+                              [-p PORT] [--nodes [NODES [NODES ...]]] [-v]
 
 optional arguments:
   -h, --help            show this help message and exit
-  --cycrc CYCRC         A global run control file, defaults to
-                        $HOME/.cyclopts.rc useful for declaring global
-                        family/species information.
+  --cycrc CYCRC         A global run control file, defaults to $HOME/.cyclopts.rc
+                        useful for declaring global family/species information.
   --family_module FAMILY_MODULE
                         The module for the problem family
   --family_class FAMILY_CLASS
                         The problem family class
-  --rc RC               The run control file, which allows idetification of a
-                        subset of input to run.
-  --db DB               An HDF5 Cyclopts database (e.g., the result of
-                        &#39;cyclopts convert&#39;).
+  --rc RC               The run control file, which allows idetification of a subset of
+                        input to run.
+  --db DB               An HDF5 Cyclopts database (e.g., the result of &#39;cyclopts
+                        convert&#39;).
   --instids [INSTIDS [INSTIDS ...]]
                         A list of instids (as UUID hex strings) to run.
   --solvers [SOLVERS [SOLVERS ...]]
@@ -192,11 +182,10 @@ optional arguments:
   -t HOST, --host HOST  The remote condor submit host.
   --keyfile KEYFILE     An ssh public key file.
   -d REMOTEDIR, --remotedir REMOTEDIR
-                        The remote directory (relative to ~/cyclopts-runs) on
-                        the submit node in which to run cyclopts jobs.
+                        The remote directory (relative to ~/cyclopts-runs) on the
+                        submit node in which to run cyclopts jobs.
   -k {dag,queue}, --kind {dag,queue}
                         The kind of condor submission to use.
-  --log                 Whether to keep a log of worker queue data.
   -p PORT, --port PORT  The port to use for a condor queue submission.
   --nodes [NODES [NODES ...]]
                         The execute nodes to target.
@@ -206,22 +195,21 @@ optional arguments:
 </li>
 <li><p class="first"><tt class="docutils literal"><span class="pre">cyclopts</span> <span class="pre">condor-collect</span> <span class="pre">-h</span></tt></p>
 <div class="highlight-text"><div class="highlight"><pre>usage: Cyclopts condor-collect [-h] [--outdb OUTDB] [-u USER] [-t HOST]
-                               [--keyfile KEYFILE] [-l LOCALDIR]
-                               [-d REMOTEDIR] [--clean]
+                               [--keyfile KEYFILE] [-l LOCALDIR] [-d REMOTEDIR]
+                               [--clean]
 
 optional arguments:
   -h, --help            show this help message and exit
-  --outdb OUTDB         An optional database to write results to. By default,
-                        the database given by the --db flag is use.
+  --outdb OUTDB         An optional database to write results to. By default, the
+                        database given by the --db flag is use.
   -u USER, --user USER  The condor user name.
   -t HOST, --host HOST  The remote condor submit host.
   --keyfile KEYFILE     An ssh public key file.
   -l LOCALDIR, --localdir LOCALDIR
                         The local directory in which to place resulting files.
   -d REMOTEDIR, --remotedir REMOTEDIR
-                        The remote directory (relative to the user&#39;s home
-                        directory) in which output files from a run are
-                        located.
+                        The remote directory (relative to the user&#39;s home directory) in
+                        which output files from a run are located.
   --clean               Clean up the submit node after.
 </pre></div>
 </div>
@@ -242,14 +230,13 @@ optional arguments:
 </li>
 <li><p class="first"><tt class="docutils literal"><span class="pre">cyclopts</span> <span class="pre">cde</span> <span class="pre">-h</span></tt></p>
 <div class="highlight-text"><div class="highlight"><pre>usage: Cyclopts cde [-h] [--cycrc CYCRC] [--family_module FAMILY_MODULE]
-                    [--family_class FAMILY_CLASS] [--source-path PREFIX]
-                    [-u USER] [-t HOST] [--no-clean] [--keyfile KEYFILE]
+                    [--family_class FAMILY_CLASS] [--source-path PREFIX] [-u USER]
+                    [-t HOST] [--no-clean] [--keyfile KEYFILE]
 
 optional arguments:
   -h, --help            show this help message and exit
-  --cycrc CYCRC         A global run control file, defaults to
-                        $HOME/.cyclopts.rc useful for declaring global
-                        family/species information.
+  --cycrc CYCRC         A global run control file, defaults to $HOME/.cyclopts.rc
+                        useful for declaring global family/species information.
   --family_module FAMILY_MODULE
                         The module for the problem family
   --family_class FAMILY_CLASS
@@ -281,15 +268,14 @@ optional arguments:
 
 optional arguments:
   -h, --help            show this help message and exit
-  --cycrc CYCRC         A global run control file, defaults to
-                        $HOME/.cyclopts.rc useful for declaring global
-                        family/species information.
+  --cycrc CYCRC         A global run control file, defaults to $HOME/.cyclopts.rc
+                        useful for declaring global family/species information.
   --family_module FAMILY_MODULE
                         The module for the problem family
   --family_class FAMILY_CLASS
                         The problem family class
-  --db DB               An HDF5 Cyclopts database (e.g., the result of
-                        &#39;cyclopts convert&#39;).
+  --db DB               An HDF5 Cyclopts database (e.g., the result of &#39;cyclopts
+                        convert&#39;).
 </pre></div>
 </div>
 </li>
