@@ -248,14 +248,12 @@ Supplier Constraint RHS Values
 Supporting facilities have a nominal throughput capacity. The proposed Eagle
 Rock Enrichment Plant `purports
 <http://us.areva.com/EN/home-203/eagle-rock-enrichment-facility.html>`_ to have
-a capacity of 3.3M SWU per year, which is enough to support 25 reactors. This
-work assumes a new facility could serve 25 thermal reactors requesting an
-average enrichment. From previous conversations with industry representatives, a
-reasonable size for a processing plant is 800 tonnes per year, which is similar
-to `Rokkassho
+a capacity of 3.3M SWU per year. From previous conversations with industry
+representatives, a reasonable size for a processing plant is 800 tonnes per
+year, which is similar to `Rokkassho
 <http://ec.europa.eu/dgs/jrc/downloads/jrc_20100615_safeguards_heinonen.pdf>`_. With
-the factor of 100 discussed above, a 800 t U/ 8 t Pu facility could service
-on the order of 2-3 fast reactors.
+the factor of 100 discussed above, a 800 t U/ 8 t Pu facility could service on
+the order of 2-3 fast reactors.
 
 Using the following assumptions
 
@@ -265,11 +263,9 @@ Using the following assumptions
 
 .. math::
 
-   SWU_{lwr} = SWU(\bar{\epsilon}, 12.5 * fuel unit) = ~1.1e5
+   S_{proc, SWU} = \frac{3.3E6 WU}{12 \frac{month}{year}} = ~2.75e5 \frac{SWU}{month} 
 
-   S_{proc, SWU} = \frac{25 SWU_{lwr}}{12 \frac{month}{year}} = ~2.3e5 \frac{SWU}{month} 
-
-   S_{proc, recycle} = \frac{800 \frac{t}{year}}{12 \frac{month}{year} * 1.4 \frac{t}{fuel unit}} = ~47 \frac{fuel unit}{month} 
+   S_{proc, recycle} = \frac{800 \frac{t}{year}}{12 \frac{month}{year}} = ~66.7 \frac{t}{month} 
 
 From the formulation point of view, interesting cases arise when either
 constraint is dominated by the other and when neither is dominant. Furthermore,
@@ -415,7 +411,7 @@ listed below:
     :math:`r_{s, mox}`      ratio of primary suppliers to fast mox reactors                    :math:`[0, \frac{1}{2}]`
     :math:`r_{s, thox}`     ratio of primary suppliers to fast thox reactors                   :math:`[0, \frac{1}{2}]`
     :math:`f_{mox}`         fraction of thermal reactor requests that can be met with mox fuel :math:`[0, 1]`
-    :math:`r_{inv, proc}`   ratio of the inventory RHS to the process RHS                      :math:`\{0.5, 1, 2\}`
+    :math:`r_{inv, proc}`   ratio of the inventory RHS to the process RHS                      :math:`\{0.75, 1, 1.5\}`
     :math:`n_{reg}`         number of regions                                                  any
     :math:`r_{l, c}`        ratio of location to commodity preference                          :math:`[0, 2]` 
     ======================= ================================================================== ==========================

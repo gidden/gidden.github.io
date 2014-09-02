@@ -376,13 +376,11 @@ commodities.</p>
 <h4>Supplier Constraint RHS Values<a class="headerlink" href="#supplier-constraint-rhs-values" title="Permalink to this headline">¶</a></h4>
 <p>Supporting facilities have a nominal throughput capacity. The proposed Eagle
 Rock Enrichment Plant <a class="reference external" href="http://us.areva.com/EN/home-203/eagle-rock-enrichment-facility.html">purports</a> to have
-a capacity of 3.3M SWU per year, which is enough to support 25 reactors. This
-work assumes a new facility could serve 25 thermal reactors requesting an
-average enrichment. From previous conversations with industry representatives, a
-reasonable size for a processing plant is 800 tonnes per year, which is similar
-to <a class="reference external" href="http://ec.europa.eu/dgs/jrc/downloads/jrc_20100615_safeguards_heinonen.pdf">Rokkassho</a>. With
-the factor of 100 discussed above, a 800 t U/ 8 t Pu facility could service
-on the order of 2-3 fast reactors.</p>
+a capacity of 3.3M SWU per year. From previous conversations with industry
+representatives, a reasonable size for a processing plant is 800 tonnes per
+year, which is similar to <a class="reference external" href="http://ec.europa.eu/dgs/jrc/downloads/jrc_20100615_safeguards_heinonen.pdf">Rokkassho</a>. With
+the factor of 100 discussed above, a 800 t U/ 8 t Pu facility could service on
+the order of 2-3 fast reactors.</p>
 <p>Using the following assumptions</p>
 <ul class="simple">
 <li>enrichment facilities primarily service thermal reactors</li>
@@ -390,7 +388,7 @@ on the order of 2-3 fast reactors.</p>
 <li>requests are based on a single unit of fuel (rather than kilograms, etc.)</li>
 </ul>
 <div class="math">
-\[SWU_{lwr} = SWU(\bar{\epsilon}, 12.5 * fuel unit) = ~1.1e5\]\[S_{proc, SWU} = \frac{25 SWU_{lwr}}{12 \frac{month}{year}} = ~2.3e5 \frac{SWU}{month}\]\[S_{proc, recycle} = \frac{800 \frac{t}{year}}{12 \frac{month}{year} * 1.4 \frac{t}{fuel unit}} = ~47 \frac{fuel unit}{month}\]</div>
+\[S_{proc, SWU} = \frac{3.3E6 WU}{12 \frac{month}{year}} = ~2.75e5 \frac{SWU}{month}\]\[S_{proc, recycle} = \frac{800 \frac{t}{year}}{12 \frac{month}{year}} = ~66.7 \frac{t}{month}\]</div>
 <p>From the formulation point of view, interesting cases arise when either
 constraint is dominated by the other and when neither is dominant. Furthermore,
 instanes should be investigated in which supply is generally constrained and
@@ -560,7 +558,7 @@ listed below:</p>
 </tr>
 <tr class="row-odd"><td><span class="math">\(r_{inv, proc}\)</span></td>
 <td>ratio of the inventory RHS to the process RHS</td>
-<td><span class="math">\(\{0.5, 1, 2\}\)</span></td>
+<td><span class="math">\(\{0.75, 1, 1.5\}\)</span></td>
 </tr>
 <tr class="row-even"><td><span class="math">\(n_{reg}\)</span></td>
 <td>number of regions</td>
