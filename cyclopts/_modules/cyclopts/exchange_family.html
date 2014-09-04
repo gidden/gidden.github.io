@@ -73,7 +73,7 @@
 <span class="kn">import</span> <span class="nn">cyclopts.cyclopts_io</span> <span class="kn">as</span> <span class="nn">cycio</span>
 <span class="kn">import</span> <span class="nn">cyclopts.exchange_instance</span> <span class="kn">as</span> <span class="nn">exinst</span>
 
-<span class="n">_N_CAPS_MAX</span> <span class="o">=</span> <span class="mi">10</span>
+<span class="n">_N_CAPS_MAX</span> <span class="o">=</span> <span class="mi">4</span>
 
 <span class="c"># add to this if more objects need to be persistable</span>
 <span class="n">_tbl_names</span> <span class="o">=</span> <span class="p">{</span>
@@ -308,7 +308,9 @@
 <span class="sd">            A representation of a problem solution</span>
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="n">groups</span><span class="p">,</span> <span class="n">nodes</span><span class="p">,</span> <span class="n">arcs</span> <span class="o">=</span> <span class="n">inst</span>
-        <span class="k">return</span> <span class="n">exinst</span><span class="o">.</span><span class="n">Run</span><span class="p">(</span><span class="n">groups</span><span class="p">,</span> <span class="n">nodes</span><span class="p">,</span> <span class="n">arcs</span><span class="p">,</span> <span class="n">solver</span><span class="p">,</span> <span class="n">verbose</span><span class="p">)</span></div></div>
+        <span class="n">soln</span> <span class="o">=</span> <span class="n">exinst</span><span class="o">.</span><span class="n">Run</span><span class="p">(</span><span class="n">groups</span><span class="p">,</span> <span class="n">nodes</span><span class="p">,</span> <span class="n">arcs</span><span class="p">,</span> <span class="n">solver</span><span class="p">,</span> <span class="n">verbose</span><span class="p">)</span>
+        <span class="k">print</span><span class="p">(</span><span class="s">&quot;flows&quot;</span><span class="p">,</span> <span class="n">soln</span><span class="o">.</span><span class="n">flows</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">soln</span></div></div>
 </pre></div>
 
           </div>
