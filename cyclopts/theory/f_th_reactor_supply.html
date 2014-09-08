@@ -122,38 +122,26 @@ reactor is assumed to be fueled by its preferred commodity with a randomly
 chosen initial enrichment.</p>
 <div class="section" id="parameters">
 <h4>Parameters<a class="headerlink" href="#parameters" title="Permalink to this headline">¶</a></h4>
+<p>Reactor parameters will include all those of the request instance plus</p>
 <blockquote>
-<div><p><span class="math">\(f_{t, f}\)</span> : the ratio of thermal reactors to fast reactors</p>
-<p><span class="math">\(f_{mox} \in [0, \frac{1}{3}]\)</span> : the fraction of thermal reactor
-used fuel that is MOX</p>
-<p><span class="math">\(f_{th, pu}\)</span> : the ratio of Thorium to Plutonium-based fast reactors</p>
+<div><p><span class="math">\(d_{th}\)</span> : the distribution of thermal reactor assembly commodities</p>
+<p><span class="math">\(d_{f_{mox}}\)</span> : the distribution of fast mox reactor assembly commodities</p>
+<p><span class="math">\(d_{f_{thox}}\)</span> : the distribution of fast thox reactor assembly commodities</p>
 </div></blockquote>
 </div>
 </div>
 <div class="section" id="supporting-facilities">
 <h3>Supporting Facilities<a class="headerlink" href="#supporting-facilities" title="Permalink to this headline">¶</a></h3>
-<p>Four types of supportin facilities will be modeled:</p>
+<p>The same supporting facilities will be used with the addition of:</p>
 <ul class="simple">
-<li>Thermal Recycle</li>
-<li>Fast MOX Recycle</li>
-<li>Fast ThOX Recycle</li>
 <li>Repository</li>
 </ul>
-<div class="section" id="constraints">
-<h4>Constraints<a class="headerlink" href="#constraints" title="Permalink to this headline">¶</a></h4>
-<p>Recycle facilities will maintain the same constraint coefficients and RHS values
-as the reactor request, except they are interpreted as demand
-constraints.</p>
-<p>Repostories will employ a simple linear combination quantity processing
-constraint based on the total fuel exiting a reactor via its relative quantity
-measure, <span class="math">\(r_{commod}\)</span>.</p>
-<div class="math">
-\[conv_{proc}(\epsilon, q, commod) = \frac{q}{r_{commod}}\]</div>
-<p>To determine an appropriate RHS, I assume a Yucca Mountain statutory limit of
-17,000 tonnes and a 30 year lifetime, resulting in ~575 t per year processing
-capacity. In fuel units, the RHS value becomes</p>
-<div class="math">
-\[S_{proc} = \frac{575 \frac{t}{year}}{12 \frac{month}{year}} = ~48 \frac{t}{month}\]</div>
+<div class="section" id="id1">
+<h4>Parameters<a class="headerlink" href="#id1" title="Permalink to this headline">¶</a></h4>
+<p>Supporing facility parameters will include all those of the request instance plus</p>
+<blockquote>
+<div><span class="math">\(f_{repo}\)</span> : the ratio of repositories to other supporting
+facilities</div></blockquote>
 </div>
 <div class="section" id="commodity-preferences">
 <h4>Commodity Preferences<a class="headerlink" href="#commodity-preferences" title="Permalink to this headline">¶</a></h4>
@@ -207,23 +195,70 @@ material to be sent to processing facilities over repositories.</p>
 </tbody>
 </table>
 </div>
-<div class="section" id="id1">
-<h4>Parameters<a class="headerlink" href="#id1" title="Permalink to this headline">¶</a></h4>
-<blockquote>
-<div><p><span class="math">\(f_{repository}\)</span> : the ratio of repositories to other supporting
-facilities</p>
-<p><span class="math">\(f_{t, f}\)</span> : the ratio of thermal recycle facilities to fast recycle
-facilities</p>
-<p><span class="math">\(f_{mox, th}\)</span> : the ratio of MOX fast recycle facilities to ThOX fast
-recycle facilities</p>
-</div></blockquote>
+<div class="section" id="constraints">
+<h4>Constraints<a class="headerlink" href="#constraints" title="Permalink to this headline">¶</a></h4>
+<p>Recycle facilities will maintain the same constraint coefficients and RHS values
+as the reactor request, except they are interpreted as demand
+constraints.</p>
+<p>Repostories will employ a simple linear combination quantity processing
+constraint based on the total fuel exiting a reactor via its relative quantity
+measure, <span class="math">\(r_{commod}\)</span>.</p>
+<div class="math">
+\[conv_{proc}(\epsilon, q, commod) = \frac{q}{r_{commod}}\]</div>
+<p>To determine an appropriate RHS, I assume a Yucca Mountain statutory limit of
+17,000 tonnes and a 30 year lifetime, resulting in ~575 t per year processing
+capacity. In fuel units, the RHS value becomes</p>
+<div class="math">
+\[S_{proc} = \frac{575 \frac{t}{year}}{12 \frac{month}{year}} = ~48 \frac{t}{month}\]</div>
 </div>
 </div>
+</div>
+<div class="section" id="fuel-cycles">
+<h2>Fuel Cycles<a class="headerlink" href="#fuel-cycles" title="Permalink to this headline">¶</a></h2>
+<p>The same fuel cycles will be modeled as in the request case.</p>
 </div>
 <div class="section" id="location-assignment">
 <h2>Location Assignment<a class="headerlink" href="#location-assignment" title="Permalink to this headline">¶</a></h2>
 <p>Location considerations will be handled in the same manner as the request
 case.</p>
+</div>
+<div class="section" id="preference-determination">
+<h2>Preference Determination<a class="headerlink" href="#preference-determination" title="Permalink to this headline">¶</a></h2>
+<p>Preferences will be determined in the same manner as the request case.</p>
+<p>In addition to all <a class="reference internal" href="f_th_reactor_request.html#request-params"><em>Request Parameters</em></a>, the following
+parameters can be set in a run control file for the supply case:</p>
+<table border="1" class="docutils">
+<caption>Structured Supply Species Parameters</caption>
+<colgroup>
+<col width="14%" />
+<col width="39%" />
+<col width="48%" />
+</colgroup>
+<thead valign="bottom">
+<tr class="row-odd"><th class="head">Handle</th>
+<th class="head">Full Name</th>
+<th class="head">Possible Values</th>
+</tr>
+</thead>
+<tbody valign="top">
+<tr class="row-even"><td><span class="math">\(d_{th}\)</span></td>
+<td>thermal reactor assembly distribution</td>
+<td><span class="math">\([x_{uox}, x_{{mox}_{th}}, x_{{mox}_{f}}], x_i \in [0, 1)\)</span></td>
+</tr>
+<tr class="row-odd"><td><span class="math">\(d_{f_{mox}}\)</span></td>
+<td>fast mox reactor assembly distribution</td>
+<td><span class="math">\([x_{uox}, x_{{mox}_{th}}, x_{{mox}_{f}}, x_{{thox}_{f}}], x_i \in [0, 1)\)</span></td>
+</tr>
+<tr class="row-even"><td><span class="math">\(d_{f_{thox}}\)</span></td>
+<td>fast thox reactor assembly distribution</td>
+<td><span class="math">\([x_{uox}, x_{{mox}_{th}}, x_{{mox}_{f}}, x_{{thox}_{f}}], x_i \in [0, 1)\)</span></td>
+</tr>
+<tr class="row-odd"><td><span class="math">\(f_{repo}\)</span></td>
+<td>repository to supportin facility ratio</td>
+<td><span class="math">\([0, 2]\)</span></td>
+</tr>
+</tbody>
+</table>
 </div>
 </div>
 
@@ -241,7 +276,9 @@ case.</p>
 <li><a class="reference internal" href="#">Fast/Thermal Reactor Supply-Based Exchange</a><ul>
 <li><a class="reference internal" href="#commodities">Commodities</a></li>
 <li><a class="reference internal" href="#facilities">Facilities</a></li>
+<li><a class="reference internal" href="#fuel-cycles">Fuel Cycles</a></li>
 <li><a class="reference internal" href="#location-assignment">Location Assignment</a></li>
+<li><a class="reference internal" href="#preference-determination">Preference Determination</a></li>
 </ul>
 </li>
 </ul>
