@@ -8,7 +8,7 @@
   <head>
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
     
-    <title>Fast/Thermal Reactor Supply-Based Exchange &mdash; Cyclopts 0.0.5 documentation</title>
+    <title>Fast/Thermal Reactor Supply-Based Exchange &mdash; Cyclopts 0.0.6 documentation</title>
     
     <link rel="stylesheet" href="../_static/cloud.css" type="text/css" />
     <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
@@ -17,7 +17,7 @@
     <script type="text/javascript">
       var DOCUMENTATION_OPTIONS = {
         URL_ROOT:    '../',
-        VERSION:     '0.0.5',
+        VERSION:     '0.0.6',
         COLLAPSE_INDEX: false,
         FILE_SUFFIX: '.html',
         HAS_SOURCE:  true
@@ -29,7 +29,7 @@
     <script type="text/javascript" src="http://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
     <script type="text/javascript" src="../_static/jquery.cookie.js"></script>
     <script type="text/javascript" src="../_static/cloud.js"></script>
-    <link rel="top" title="Cyclopts 0.0.5 documentation" href="../index.html" />
+    <link rel="top" title="Cyclopts 0.0.6 documentation" href="../index.html" />
     <link rel="up" title="Cyclopts Theory" href="main.html" />
     <link rel="prev" title="Fast/Thermal Reactor Request-Based Exchange" href="f_th_reactor_request.html" /> 
         <meta name="viewport" content="width=device-width, initial-scale=1">
@@ -52,7 +52,7 @@
         <li class="right" >
           <a href="f_th_reactor_request.html" title="Fast/Thermal Reactor Request-Based Exchange"
              accesskey="P">previous</a> &nbsp; &nbsp;</li>
-    <li><a href="../index.html">Cyclopts 0.0.5 documentation</a> &raquo;</li>
+    <li><a href="../index.html">Cyclopts 0.0.6 documentation</a> &raquo;</li>
 
           <li><a href="main.html" accesskey="U">Cyclopts Theory</a> &raquo;</li> 
       </ul>
@@ -148,12 +148,12 @@ constraints.</p>
 constraint based on the total fuel exiting a reactor via its relative quantity
 measure, <span class="math">\(r_{rxtr, commod}\)</span>.</p>
 <div class="math">
-\[conv_{proc}(\epsilon, q) = \frac{q}{r_{rxtr, commod}}\]</div>
+\[conv_{proc}(\epsilon, q, commod) = \frac{q}{r_{commod}}\]</div>
 <p>To determine an appropriate RHS, I assume a Yucca Mountain statutory limit of
 17,000 tonnes and a 30 year lifetime, resulting in ~575 t per year processing
 capacity. In fuel units, the RHS value becomes</p>
 <div class="math">
-\[S_{proc} = \frac{575 \frac{t}{year}}{12 \frac{month}{year} * 1.4 \frac{t}{fuel unit}} = ~35 \frac{fuel unit}{month}\]</div>
+\[S_{proc} = \frac{575 \frac{t}{year}}{12 \frac{month}{year}} = ~48 \frac{t}{month}\]</div>
 </div>
 <div class="section" id="commodity-preferences">
 <h4>Commodity Preferences<a class="headerlink" href="#commodity-preferences" title="Permalink to this headline">¶</a></h4>
@@ -291,7 +291,7 @@ case.</p>
         <li class="right" >
           <a href="f_th_reactor_request.html" title="Fast/Thermal Reactor Request-Based Exchange"
              >previous</a> &nbsp; &nbsp;</li>
-    <li><a href="../index.html">Cyclopts 0.0.5 documentation</a> &raquo;</li>
+    <li><a href="../index.html">Cyclopts 0.0.6 documentation</a> &raquo;</li>
 
           <li><a href="main.html" >Cyclopts Theory</a> &raquo;</li> 
       </ul>
