@@ -573,6 +573,8 @@
                             <span class="n">fam_tables</span><span class="p">)</span>
             <span class="k">if</span> <span class="n">n</span> <span class="o">%</span> <span class="n">update_freq</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
                 <span class="k">if</span> <span class="n">verbose</span><span class="p">:</span>
+                    <span class="k">print</span><span class="p">(</span><span class="s">&#39;Total writes: {0}&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span>
+                            <span class="nb">sum</span><span class="p">([</span><span class="n">tbl</span><span class="o">.</span><span class="n">n_writes</span> <span class="k">for</span> <span class="n">tbl</span> <span class="ow">in</span> <span class="n">fam_tables</span><span class="o">.</span><span class="n">values</span><span class="p">()</span> <span class="o">+</span> <span class="n">sp_tables</span><span class="o">.</span><span class="n">values</span><span class="p">()])))</span>
                     <span class="k">print</span><span class="p">(</span><span class="s">&#39;Memusg before collect: {0}&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span>
                             <span class="n">resource</span><span class="o">.</span><span class="n">getrusage</span><span class="p">(</span><span class="n">resource</span><span class="o">.</span><span class="n">RUSAGE_SELF</span><span class="p">)</span><span class="o">.</span><span class="n">ru_maxrss</span><span class="p">))</span>
                 <span class="n">gc</span><span class="o">.</span><span class="n">collect</span><span class="p">()</span>

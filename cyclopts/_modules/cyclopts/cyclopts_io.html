@@ -78,7 +78,8 @@
     <span class="sd">&quot;&quot;&quot;A thin wrapper for a PyTables Table to be used by Cyclopts.</span>
 <span class="sd">    &quot;&quot;&quot;</span>
 
-    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">h5file</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span> <span class="n">path</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span> <span class="n">dt</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span> <span class="n">chunksize</span><span class="o">=</span><span class="bp">None</span><span class="p">):</span>
+    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">h5file</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span> <span class="n">path</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span> <span class="n">dt</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span> <span class="n">chunksize</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span> 
+                 <span class="n">cachesize</span><span class="o">=</span><span class="bp">None</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;Parameters</span>
 <span class="sd">        ----------</span>
 <span class="sd">        h5file : PyTables File</span>
@@ -90,6 +91,9 @@
 <span class="sd">        chunksize : int, optional</span>
 <span class="sd">            the table chunksize, Cyclopts will optimize for a 32Kb L1 cache by</span>
 <span class="sd">            default</span>
+<span class="sd">        cachesize : int, optional</span>
+<span class="sd">            the size of data to cache before writing, defaults to 100 times the </span>
+<span class="sd">            chunksize</span>
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">h5file</span> <span class="o">=</span> <span class="n">h5file</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">path</span> <span class="o">=</span> <span class="n">path</span> <span class="k">if</span> <span class="n">path</span> <span class="ow">is</span> <span class="ow">not</span> <span class="bp">None</span> <span class="k">else</span> <span class="s">&#39;/&#39;</span>
@@ -99,12 +103,16 @@
         <span class="n">chunksize</span> <span class="o">=</span> <span class="n">chunksize</span> <span class="k">if</span> <span class="n">chunksize</span> <span class="ow">is</span> <span class="ow">not</span> <span class="bp">None</span> \
             <span class="k">else</span> <span class="n">math</span><span class="o">.</span><span class="n">floor</span><span class="p">(</span><span class="mi">32</span> <span class="o">*</span> <span class="mi">1024</span> <span class="o">/</span> <span class="nb">float</span><span class="p">(</span><span class="n">dt</span><span class="o">.</span><span class="n">itemsize</span><span class="p">)</span> <span class="o">/</span> <span class="mi">2</span><span class="p">)</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">chunksize</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">chunksize</span><span class="p">)</span>
+        <span class="c"># 100 seems right, eh?</span>
+        <span class="n">factor</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="mf">1e0</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">cachesize</span> <span class="o">=</span> <span class="n">factor</span> <span class="o">*</span> <span class="bp">self</span><span class="o">.</span><span class="n">chunksize</span> <span class="k">if</span> <span class="n">cachesize</span> <span class="ow">is</span> <span class="bp">None</span> <span class="k">else</span> <span class="n">cachesize</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">prefix</span> <span class="o">=</span> <span class="s">&#39;/&#39;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s">&#39;/&#39;</span><span class="p">)[:</span><span class="o">-</span><span class="mi">1</span><span class="p">])</span>
         <span class="k">if</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">prefix</span><span class="o">.</span><span class="n">startswith</span><span class="p">(</span><span class="s">&#39;/&#39;</span><span class="p">):</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">prefix</span> <span class="o">=</span> <span class="s">&#39;/{0}&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">prefix</span><span class="p">)</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">name</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s">&#39;/&#39;</span><span class="p">)[</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">_data</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">empty</span><span class="p">(</span><span class="n">shape</span><span class="o">=</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">chunksize</span><span class="p">),</span> <span class="n">dtype</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">dt</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_data</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">empty</span><span class="p">(</span><span class="n">shape</span><span class="o">=</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">cachesize</span><span class="p">),</span> <span class="n">dtype</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">dt</span><span class="p">)</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_idx</span> <span class="o">=</span> <span class="mi">0</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">n_writes</span> <span class="o">=</span> <span class="mi">0</span>
         
         <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">h5file</span> <span class="ow">is</span> <span class="ow">not</span> <span class="bp">None</span> <span class="ow">and</span> <span class="bp">self</span><span class="o">.</span><span class="n">path</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">h5file</span><span class="p">:</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">_tbl</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">h5file</span><span class="o">.</span><span class="n">get_node</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">path</span><span class="p">)</span>
@@ -139,7 +147,7 @@
         <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_tbl</span><span class="o">.</span><span class="n">where</span><span class="p">(</span><span class="s">&#39;instid == uuid&#39;</span><span class="p">)</span>
 
 <div class="viewcode-block" id="Table.append_data"><a class="viewcode-back" href="../../pyapi/io.html#cyclopts.cyclopts_io.Table.append_data">[docs]</a>    <span class="k">def</span> <span class="nf">append_data</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">data</span><span class="p">):</span>
-        <span class="sd">&quot;&quot;&quot;Appends data to the Table. If the chunksize limit is reached, data is</span>
+        <span class="sd">&quot;&quot;&quot;Appends data to the Table. If the cachesize limit is reached, data is</span>
 <span class="sd">        written to disc.</span>
 
 <span class="sd">        Parameters</span>
@@ -149,34 +157,29 @@
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="n">ndata</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">data</span><span class="p">)</span>
         <span class="n">idx</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_idx</span>
-        <span class="n">chunksize</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">chunksize</span>
+        <span class="n">arylen</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">cachesize</span>
         <span class="c"># just add data, no writing</span>
-        <span class="k">if</span> <span class="n">ndata</span> <span class="o">+</span> <span class="n">idx</span> <span class="o">&lt;</span> <span class="n">chunksize</span><span class="p">:</span>
+        <span class="k">if</span> <span class="n">ndata</span> <span class="o">+</span> <span class="n">idx</span> <span class="o">&lt;</span> <span class="n">arylen</span><span class="p">:</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">_idx</span> <span class="o">+=</span> <span class="n">ndata</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">_data</span><span class="p">[</span><span class="n">idx</span><span class="p">:</span><span class="bp">self</span><span class="o">.</span><span class="n">_idx</span><span class="p">]</span> <span class="o">=</span> <span class="n">data</span>
             <span class="k">return</span>
 
         <span class="c"># writing</span>
-        <span class="n">space</span> <span class="o">=</span> <span class="n">chunksize</span> <span class="o">-</span> <span class="n">idx</span>
-        <span class="n">nwrites</span> <span class="o">=</span> <span class="mi">1</span> <span class="o">+</span> <span class="nb">int</span><span class="p">(</span><span class="n">math</span><span class="o">.</span><span class="n">floor</span><span class="p">(</span><span class="nb">float</span><span class="p">(</span><span class="n">ndata</span> <span class="o">-</span> <span class="n">space</span><span class="p">)</span> <span class="o">/</span> <span class="n">chunksize</span><span class="p">))</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">_data</span><span class="p">[</span><span class="n">idx</span><span class="p">:</span><span class="n">chunksize</span><span class="p">]</span> <span class="o">=</span> <span class="n">data</span><span class="p">[:</span><span class="n">space</span><span class="p">]</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">_idx</span> <span class="o">=</span> <span class="n">chunksize</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">_write</span><span class="p">()</span>
-        <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">nwrites</span> <span class="o">-</span> <span class="mi">1</span><span class="p">):</span>
-            <span class="n">start</span> <span class="o">=</span> <span class="n">i</span> <span class="o">*</span> <span class="n">chunksize</span> <span class="o">+</span> <span class="n">space</span>
-            <span class="n">stop</span> <span class="o">=</span> <span class="p">(</span><span class="n">i</span> <span class="o">+</span> <span class="mi">1</span><span class="p">)</span> <span class="o">*</span> <span class="n">chunksize</span> <span class="o">+</span> <span class="n">space</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">_write</span><span class="p">(</span><span class="n">data</span><span class="p">[</span><span class="n">start</span><span class="p">:</span><span class="n">stop</span><span class="p">])</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">_idx</span> <span class="o">=</span> <span class="n">ndata</span> <span class="o">-</span> <span class="p">(</span><span class="n">nwrites</span> <span class="o">-</span> <span class="mi">1</span><span class="p">)</span> <span class="o">*</span> <span class="n">chunksize</span> <span class="o">-</span> <span class="n">space</span>
+        <span class="n">space</span> <span class="o">=</span> <span class="n">arylen</span> <span class="o">-</span> <span class="n">idx</span>
+        <span class="n">n_writes</span> <span class="o">=</span> <span class="mi">1</span> <span class="o">+</span> <span class="nb">int</span><span class="p">(</span><span class="n">math</span><span class="o">.</span><span class="n">floor</span><span class="p">(</span><span class="nb">float</span><span class="p">(</span><span class="n">ndata</span> <span class="o">-</span> <span class="n">space</span><span class="p">)</span> <span class="o">/</span> <span class="n">arylen</span><span class="p">))</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_data</span><span class="p">[</span><span class="n">idx</span><span class="p">:</span><span class="n">arylen</span><span class="p">]</span> <span class="o">=</span> <span class="n">data</span><span class="p">[:</span><span class="n">space</span><span class="p">]</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_idx</span> <span class="o">=</span> <span class="n">arylen</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">flush</span><span class="p">()</span>
+        <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">n_writes</span> <span class="o">-</span> <span class="mi">1</span><span class="p">):</span>
+            <span class="n">start</span> <span class="o">=</span> <span class="n">i</span> <span class="o">*</span> <span class="n">arylen</span> <span class="o">+</span> <span class="n">space</span>
+            <span class="n">stop</span> <span class="o">=</span> <span class="p">(</span><span class="n">i</span> <span class="o">+</span> <span class="mi">1</span><span class="p">)</span> <span class="o">*</span> <span class="n">arylen</span> <span class="o">+</span> <span class="n">space</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">flush</span><span class="p">(</span><span class="n">data</span><span class="p">[</span><span class="n">start</span><span class="p">:</span><span class="n">stop</span><span class="p">])</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_idx</span> <span class="o">=</span> <span class="n">ndata</span> <span class="o">-</span> <span class="p">(</span><span class="n">n_writes</span> <span class="o">-</span> <span class="mi">1</span><span class="p">)</span> <span class="o">*</span> <span class="n">arylen</span> <span class="o">-</span> <span class="n">space</span>
         <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_idx</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">:</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">_data</span><span class="p">[:</span><span class="bp">self</span><span class="o">.</span><span class="n">_idx</span><span class="p">]</span> <span class="o">=</span> <span class="n">data</span><span class="p">[</span><span class="o">-</span><span class="bp">self</span><span class="o">.</span><span class="n">_idx</span><span class="p">:]</span>
             </div>
-<div class="viewcode-block" id="Table.flush"><a class="viewcode-back" href="../../pyapi/io.html#cyclopts.cyclopts_io.Table.flush">[docs]</a>    <span class="k">def</span> <span class="nf">flush</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
-        <span class="sd">&quot;&quot;&quot;Writes any remaining data to the table. This must be called before</span>
-<span class="sd">        closing the h5file.&quot;&quot;&quot;</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">_write</span><span class="p">()</span>
-</div>
-    <span class="k">def</span> <span class="nf">_write</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">data</span><span class="o">=</span><span class="bp">None</span><span class="p">):</span>
-        <span class="sd">&quot;&quot;&quot;Writes data up to self.idx&quot;&quot;&quot;</span>
+<div class="viewcode-block" id="Table.flush"><a class="viewcode-back" href="../../pyapi/io.html#cyclopts.cyclopts_io.Table.flush">[docs]</a>    <span class="k">def</span> <span class="nf">flush</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">data</span><span class="o">=</span><span class="bp">None</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Writes cached data to the table.&quot;&quot;&quot;</span>
         <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_tbl</span> <span class="ow">is</span> <span class="bp">None</span><span class="p">:</span>
             <span class="k">raise</span> <span class="ne">IOError</span><span class="p">(</span><span class="s">&#39;Table must be created before it can be written to.&#39;</span><span class="p">)</span>
         <span class="k">if</span> <span class="n">data</span> <span class="ow">is</span> <span class="bp">None</span><span class="p">:</span>
@@ -185,7 +188,8 @@
         <span class="k">else</span><span class="p">:</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">_tbl</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">data</span><span class="p">)</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_tbl</span><span class="o">.</span><span class="n">flush</span><span class="p">()</span>        
-</div>
+        <span class="bp">self</span><span class="o">.</span><span class="n">n_writes</span> <span class="o">+=</span> <span class="mi">1</span>
+</div></div>
 <span class="n">_result_dt</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">dtype</span><span class="p">([</span>
                 <span class="p">(</span><span class="s">&quot;solnid&quot;</span><span class="p">,</span> <span class="p">(</span><span class="s">&#39;str&#39;</span><span class="p">,</span> <span class="mi">16</span><span class="p">)),</span> <span class="c"># 16 bytes for uuid</span>
                 <span class="p">(</span><span class="s">&quot;instid&quot;</span><span class="p">,</span> <span class="p">(</span><span class="s">&#39;str&#39;</span><span class="p">,</span> <span class="mi">16</span><span class="p">)),</span> <span class="c"># 16 bytes for uuid</span>
@@ -254,7 +258,10 @@
     
     <span class="k">def</span> <span class="nf">flush_tables</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
         <span class="k">for</span> <span class="n">tbl</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">tables</span><span class="o">.</span><span class="n">values</span><span class="p">():</span>
-            <span class="n">tbl</span><span class="o">.</span><span class="n">flush</span><span class="p">()</span></div>
+            <span class="n">tbl</span><span class="o">.</span><span class="n">flush</span><span class="p">()</span>
+
+    <span class="k">def</span> <span class="nf">total_writes</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">return</span> <span class="nb">sum</span><span class="p">([</span><span class="n">tbl</span><span class="o">.</span><span class="n">n_writes</span> <span class="k">for</span> <span class="n">tbl</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">tables</span><span class="o">.</span><span class="n">values</span><span class="p">()])</span></div>
 </pre></div>
 
           </div>

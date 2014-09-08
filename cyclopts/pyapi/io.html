@@ -109,7 +109,7 @@ default</p>
 
 <dl class="class">
 <dt id="cyclopts.cyclopts_io.Table">
-<em class="property">class </em><tt class="descclassname">cyclopts.cyclopts_io.</tt><tt class="descname">Table</tt><big>(</big><em>h5file=None</em>, <em>path=None</em>, <em>dt=None</em>, <em>chunksize=None</em><big>)</big><a class="reference internal" href="../_modules/cyclopts/cyclopts_io.html#Table"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#cyclopts.cyclopts_io.Table" title="Permalink to this definition">¶</a></dt>
+<em class="property">class </em><tt class="descclassname">cyclopts.cyclopts_io.</tt><tt class="descname">Table</tt><big>(</big><em>h5file=None</em>, <em>path=None</em>, <em>dt=None</em>, <em>chunksize=None</em>, <em>cachesize=None</em><big>)</big><a class="reference internal" href="../_modules/cyclopts/cyclopts_io.html#Table"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#cyclopts.cyclopts_io.Table" title="Permalink to this definition">¶</a></dt>
 <dd><p>A thin wrapper for a PyTables Table to be used by Cyclopts.</p>
 <table class="docutils field-list" frame="void" rules="none">
 <col class="field-name" />
@@ -128,9 +128,14 @@ default</p>
 <div><p>the dtype for the table</p>
 </div></blockquote>
 <p><strong>chunksize</strong> : int, optional</p>
-<blockquote class="last">
+<blockquote>
 <div><p>the table chunksize, Cyclopts will optimize for a 32Kb L1 cache by
 default</p>
+</div></blockquote>
+<p><strong>cachesize</strong> : int, optional</p>
+<blockquote class="last">
+<div><p>the size of data to cache before writing, defaults to 100 times the 
+chunksize</p>
 </div></blockquote>
 </td>
 </tr>
@@ -139,7 +144,7 @@ default</p>
 <dl class="method">
 <dt id="cyclopts.cyclopts_io.Table.append_data">
 <tt class="descname">append_data</tt><big>(</big><em>data</em><big>)</big><a class="reference internal" href="../_modules/cyclopts/cyclopts_io.html#Table.append_data"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#cyclopts.cyclopts_io.Table.append_data" title="Permalink to this definition">¶</a></dt>
-<dd><p>Appends data to the Table. If the chunksize limit is reached, data is
+<dd><p>Appends data to the Table. If the cachesize limit is reached, data is
 written to disc.</p>
 <table class="docutils field-list" frame="void" rules="none">
 <col class="field-name" />
@@ -163,9 +168,8 @@ written to disc.</p>
 
 <dl class="method">
 <dt id="cyclopts.cyclopts_io.Table.flush">
-<tt class="descname">flush</tt><big>(</big><big>)</big><a class="reference internal" href="../_modules/cyclopts/cyclopts_io.html#Table.flush"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#cyclopts.cyclopts_io.Table.flush" title="Permalink to this definition">¶</a></dt>
-<dd><p>Writes any remaining data to the table. This must be called before
-closing the h5file.</p>
+<tt class="descname">flush</tt><big>(</big><em>data=None</em><big>)</big><a class="reference internal" href="../_modules/cyclopts/cyclopts_io.html#Table.flush"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#cyclopts.cyclopts_io.Table.flush" title="Permalink to this definition">¶</a></dt>
+<dd><p>Writes cached data to the table.</p>
 </dd></dl>
 
 </dd></dl>
