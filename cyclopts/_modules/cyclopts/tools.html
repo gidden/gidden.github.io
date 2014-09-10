@@ -525,10 +525,17 @@
     
     <span class="k">return</span> <span class="n">instids</span>
 </div>
-<div class="viewcode-block" id="n_permutations"><a class="viewcode-back" href="../../pyapi/tools.html#cyclopts.tools.n_permutations">[docs]</a><span class="k">def</span> <span class="nf">n_permutations</span><span class="p">(</span><span class="n">x</span><span class="p">):</span>
+<span class="sd">&quot;&quot;&quot;simple utility for determining if something is a sequence (and not a</span>
+<span class="sd">string)&quot;&quot;&quot;</span>
+<span class="n">seq_not_str</span> <span class="o">=</span> <span class="k">lambda</span> <span class="n">obj</span><span class="p">:</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">obj</span><span class="p">,</span> <span class="n">Sequence</span><span class="p">)</span> \
+    <span class="ow">and</span> <span class="ow">not</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">obj</span><span class="p">,</span> <span class="nb">basestring</span><span class="p">)</span>
+
+<div class="viewcode-block" id="n_permutations"><a class="viewcode-back" href="../../pyapi/tools.html#cyclopts.tools.n_permutations">[docs]</a><span class="k">def</span> <span class="nf">n_permutations</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">iter_keys</span><span class="o">=</span><span class="p">[],</span> <span class="n">recurse</span><span class="o">=</span><span class="bp">True</span><span class="p">):</span>
     <span class="sd">&quot;&quot;&quot;Parameters</span>
 <span class="sd">    ----------</span>
 <span class="sd">    x : dict, list, or other</span>
+<span class="sd">    iter_keys : a list of keys atomic values should be iterables, optional</span>
+<span class="sd">    recurse : bool, whether to recurse at the lowest level</span>
 <span class="sd">    </span>
 <span class="sd">    Returns</span>
 <span class="sd">    -------</span>
@@ -537,15 +544,20 @@
 <span class="sd">        container values, those are recusively interrogated as well</span>
 <span class="sd">    &quot;&quot;&quot;</span>
     <span class="n">n</span> <span class="o">=</span> <span class="mi">1</span>
-    <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">Sequence</span><span class="p">)</span> <span class="ow">and</span> <span class="ow">not</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="nb">basestring</span><span class="p">):</span>
-        <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">x</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="n">Sequence</span><span class="p">)</span> <span class="ow">and</span> <span class="ow">not</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">x</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="nb">basestring</span><span class="p">):</span>
-            <span class="k">for</span> <span class="n">y</span> <span class="ow">in</span> <span class="n">x</span><span class="p">:</span>
-                <span class="n">n</span> <span class="o">*=</span> <span class="n">n_permutations</span><span class="p">(</span><span class="n">y</span><span class="p">)</span>
+    <span class="k">if</span> <span class="n">seq_not_str</span><span class="p">(</span><span class="n">x</span><span class="p">):</span>
+        <span class="k">if</span> <span class="n">seq_not_str</span><span class="p">(</span><span class="n">x</span><span class="p">[</span><span class="mi">0</span><span class="p">]):</span>
+            <span class="k">if</span> <span class="n">recurse</span><span class="p">:</span>
+                <span class="k">for</span> <span class="n">y</span> <span class="ow">in</span> <span class="n">x</span><span class="p">:</span>
+                    <span class="n">n</span> <span class="o">*=</span> <span class="n">n_permutations</span><span class="p">(</span><span class="n">y</span><span class="p">,</span> <span class="n">recurse</span><span class="o">=</span><span class="n">recurse</span><span class="p">)</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="n">n</span> <span class="o">*=</span> <span class="nb">len</span><span class="p">(</span><span class="n">x</span><span class="p">)</span>
         <span class="k">else</span><span class="p">:</span>
-            <span class="n">n</span> <span class="o">*=</span> <span class="nb">len</span><span class="p">(</span><span class="n">x</span><span class="p">)</span>
+            <span class="n">factor</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">x</span><span class="p">)</span> <span class="k">if</span> <span class="n">recurse</span> <span class="k">else</span> <span class="mi">1</span>
+            <span class="n">n</span> <span class="o">*=</span> <span class="n">factor</span>
     <span class="k">elif</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">Mapping</span><span class="p">):</span>
-        <span class="k">for</span> <span class="n">v</span> <span class="ow">in</span> <span class="n">x</span><span class="o">.</span><span class="n">values</span><span class="p">():</span>
-            <span class="n">n</span> <span class="o">*=</span> <span class="n">n_permutations</span><span class="p">(</span><span class="n">v</span><span class="p">)</span>
+        <span class="k">for</span> <span class="n">k</span><span class="p">,</span> <span class="n">v</span> <span class="ow">in</span> <span class="n">x</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
+            <span class="n">flag</span> <span class="o">=</span> <span class="bp">False</span> <span class="k">if</span> <span class="n">k</span> <span class="ow">in</span> <span class="n">iter_keys</span> <span class="k">else</span> <span class="bp">True</span> <span class="c"># in blacklist</span>
+            <span class="n">n</span> <span class="o">*=</span> <span class="n">n_permutations</span><span class="p">(</span><span class="n">v</span><span class="p">,</span> <span class="n">recurse</span><span class="o">=</span><span class="n">flag</span><span class="p">)</span>
     <span class="k">return</span> <span class="n">n</span>
 </div>
 <div class="viewcode-block" id="expand_args"><a class="viewcode-back" href="../../pyapi/tools.html#cyclopts.tools.expand_args">[docs]</a><span class="k">def</span> <span class="nf">expand_args</span><span class="p">(</span><span class="n">x</span><span class="p">):</span>
