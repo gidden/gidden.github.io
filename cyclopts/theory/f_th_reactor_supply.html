@@ -140,10 +140,8 @@ reactor&#8217;s entire batch.</p>
 </div>
 <div class="section" id="supporting-facilities">
 <h3>Supporting Facilities<a class="headerlink" href="#supporting-facilities" title="Permalink to this headline">¶</a></h3>
-<p>The same supporting facilities will be used with the addition of:</p>
-<ul class="simple">
-<li>Repository</li>
-</ul>
+<p>The same supporting facilities will be used with the addition of a Repository
+and the subtraction of the Enrichment Facility.</p>
 <div class="section" id="id1">
 <h4>Parameters<a class="headerlink" href="#id1" title="Permalink to this headline">¶</a></h4>
 <p>Supporing facility parameters will include all those of the request instance plus</p>
@@ -205,17 +203,17 @@ material to be sent to processing facilities over repositories.</p>
 </div>
 <div class="section" id="constraints">
 <h4>Constraints<a class="headerlink" href="#constraints" title="Permalink to this headline">¶</a></h4>
-<p>Recycle facilities will maintain the same constraint coefficients and RHS values
-as the reactor request, except they are interpreted as demand
-constraints.</p>
-<p>Repostories will employ a simple linear combination quantity processing
-constraint based on the total fuel exiting a reactor via its relative quantity
-measure, <span class="math">\(r_{commod}\)</span>.</p>
+<p>In addition to a raw throughput capacity constraint of 800 t/yr of material,
+recycle facilities requesting material will be supply a fissile content demand
+constraint with the coefficient and RHS are shown below, where
+<span class="math">\(\bar{\epsilon}\)</span> is determined by the mean enrichment of the primary
+supplier to given requester.</p>
 <div class="math">
-\[conv_{proc}(\epsilon, q, commod) = \frac{q}{r_{commod}}\]</div>
-<p>To determine an appropriate RHS, I assume a Yucca Mountain statutory limit of
-17,000 tonnes and a 30 year lifetime, resulting in ~575 t per year processing
-capacity. In fuel units, the RHS value becomes</p>
+\[conv_{fiss}(\epsilon, q) = \epsilon q\]\[S_{fiss} = \bar{\epsilon}\frac{800 \frac{t}{year}}{12 \frac{month}{year}} = ~66.7 \frac{t}{month}\]</div>
+<p>Repostories will employ a simple, quantity-based supply constraint. To determine
+an appropriate RHS, I assume a Yucca Mountain statutory limit of 17,000 tonnes
+and a 30 year lifetime, resulting in ~575 t per year processing capacity. In
+fuel units, the RHS value becomes</p>
 <div class="math">
 \[S_{proc} = \frac{575 \frac{t}{year}}{12 \frac{month}{year}} = ~48 \frac{t}{month}\]</div>
 </div>

@@ -599,6 +599,13 @@
     <span class="k">if</span> <span class="n">verbose</span><span class="p">:</span>
         <span class="k">print</span><span class="p">(</span><span class="s">&#39;{0} instances have been converted&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">n</span><span class="p">))</span>
 
+<div class="viewcode-block" id="cyc_members"><a class="viewcode-back" href="../../pyapi/tools.html#cyclopts.tools.cyc_members">[docs]</a><span class="k">def</span> <span class="nf">cyc_members</span><span class="p">(</span><span class="n">obj</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;return a list of persistable members per the Cyclopts style guide.&quot;&quot;&quot;</span>
+    <span class="n">members</span> <span class="o">=</span> <span class="n">obj</span><span class="o">.</span><span class="n">__class__</span><span class="o">.</span><span class="n">__dict__</span><span class="o">.</span><span class="n">keys</span><span class="p">()</span>
+    <span class="n">cycfilter</span> <span class="o">=</span> <span class="k">lambda</span> <span class="n">x</span><span class="p">:</span> <span class="n">x</span><span class="o">.</span><span class="n">startswith</span><span class="p">(</span><span class="s">&#39;_&#39;</span><span class="p">)</span> <span class="ow">or</span> <span class="n">x</span><span class="o">.</span><span class="n">endswith</span><span class="p">(</span><span class="s">&#39;_&#39;</span><span class="p">)</span> <span class="ow">or</span> <span class="n">x</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">isupper</span><span class="p">()</span>
+    <span class="k">return</span> <span class="p">[</span><span class="n">x</span> <span class="k">for</span> <span class="n">x</span> <span class="ow">in</span> <span class="n">members</span> <span class="k">if</span> <span class="ow">not</span> <span class="n">cycfilter</span><span class="p">(</span><span class="n">x</span><span class="p">)]</span>
+    
+
 <span class="c"># def run_insts_mp():</span>
 <span class="c">#     q = mp.Queue()</span>
 <span class="c">#     pool = mp.Pool(4, multi_proc_gen, (q,))</span>
@@ -620,7 +627,7 @@
 <span class="c">#         if verbose and q.qsize() % update_freq == 0:</span>
 <span class="c">#             print(&#39;{0} instances have been converted&#39;.format(n))</span>
 <span class="c">#         time.sleep(1)</span>
-</pre></div>
+</pre></div></div>
 
           </div>
         </div>

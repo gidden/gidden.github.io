@@ -71,6 +71,7 @@
 
 <span class="kn">from</span> <span class="nn">cyclopts.problems</span> <span class="kn">import</span> <span class="n">ProblemFamily</span>
 <span class="kn">import</span> <span class="nn">cyclopts.cyclopts_io</span> <span class="kn">as</span> <span class="nn">cycio</span>
+<span class="kn">import</span> <span class="nn">cyclopts.tools</span> <span class="kn">as</span> <span class="nn">tools</span>
 <span class="kn">import</span> <span class="nn">cyclopts.exchange_instance</span> <span class="kn">as</span> <span class="nn">exinst</span>
 
 <span class="n">_N_CAPS_MAX</span> <span class="o">=</span> <span class="mi">4</span>
@@ -92,6 +93,7 @@
         <span class="p">(</span><span class="s">&quot;id&quot;</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">int64</span><span class="p">),</span>
         <span class="p">(</span><span class="s">&quot;kind&quot;</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">bool_</span><span class="p">),</span>
         <span class="p">(</span><span class="s">&quot;caps&quot;</span><span class="p">,</span> <span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">float64</span><span class="p">,</span> <span class="n">_N_CAPS_MAX</span><span class="p">),),</span> <span class="c"># array of size N_CAPS_MAX</span>
+        <span class="p">(</span><span class="s">&quot;cap_dirs&quot;</span><span class="p">,</span> <span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">bool_</span><span class="p">,</span> <span class="n">_N_CAPS_MAX</span><span class="p">),),</span> <span class="c"># array of size N_CAPS_MAX</span>
         <span class="p">(</span><span class="s">&quot;qty&quot;</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">float64</span><span class="p">),</span>
         <span class="p">]),</span>
     <span class="s">&quot;ExNode&quot;</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">dtype</span><span class="p">([</span>
@@ -139,8 +141,12 @@
 
 <span class="c"># these functions must be kept up to date with cyclopts.instance</span>
 <span class="k">def</span> <span class="nf">grp_tpl</span><span class="p">(</span><span class="n">instid</span><span class="p">,</span> <span class="n">obj</span><span class="p">):</span>    
-    <span class="k">return</span><span class="p">(</span><span class="n">instid</span><span class="o">.</span><span class="n">bytes</span><span class="p">,</span> <span class="n">obj</span><span class="o">.</span><span class="n">id</span><span class="p">,</span> <span class="n">obj</span><span class="o">.</span><span class="n">kind</span><span class="p">,</span> 
-           <span class="n">np</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">obj</span><span class="o">.</span><span class="n">caps</span><span class="p">,</span> <span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">*</span> <span class="p">(</span><span class="n">_N_CAPS_MAX</span> <span class="o">-</span> <span class="nb">len</span><span class="p">(</span><span class="n">obj</span><span class="o">.</span><span class="n">caps</span><span class="p">))),</span> <span class="n">obj</span><span class="o">.</span><span class="n">qty</span><span class="p">)</span>
+    <span class="k">return</span><span class="p">(</span><span class="n">instid</span><span class="o">.</span><span class="n">bytes</span><span class="p">,</span> 
+           <span class="n">obj</span><span class="o">.</span><span class="n">id</span><span class="p">,</span> 
+           <span class="n">obj</span><span class="o">.</span><span class="n">kind</span><span class="p">,</span> 
+           <span class="n">np</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">obj</span><span class="o">.</span><span class="n">caps</span><span class="p">,</span> <span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">*</span> <span class="p">(</span><span class="n">_N_CAPS_MAX</span> <span class="o">-</span> <span class="nb">len</span><span class="p">(</span><span class="n">obj</span><span class="o">.</span><span class="n">caps</span><span class="p">))),</span>
+           <span class="n">np</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">obj</span><span class="o">.</span><span class="n">cap_dirs</span><span class="p">,</span> <span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">*</span> <span class="p">(</span><span class="n">_N_CAPS_MAX</span> <span class="o">-</span> <span class="nb">len</span><span class="p">(</span><span class="n">obj</span><span class="o">.</span><span class="n">cap_dirs</span><span class="p">))),</span> 
+           <span class="n">obj</span><span class="o">.</span><span class="n">qty</span><span class="p">,)</span>
 
 <span class="k">def</span> <span class="nf">node_tpl</span><span class="p">(</span><span class="n">instid</span><span class="p">,</span> <span class="n">obj</span><span class="p">):</span>    
     <span class="k">return</span><span class="p">(</span><span class="n">instid</span><span class="o">.</span><span class="n">bytes</span><span class="p">,</span> <span class="n">obj</span><span class="o">.</span><span class="n">id</span><span class="p">,</span> <span class="n">obj</span><span class="o">.</span><span class="n">gid</span><span class="p">,</span> <span class="n">obj</span><span class="o">.</span><span class="n">kind</span><span class="p">,</span> <span class="n">obj</span><span class="o">.</span><span class="n">qty</span><span class="p">,</span> <span class="n">obj</span><span class="o">.</span><span class="n">excl</span><span class="p">,</span> <span class="n">obj</span><span class="o">.</span><span class="n">excl_id</span><span class="p">)</span>
@@ -269,8 +275,6 @@
 <span class="sd">        inst : tuple of lists of ExGroups, ExNodes, and ExArgs</span>
 <span class="sd">            A representation of a problem instance</span>
 <span class="sd">        &quot;&quot;&quot;</span>
-        <span class="n">xdattrs</span> <span class="o">=</span> <span class="k">lambda</span> <span class="n">obj</span><span class="p">:</span> <span class="p">[</span><span class="n">x</span> <span class="k">for</span> <span class="n">x</span> <span class="ow">in</span> <span class="n">obj</span><span class="o">.</span><span class="n">__class__</span><span class="o">.</span><span class="n">__dict__</span><span class="o">.</span><span class="n">keys</span><span class="p">()</span> \
-                                   <span class="k">if</span> <span class="ow">not</span> <span class="n">x</span><span class="o">.</span><span class="n">startswith</span><span class="p">(</span><span class="s">&#39;_&#39;</span><span class="p">)]</span>
         <span class="n">ctors</span> <span class="o">=</span> <span class="p">{</span><span class="s">&#39;ExGroup&#39;</span><span class="p">:</span> <span class="n">exinst</span><span class="o">.</span><span class="n">ExGroup</span><span class="p">,</span> 
                  <span class="s">&#39;ExNode&#39;</span><span class="p">:</span> <span class="n">exinst</span><span class="o">.</span><span class="n">ExNode</span><span class="p">,</span> 
                  <span class="s">&#39;ExArc&#39;</span><span class="p">:</span> <span class="n">exinst</span><span class="o">.</span><span class="n">ExArc</span><span class="p">}</span>
@@ -278,16 +282,22 @@
         <span class="k">for</span> <span class="n">name</span> <span class="ow">in</span> <span class="n">ctors</span><span class="o">.</span><span class="n">keys</span><span class="p">():</span>
             <span class="n">tbl</span> <span class="o">=</span> <span class="n">tables</span><span class="p">[</span><span class="n">_tbl_names</span><span class="p">[</span><span class="n">name</span><span class="p">]]</span>
             <span class="n">rows</span> <span class="o">=</span> <span class="n">tbl</span><span class="o">.</span><span class="n">instid_rows</span><span class="p">(</span><span class="n">uuid</span><span class="o">.</span><span class="n">bytes</span><span class="p">)</span>
-            <span class="n">setattrs</span> <span class="o">=</span> <span class="n">xdattrs</span><span class="p">(</span><span class="n">ctors</span><span class="p">[</span><span class="n">name</span><span class="p">]())</span>
+            <span class="n">setattrs</span> <span class="o">=</span> <span class="n">tools</span><span class="o">.</span><span class="n">cyc_members</span><span class="p">(</span><span class="n">ctors</span><span class="p">[</span><span class="n">name</span><span class="p">]())</span>
             <span class="k">for</span> <span class="n">row</span> <span class="ow">in</span> <span class="n">rows</span><span class="p">:</span>
                 <span class="n">obj</span> <span class="o">=</span> <span class="n">ctors</span><span class="p">[</span><span class="n">name</span><span class="p">]()</span>
+                <span class="k">if</span> <span class="n">name</span> <span class="o">==</span> <span class="s">&#39;ExGroup&#39;</span><span class="p">:</span>
+                    <span class="n">ncaps</span> <span class="o">=</span> <span class="nb">len</span><span class="p">([</span><span class="n">x</span> <span class="k">for</span> <span class="n">x</span> <span class="ow">in</span> <span class="n">row</span><span class="p">[</span><span class="s">&#39;caps&#39;</span><span class="p">]</span> <span class="k">if</span> <span class="n">x</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">])</span>
                 <span class="k">for</span> <span class="n">var</span> <span class="ow">in</span> <span class="n">setattrs</span><span class="p">:</span>
                     <span class="n">attr</span> <span class="o">=</span> <span class="nb">getattr</span><span class="p">(</span><span class="n">obj</span><span class="p">,</span> <span class="n">var</span><span class="p">)</span>
                     <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">attr</span><span class="p">,</span> <span class="n">Iterable</span><span class="p">):</span>
                         <span class="n">ary</span> <span class="o">=</span> <span class="n">row</span><span class="p">[</span><span class="n">var</span><span class="p">]</span>
-                        <span class="n">attr</span> <span class="o">=</span> <span class="n">ary</span><span class="p">[</span><span class="n">ary</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">]</span> 
+                        <span class="k">if</span> <span class="n">name</span> <span class="o">==</span> <span class="s">&#39;ExGroup&#39;</span><span class="p">:</span>
+                            <span class="n">attr</span> <span class="o">=</span> <span class="p">[</span><span class="n">ary</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">ncaps</span><span class="p">)]</span>
+                        <span class="k">else</span><span class="p">:</span>
+                            <span class="n">attr</span> <span class="o">=</span> <span class="n">ary</span><span class="p">[</span><span class="n">ary</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">]</span>
                     <span class="k">else</span><span class="p">:</span>
                         <span class="n">attr</span> <span class="o">=</span> <span class="n">row</span><span class="p">[</span><span class="n">var</span><span class="p">]</span>
+                    <span class="c">#print(&#39;setting {0} to {1}&#39;.format(var, attr))</span>
                     <span class="nb">setattr</span><span class="p">(</span><span class="n">obj</span><span class="p">,</span> <span class="n">var</span><span class="p">,</span> <span class="n">attr</span><span class="p">)</span>
                 <span class="n">objs</span><span class="p">[</span><span class="n">name</span><span class="p">]</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">obj</span><span class="p">)</span>
         <span class="k">return</span> <span class="n">objs</span><span class="p">[</span><span class="s">&#39;ExGroup&#39;</span><span class="p">],</span> <span class="n">objs</span><span class="p">[</span><span class="s">&#39;ExNode&#39;</span><span class="p">],</span> <span class="n">objs</span><span class="p">[</span><span class="s">&#39;ExArc&#39;</span><span class="p">]</span>

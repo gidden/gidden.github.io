@@ -83,7 +83,7 @@
 <span class="kn">from</span> <span class="nn">cyclopts.exchange_family</span> <span class="kn">import</span> <span class="n">ResourceExchange</span>
 <span class="kn">from</span> <span class="nn">cyclopts.params</span> <span class="kn">import</span> <span class="n">Param</span><span class="p">,</span> <span class="n">BoolParam</span><span class="p">,</span> <span class="n">CoeffParam</span><span class="p">,</span> <span class="n">SupConstrParam</span><span class="p">,</span> \
     <span class="n">PARAM_CTOR_ARGS</span>
-<span class="kn">from</span> <span class="nn">cyclopts.tools</span> <span class="kn">import</span> <span class="n">Incrementer</span>
+<span class="kn">import</span> <span class="nn">cyclopts.tools</span> <span class="kn">as</span> <span class="nn">tools</span>
 
 <div class="viewcode-block" id="RandomRequestPoint"><a class="viewcode-back" href="../../pyapi/random_request_species.html#cyclopts.random_request_species.RandomRequestPoint">[docs]</a><span class="k">class</span> <span class="nc">RandomRequestPoint</span><span class="p">(</span><span class="nb">object</span><span class="p">):</span>
     <span class="sd">&quot;&quot;&quot;A container class representing a point in parameter space for</span>
@@ -212,7 +212,7 @@
                 <span class="k">if</span> <span class="n">subname</span><span class="o">.</span><span class="n">startswith</span><span class="p">(</span><span class="s">&#39;_&#39;</span><span class="p">):</span>
                     <span class="k">continue</span>
                 <span class="n">ret</span><span class="o">.</span><span class="n">append</span><span class="p">((</span><span class="s">&quot;{0}_{1}&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">name</span><span class="p">,</span> <span class="n">subname</span><span class="p">),</span> 
-                            <span class="bp">self</span><span class="o">.</span><span class="n">_dt_convert</span><span class="p">(</span><span class="n">subobj</span><span class="p">)))</span>
+                            <span class="bp">self</span><span class="o">.</span><span class="n">_dt_convert</span><span class="p">(</span><span class="nb">getattr</span><span class="p">(</span><span class="n">obj</span><span class="p">,</span> <span class="n">subname</span><span class="p">))))</span>
         <span class="k">return</span> <span class="n">np</span><span class="o">.</span><span class="n">dtype</span><span class="p">(</span><span class="n">ret</span><span class="p">)</span>
                 </div>
     <span class="k">def</span> <span class="nf">export_h5</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">uuid</span><span class="p">,</span> <span class="n">fam_name</span><span class="p">):</span>
@@ -324,7 +324,7 @@
 <span class="sd">            the requesters        </span>
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="n">s</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">sampler</span>
-        <span class="n">n_ids</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">req_n_ids</span> <span class="o">=</span> <span class="n">Incrementer</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">req_n_offset</span><span class="p">)</span>
+        <span class="n">n_ids</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">req_n_ids</span> <span class="o">=</span> <span class="n">tools</span><span class="o">.</span><span class="n">Incrementer</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">req_n_offset</span><span class="p">)</span>
         <span class="n">requests</span> <span class="o">=</span> <span class="n">collections</span><span class="o">.</span><span class="n">defaultdict</span><span class="p">(</span><span class="nb">list</span><span class="p">)</span>
         
         <span class="n">chosen_commods</span> <span class="o">=</span> <span class="nb">set</span><span class="p">()</span>
@@ -391,9 +391,12 @@
             <span class="n">n_constr</span> <span class="o">=</span> <span class="n">s</span><span class="o">.</span><span class="n">n_req_constr</span><span class="o">.</span><span class="n">sample</span><span class="p">()</span>
             <span class="c"># add qty as first constraint -- required for clp/cbc</span>
             <span class="n">caps</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">total_grp_qty</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">_req_constr_vals</span><span class="p">(</span><span class="n">n_constr</span><span class="p">,</span> <span class="n">multi_reqs</span><span class="p">))</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">groups</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">exinst</span><span class="o">.</span><span class="n">ExGroup</span><span class="p">(</span><span class="n">g_id</span><span class="p">,</span> <span class="n">req</span><span class="p">,</span> <span class="n">caps</span><span class="p">,</span> <span class="n">total_grp_qty</span><span class="p">))</span>
+            <span class="n">grp</span> <span class="o">=</span> <span class="n">exinst</span><span class="o">.</span><span class="n">ExGroup</span><span class="p">(</span><span class="n">g_id</span><span class="p">,</span> <span class="n">req</span><span class="p">,</span> <span class="n">total_grp_qty</span><span class="p">)</span>
+            <span class="k">for</span> <span class="n">cap</span> <span class="ow">in</span> <span class="n">caps</span><span class="p">:</span>
+                <span class="n">grp</span><span class="o">.</span><span class="n">AddCap</span><span class="p">(</span><span class="n">cap</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">groups</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">grp</span><span class="p">)</span>
             
-            <span class="n">exid</span> <span class="o">=</span> <span class="n">Incrementer</span><span class="p">()</span>
+            <span class="n">exid</span> <span class="o">=</span> <span class="n">tools</span><span class="o">.</span><span class="n">Incrementer</span><span class="p">()</span>
             <span class="k">for</span> <span class="n">reqs</span> <span class="ow">in</span> <span class="n">multi_reqs</span><span class="p">:</span> <span class="c"># mutually satisfying requests</span>
                 <span class="k">for</span> <span class="n">n_id</span><span class="p">,</span> <span class="n">commod</span> <span class="ow">in</span> <span class="n">reqs</span><span class="p">:</span>
                     <span class="n">n_node_ucaps</span><span class="p">[</span><span class="n">n_id</span><span class="p">]</span> <span class="o">=</span> <span class="n">n_constr</span>
@@ -405,14 +408,17 @@
                     <span class="n">req_qtys</span><span class="p">[</span><span class="n">n_id</span><span class="p">]</span> <span class="o">=</span> <span class="n">req_qty</span>
     
         <span class="c"># populate supply params and arc relations</span>
-        <span class="n">a_ids</span> <span class="o">=</span> <span class="n">Incrementer</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">arc_offset</span><span class="p">)</span>
+        <span class="n">a_ids</span> <span class="o">=</span> <span class="n">tools</span><span class="o">.</span><span class="n">Incrementer</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">arc_offset</span><span class="p">)</span>
         <span class="n">commod_demand</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_commod_demand</span><span class="p">()</span>
         <span class="n">supplier_capacity</span> <span class="o">=</span> \
             <span class="bp">self</span><span class="o">.</span><span class="n">_supplier_capacity</span><span class="p">(</span><span class="n">commod_demand</span><span class="p">,</span> <span class="n">supplier_commods</span><span class="p">)</span>
         <span class="k">for</span> <span class="n">g_id</span><span class="p">,</span> <span class="n">sups</span> <span class="ow">in</span> <span class="n">supply</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
             <span class="n">caps</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_sup_constr_vals</span><span class="p">(</span><span class="n">supplier_capacity</span><span class="p">[</span><span class="n">g_id</span><span class="p">],</span> 
                                          <span class="n">s</span><span class="o">.</span><span class="n">n_sup_constr</span><span class="o">.</span><span class="n">sample</span><span class="p">())</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">groups</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">exinst</span><span class="o">.</span><span class="n">ExGroup</span><span class="p">(</span><span class="n">g_id</span><span class="p">,</span> <span class="n">bid</span><span class="p">,</span> <span class="n">caps</span><span class="p">))</span>
+            <span class="n">grp</span> <span class="o">=</span> <span class="n">exinst</span><span class="o">.</span><span class="n">ExGroup</span><span class="p">(</span><span class="n">g_id</span><span class="p">,</span> <span class="n">bid</span><span class="p">)</span>
+            <span class="k">for</span> <span class="n">cap</span> <span class="ow">in</span> <span class="n">caps</span><span class="p">:</span>
+                <span class="n">grp</span><span class="o">.</span><span class="n">AddCap</span><span class="p">(</span><span class="n">cap</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">groups</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">grp</span><span class="p">)</span>
             <span class="k">for</span> <span class="n">v_id</span><span class="p">,</span> <span class="n">u_id</span> <span class="ow">in</span> <span class="n">sups</span><span class="p">:</span>
                 <span class="n">req_qty</span> <span class="o">=</span> <span class="n">req_qtys</span><span class="p">[</span><span class="n">u_id</span><span class="p">]</span>
                 <span class="n">n_node_ucaps</span><span class="p">[</span><span class="n">v_id</span><span class="p">]</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">caps</span><span class="p">)</span>
@@ -442,17 +448,17 @@
         <span class="c"># the request quantity per assembly (i.e., kg of fuel per assembly request)</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">req_qty</span> <span class="o">=</span> <span class="n">s</span><span class="o">.</span><span class="n">req_qty</span><span class="o">.</span><span class="n">sample</span><span class="p">()</span> 
 
-        <span class="n">req_g_ids</span> <span class="o">=</span> <span class="n">Incrementer</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">req_g_offset</span><span class="p">)</span>
+        <span class="n">req_g_ids</span> <span class="o">=</span> <span class="n">tools</span><span class="o">.</span><span class="n">Incrementer</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">req_g_offset</span><span class="p">)</span>
         <span class="c"># request groups</span>
         <span class="n">requesters</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">requesters</span> <span class="o">=</span> \
             <span class="p">[</span><span class="n">req_g_ids</span><span class="o">.</span><span class="n">next</span><span class="p">()</span> <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">n_request</span><span class="p">)]</span> 
         <span class="c"># include request values because ids are global</span>
         <span class="n">sup_g_ids</span> <span class="o">=</span> \
-            <span class="n">Incrementer</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">req_g_offset</span> <span class="o">+</span> <span class="bp">self</span><span class="o">.</span><span class="n">sup_g_offset</span> <span class="o">+</span> <span class="bp">self</span><span class="o">.</span><span class="n">n_request</span><span class="p">)</span>
+            <span class="n">tools</span><span class="o">.</span><span class="n">Incrementer</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">req_g_offset</span> <span class="o">+</span> <span class="bp">self</span><span class="o">.</span><span class="n">sup_g_offset</span> <span class="o">+</span> <span class="bp">self</span><span class="o">.</span><span class="n">n_request</span><span class="p">)</span>
         <span class="c"># supply groups</span>
         <span class="n">suppliers</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">suppliers</span> <span class="o">=</span> \
             <span class="p">[</span><span class="n">sup_g_ids</span><span class="o">.</span><span class="n">next</span><span class="p">()</span> <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">n_supply</span><span class="p">)]</span> 
-        <span class="bp">self</span><span class="o">.</span><span class="n">arc_ids</span> <span class="o">=</span> <span class="n">Incrementer</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">arc_offset</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">arc_ids</span> <span class="o">=</span> <span class="n">tools</span><span class="o">.</span><span class="n">Incrementer</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">arc_offset</span><span class="p">)</span>
 
         <span class="bp">self</span><span class="o">.</span><span class="n">reqs_to_commods</span> <span class="o">=</span> <span class="p">{}</span> <span class="c"># requests to their commodities</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">commods_to_reqs</span> <span class="o">=</span> <span class="p">{}</span> <span class="c"># commodities to all requests</span>
@@ -553,9 +559,9 @@
         <span class="n">s</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">sampler</span>
 
         <span class="c"># include request values because ids are global</span>
-        <span class="n">n_ids</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">sup_n_ids</span> <span class="o">=</span> <span class="n">Incrementer</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">req_n_offset</span> <span class="o">+</span> 
-                                             <span class="bp">self</span><span class="o">.</span><span class="n">sup_n_offset</span> <span class="o">+</span> 
-                                             <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">reqs_to_commods</span><span class="p">))</span>
+        <span class="n">n_ids</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">sup_n_ids</span> <span class="o">=</span> <span class="n">tools</span><span class="o">.</span><span class="n">Incrementer</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">req_n_offset</span> <span class="o">+</span> 
+                                                   <span class="bp">self</span><span class="o">.</span><span class="n">sup_n_offset</span> <span class="o">+</span> 
+                                                   <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">reqs_to_commods</span><span class="p">))</span>
 
         <span class="n">supply</span> <span class="o">=</span> <span class="n">collections</span><span class="o">.</span><span class="n">defaultdict</span><span class="p">(</span><span class="nb">list</span><span class="p">)</span> <span class="c"># supplier group id to arcs</span>
         <span class="n">possible_supply</span> <span class="o">=</span> <span class="n">collections</span><span class="o">.</span><span class="n">defaultdict</span><span class="p">(</span><span class="nb">list</span><span class="p">)</span> <span class="c"># req to supplier group id</span>
