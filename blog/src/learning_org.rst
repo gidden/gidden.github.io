@@ -58,3 +58,51 @@ that command are very important! For example make sure *not* to use a lower-case
 `p` rather than the upper-case `P`. Using a lower case will get still get you a
 PDF but without having passed it through the Beamer translator.
 
+Adding a Bibtex Entry
+-----------------------
+
+Getting everything to work nicely with Bibtex takes a bit of extra effort. My
+goal was to add the following to my generated Latex (matching previous
+presentations):
+
+```
+\begin{frame}[allowframebreaks]
+  \frametitle{References}
+  \bibliographystyle{plain}
+  \bibliography{main}
+\end{frame}
+```
+
+That part is relatively straightforward in Org-mode, just add to the bottom of
+your `pres.org` the following, replacing the `\bibliography{pres}` entry with
+your own bib file(s):
+
+```
+** References
+  :PROPERTIES:
+  :BEAMER_opt: allowframebreaks
+  :END:
+   \bibliographystyle{plain}
+   \bibliography{pres}
+```
+
+However, this won't work out of the box. I found a related
+[thread](http://lists.gnu.org/archive/html/emacs-orgmode/2013-05/msg00791.html),
+and implemented its fix by adding the following to my `~/.emacs`:
+
+```
+(setq org-latex-pdf-process (quote ("texi2dvi --pdf --clean --verbose
+--batch %f" "bibtex %b" "texi2dvi --pdf --clean --verbose --batch %f"
+"texi2dvi --pdf --clean --verbose --batch %f")))
+```
+
+Finally, you can get numbers instead of images by adding
+
+```
+#+LATEX_HEADER: \setbeamertemplate{bibliography item}[text]
+```
+
+Helpful Hints
+--------------
+
+[Cycling](http://orgmode.org/manual/Global-and-local-cycling.html#Global-and-local-cycling) through collapseable regions.
