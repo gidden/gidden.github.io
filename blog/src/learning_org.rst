@@ -102,6 +102,27 @@ Finally, you can get numbers instead of images by adding
 #+LATEX_HEADER: \setbeamertemplate{bibliography item}[text]
 ```
 
+Outer Themes, Short Titles, etc.
+----------------------------------
+
+Org-mode naturally picks up on outer themes with `BEAMER_OUTER_THEME`, but they
+don't support the constructs that usually comprise outer themes, like
+institutions, short titles, etc. If you use the bleeding edge master repository
+(as of Tues. March 10, 2015), then you can use the `BEAMER_HEADER` to inject the
+appropriate structures. For example, to get a title in all output forms *and* a
+short title in Beamer using an outer theme, let's say `infolines`, you can do
+the following:
+
+```
+#+TITLE: A Long Title
+#+BEAMER_OUTER_THEME: infolines
+#+BEAMER_HEADER: \title[A Short Title]{A Long Title}
+```
+
+Yes, I know. You have to type `A Long Title` twice. I tried using
+`\inserttitle`, but it borked on computers with "small" memory size (4GB). This
+is a small hit for what I'd consider a large effect.
+
 Helpful Hints
 --------------
 
