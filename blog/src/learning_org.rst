@@ -59,7 +59,7 @@ that command are very important! For example make sure *not* to use a lower-case
 PDF but without having passed it through the Beamer translator.
 
 Adding a Bibtex Entry
------------------------
+======================
 
 Getting everything to work nicely with Bibtex takes a bit of extra effort. My
 goal was to add the following to my generated Latex (matching previous
@@ -103,7 +103,7 @@ Finally, you can get numbers instead of images by adding
 ```
 
 Outer Themes, Short Titles, etc.
-----------------------------------
+==================================
 
 Org-mode naturally picks up on outer themes with `BEAMER_OUTER_THEME`, but they
 don't support the constructs that usually comprise outer themes, like
@@ -123,7 +123,29 @@ Yes, I know. You have to type `A Long Title` twice. I tried using
 `\inserttitle`, but it borked on computers with "small" memory size (4GB). This
 is a small hit for what I'd consider a large effect.
 
+Beamer-specific Keybindings
+============================
+
+Emacs let you specify keybinings based on the mode you're in (e.g., org
+mode). One of the most useful keybindings I use every single day is one for the
+`'comile` command. In most cases when I'm working in C++, I simply press `C-1`
+and my code compiles automatically for me (i.e., it runs `make`). I find that
+every time I want to build anything, for example a pdf document, my fingers
+instinctively use that pattern. 
+
+So, I wanted to use that same key binding for making latex and beamer documents
+in org mode. Easy enough! Add the following to your `.emacs`:
+
+```
+(define-key org-mode-map (kbd "\C-c1") 'org-latex-export-to-pdf)
+(define-key org-beamer-mode-map (kbd "\C-c1") 'org-beamer-export-to-pdf)
+```
+
+But alas, org mode has no way of detecting beamer-based org files over latex
+files automagically. It must be told. Accordingly, you also have to add
+`#+STARTUP: beamer` to you `pres.org` file.
+
 Helpful Hints
---------------
+==============
 
 [Cycling](http://orgmode.org/manual/Global-and-local-cycling.html#Global-and-local-cycling) through collapseable regions.
