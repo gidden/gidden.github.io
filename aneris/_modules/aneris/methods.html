@@ -275,7 +275,8 @@
 <div class="viewcode-block" id="default_methods"><a class="viewcode-back" href="../../api.html#aneris.methods.default_methods">[docs]</a><span class="k">def</span> <span class="nf">default_methods</span><span class="p">(</span><span class="n">hist</span><span class="p">,</span> <span class="n">model</span><span class="p">,</span> <span class="n">base_year</span><span class="p">,</span> <span class="n">luc_method</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
     <span class="sd">&quot;&quot;&quot;Determine default harmonization methods to use.</span>
 
-<span class="sd">    See &lt;WEBSITE&gt; for a graphical description of the decision tree.</span>
+<span class="sd">    See http://mattgidden.com/aneris/theory.html#default-decision-tree for a</span>
+<span class="sd">    graphical description of the decision tree.</span>
 
 <span class="sd">    Parameters</span>
 <span class="sd">    ----------</span>
@@ -294,6 +295,7 @@
 <span class="sd">       default harmonization methods</span>
 <span class="sd">    metadata : pd.DataFrame</span>
 <span class="sd">       metadata regarding why each method was chosen</span>
+
 <span class="sd">    &quot;&quot;&quot;</span>
     <span class="n">luc_method</span> <span class="o">=</span> <span class="n">luc_method</span> <span class="ow">or</span> <span class="s1">&#39;reduce_offset_2150_cov&#39;</span>
     <span class="n">y</span> <span class="o">=</span> <span class="nb">str</span><span class="p">(</span><span class="n">base_year</span><span class="p">)</span>
