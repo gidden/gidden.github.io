@@ -1,0 +1,902 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>Python API &#8212; aneris 0.1.0 documentation</title>
+    
+    <link rel="stylesheet" href="_static/flasky.css" type="text/css" />
+    <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+    <link rel="stylesheet" href="_static/table_styling.css" type="text/css" />
+    
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    './',
+        VERSION:     '0.1.0',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="_static/jquery.js"></script>
+    <script type="text/javascript" src="_static/underscore.js"></script>
+    <script type="text/javascript" src="_static/doctools.js"></script>
+    <script type="text/javascript" src="https://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+    <link rel="index" title="Index" href="genindex.html" />
+    <link rel="search" title="Search" href="search.html" />
+    <link rel="top" title="aneris 0.1.0 documentation" href="index.html" />
+    <link rel="prev" title="Command Line Interface" href="cli.html" />
+   
+  
+  <link media="only screen and (max-device-width: 480px)" href="_static/small_flask.css" type= "text/css" rel="stylesheet" />
+  <meta name="viewport" content="width=device-width, initial-scale=0.9, maximum-scale=0.9">
+
+  </head>
+  <body role="document">
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="cli.html" title="Command Line Interface"
+             accesskey="P">previous</a> |</li>
+        <li class="nav-item nav-item-0"><a href="index.html">aneris 0.1.0 documentation</a> &#187;</li> 
+      </ul>
+    </div>  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body" role="main">
+            
+  <div class="section" id="python-api">
+<span id="api"></span><h1>Python API<a class="headerlink" href="#python-api" title="Permalink to this headline">¶</a></h1>
+<div class="admonition warning">
+<p class="first admonition-title">Warning</p>
+<p class="last">Please note that <code class="code docutils literal"><span class="pre">aneris</span></code> is still in early developmental stages, thus
+all interfaces are subject to change.</p>
+</div>
+<div class="section" id="module-aneris._io">
+<span id="input-output-aneris-io"></span><h2>Input/Output: <code class="code docutils literal"><span class="pre">aneris._io</span></code><a class="headerlink" href="#module-aneris._io" title="Permalink to this headline">¶</a></h2>
+<span class="target" id="module-aneris._io"></span><p>Provides helper functions for reading input data and configuration files.</p>
+<p>The default configuration values are provided in aneris.RC_DEFAULTS.</p>
+<dl class="class">
+<dt id="aneris._io.RunControl">
+<em class="property">class </em><code class="descclassname">aneris._io.</code><code class="descname">RunControl</code><span class="sig-paren">(</span><em>rc=None</em>, <em>defaults=None</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/aneris/_io.html#RunControl"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#aneris._io.RunControl" title="Permalink to this definition">¶</a></dt>
+<dd><p>A thin wrapper around a Python Dictionary to support configuration of
+harmonization execution. Input can be provided as dictionaries or YAML
+files.</p>
+<p class="rubric">Methods</p>
+<dl class="method">
+<dt id="aneris._io.RunControl.__init__">
+<code class="descname">__init__</code><span class="sig-paren">(</span><em>rc=None</em>, <em>defaults=None</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/aneris/_io.html#RunControl.__init__"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#aneris._io.RunControl.__init__" title="Permalink to this definition">¶</a></dt>
+<dd><table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><p class="first"><strong>rc</strong> : string, file, dictionary, optional</p>
+<blockquote>
+<div><p>a path to a YAML file, a file handle for a YAML file, or a 
+dictionary describing run control configuration</p>
+</div></blockquote>
+<p><strong>defaults</strong> : string, file, dictionary, optional</p>
+<blockquote class="last">
+<div><p>a path to a YAML file, a file handle for a YAML file, or a 
+dictionary describing <strong>default</strong> run control configuration</p>
+</div></blockquote>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="aneris._io.RunControl.recursive_update">
+<code class="descname">recursive_update</code><span class="sig-paren">(</span><em>k</em>, <em>d</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/aneris/_io.html#RunControl.recursive_update"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#aneris._io.RunControl.recursive_update" title="Permalink to this definition">¶</a></dt>
+<dd><p>Recursively update a top-level option in the run control</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><p class="first"><strong>k</strong> : string</p>
+<blockquote>
+<div><p>the top-level key</p>
+</div></blockquote>
+<p><strong>d</strong> : dictionary or similar</p>
+<blockquote class="last">
+<div><p>the dictionary to use for updating</p>
+</div></blockquote>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="function">
+<dt id="aneris._io.pd_read">
+<code class="descclassname">aneris._io.</code><code class="descname">pd_read</code><span class="sig-paren">(</span><em>f</em>, <em>str_cols=False</em>, <em>*args</em>, <em>**kwargs</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/aneris/_io.html#pd_read"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#aneris._io.pd_read" title="Permalink to this definition">¶</a></dt>
+<dd><p>Try to read a file with pandas, supports CSV and XLSX</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><p class="first"><strong>f</strong> : string</p>
+<blockquote>
+<div><p>the file to read in</p>
+</div></blockquote>
+<p><strong>str_cols</strong> : bool, optional</p>
+<blockquote>
+<div><p>turn all columns into strings (numerical column names are sometimes 
+read in as numerical dtypes)</p>
+</div></blockquote>
+<p><strong>args, kwargs</strong> : sent directly to the Pandas read function</p>
+</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first last"><strong>df</strong> : pd.DataFrame</p>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="function">
+<dt id="aneris._io.pd_write">
+<code class="descclassname">aneris._io.</code><code class="descname">pd_write</code><span class="sig-paren">(</span><em>df</em>, <em>f</em>, <em>*args</em>, <em>**kwargs</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/aneris/_io.html#pd_write"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#aneris._io.pd_write" title="Permalink to this definition">¶</a></dt>
+<dd><p>Try to write a file with pandas, supports CSV and XLSX</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="aneris._io.read_excel">
+<code class="descclassname">aneris._io.</code><code class="descname">read_excel</code><span class="sig-paren">(</span><em>f</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/aneris/_io.html#read_excel"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#aneris._io.read_excel" title="Permalink to this definition">¶</a></dt>
+<dd><p>Read an excel-based input file for harmonization.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><p class="first"><strong>f</strong> : string</p>
+<blockquote>
+<div><p>path to input file</p>
+</div></blockquote>
+</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first"><strong>model</strong> : pd.DataFrame</p>
+<blockquote>
+<div><p>model data frame in IAMC format</p>
+</div></blockquote>
+<p><strong>overrides</strong> : pd.DataFrame</p>
+<blockquote>
+<div><p>overrides data frame in IAMC format</p>
+</div></blockquote>
+<p><strong>config</strong> : dictionary</p>
+<blockquote class="last">
+<div><p>configuration overrides (if any)</p>
+</div></blockquote>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+</div>
+<div class="section" id="module-aneris.harmonize">
+<span id="harmonization-aneris-harmonize"></span><h2>Harmonization: <code class="code docutils literal"><span class="pre">aneris.harmonize</span></code><a class="headerlink" href="#module-aneris.harmonize" title="Permalink to this headline">¶</a></h2>
+<span class="target" id="module-aneris.harmonize"></span><dl class="class">
+<dt id="aneris.harmonize.HarmonizationDriver">
+<em class="property">class </em><code class="descclassname">aneris.harmonize.</code><code class="descname">HarmonizationDriver</code><span class="sig-paren">(</span><em>rc</em>, <em>hist</em>, <em>model</em>, <em>overrides</em>, <em>regions</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/aneris/harmonize.html#HarmonizationDriver"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#aneris.harmonize.HarmonizationDriver" title="Permalink to this definition">¶</a></dt>
+<dd><p>A helper class to harmonize all scenarios for a model.</p>
+<p class="rubric">Methods</p>
+<dl class="method">
+<dt id="aneris.harmonize.HarmonizationDriver.harmonize">
+<code class="descname">harmonize</code><span class="sig-paren">(</span><em>scenario</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/aneris/harmonize.html#HarmonizationDriver.harmonize"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#aneris.harmonize.HarmonizationDriver.harmonize" title="Permalink to this definition">¶</a></dt>
+<dd><p>Harmonize a given scneario. Get results from 
+aneris.harmonize.HarmonizationDriver.results()</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="aneris.harmonize.HarmonizationDriver.harmonized_results">
+<code class="descname">harmonized_results</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/aneris/harmonize.html#HarmonizationDriver.harmonized_results"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#aneris.harmonize.HarmonizationDriver.harmonized_results" title="Permalink to this definition">¶</a></dt>
+<dd><p>Return 2-tuple of (pd.DataFrame of harmonized trajectories, 
+pd.DataFrame of metadata)</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="aneris.harmonize.HarmonizationDriver.scenarios">
+<code class="descname">scenarios</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/aneris/harmonize.html#HarmonizationDriver.scenarios"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#aneris.harmonize.HarmonizationDriver.scenarios" title="Permalink to this definition">¶</a></dt>
+<dd><p>Return all known scenarios</p>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="class">
+<dt id="aneris.harmonize.Harmonizer">
+<em class="property">class </em><code class="descclassname">aneris.harmonize.</code><code class="descname">Harmonizer</code><span class="sig-paren">(</span><em>data</em>, <em>history</em>, <em>config={}</em>, <em>verify_indicies=True</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/aneris/harmonize.html#Harmonizer"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#aneris.harmonize.Harmonizer" title="Permalink to this definition">¶</a></dt>
+<dd><p>A class used to harmonize model data to historical data in the 
+standard calculation format</p>
+<p class="rubric">Methods</p>
+<dl class="method">
+<dt id="aneris.harmonize.Harmonizer.harmonize">
+<code class="descname">harmonize</code><span class="sig-paren">(</span><em>overrides=None</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/aneris/harmonize.html#Harmonizer.harmonize"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#aneris.harmonize.Harmonizer.harmonize" title="Permalink to this definition">¶</a></dt>
+<dd><p>Return pd.DataFrame of harmonized trajectories given pd.DataFrame 
+overrides</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="aneris.harmonize.Harmonizer.metadata">
+<code class="descname">metadata</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/aneris/harmonize.html#Harmonizer.metadata"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#aneris.harmonize.Harmonizer.metadata" title="Permalink to this definition">¶</a></dt>
+<dd><p>Return pd.DataFrame of method choice metadata</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="aneris.harmonize.Harmonizer.methods">
+<code class="descname">methods</code><span class="sig-paren">(</span><em>overrides=None</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/aneris/harmonize.html#Harmonizer.methods"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#aneris.harmonize.Harmonizer.methods" title="Permalink to this definition">¶</a></dt>
+<dd><p>Return pd.DataFrame of methods to use for harmonization given 
+pd.DataFrame of overrides</p>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="function">
+<dt id="aneris.harmonize.diagnostics">
+<code class="descclassname">aneris.harmonize.</code><code class="descname">diagnostics</code><span class="sig-paren">(</span><em>model</em>, <em>metadata</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/aneris/harmonize.html#diagnostics"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#aneris.harmonize.diagnostics" title="Permalink to this definition">¶</a></dt>
+<dd><p>Provide warnings or throw errors based on harmonized model data and 
+metadata</p>
+<p>Current diagnostics are:
+- large missing values (sector has 20% or more contribution to</p>
+<blockquote>
+<div>history and model does not report sector) 
+- Warning provided</div></blockquote>
+<ul class="simple">
+<li>non-negative CO2 emissions (values other than CO2 are &lt; 0)
+- Error thrown</li>
+</ul>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><p class="first"><strong>model</strong> : pd.DataFrame</p>
+<blockquote>
+<div><p>harmonized model data in standard calculation format</p>
+</div></blockquote>
+<p><strong>metadata</strong> : pd.DataFrame</p>
+<blockquote class="last">
+<div><p>harmonization metadata</p>
+</div></blockquote>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+</div>
+<div class="section" id="module-aneris.methods">
+<span id="methods-aneris-methods"></span><h2>Methods: <code class="code docutils literal"><span class="pre">aneris.methods</span></code><a class="headerlink" href="#module-aneris.methods" title="Permalink to this headline">¶</a></h2>
+<span class="target" id="module-aneris.methods"></span><p>This module defines all possible functional forms of harmonization methods
+and the default decision tree for choosing which method to use.</p>
+<dl class="function">
+<dt id="aneris.methods.coeff_of_var">
+<code class="descclassname">aneris.methods.</code><code class="descname">coeff_of_var</code><span class="sig-paren">(</span><em>s</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/aneris/methods.html#coeff_of_var"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#aneris.methods.coeff_of_var" title="Permalink to this definition">¶</a></dt>
+<dd><p>Returns coefficient of variation of a Series</p>
+<div class="math">
+\[c_v = \frac{\sigma(s^{\prime}(t))}{\mu(s^{\prime}(t))}\]</div>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><p class="first"><strong>s</strong> : pd.Series</p>
+<blockquote>
+<div><p>timeseries</p>
+</div></blockquote>
+</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first"><strong>c_v</strong> : float</p>
+<blockquote class="last">
+<div><p>coefficient of variation</p>
+</div></blockquote>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="function">
+<dt id="aneris.methods.constant_offset">
+<code class="descclassname">aneris.methods.</code><code class="descname">constant_offset</code><span class="sig-paren">(</span><em>df</em>, <em>offset</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/aneris/methods.html#constant_offset"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#aneris.methods.constant_offset" title="Permalink to this definition">¶</a></dt>
+<dd><p>Calculate constant offset harmonized trajectory</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><p class="first"><strong>df</strong> : pd.DataFrame</p>
+<blockquote>
+<div><p>model data</p>
+</div></blockquote>
+<p><strong>offset</strong> : pd.DataFrame</p>
+<blockquote>
+<div><p>offset data</p>
+</div></blockquote>
+</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first"><strong>df</strong> : pd.DataFrame</p>
+<blockquote class="last">
+<div><p>harmonized trajectories</p>
+</div></blockquote>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="function">
+<dt id="aneris.methods.constant_ratio">
+<code class="descclassname">aneris.methods.</code><code class="descname">constant_ratio</code><span class="sig-paren">(</span><em>df</em>, <em>ratios</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/aneris/methods.html#constant_ratio"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#aneris.methods.constant_ratio" title="Permalink to this definition">¶</a></dt>
+<dd><p>Calculate constant ratio harmonized trajectory</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><p class="first"><strong>df</strong> : pd.DataFrame</p>
+<blockquote>
+<div><p>model data</p>
+</div></blockquote>
+<p><strong>ratio</strong> : pd.DataFrame</p>
+<blockquote>
+<div><p>ratio data</p>
+</div></blockquote>
+</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first"><strong>df</strong> : pd.DataFrame</p>
+<blockquote class="last">
+<div><p>harmonized trajectories</p>
+</div></blockquote>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="function">
+<dt id="aneris.methods.default_methods">
+<code class="descclassname">aneris.methods.</code><code class="descname">default_methods</code><span class="sig-paren">(</span><em>hist</em>, <em>model</em>, <em>base_year</em>, <em>luc_method=None</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/aneris/methods.html#default_methods"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#aneris.methods.default_methods" title="Permalink to this definition">¶</a></dt>
+<dd><p>Determine default harmonization methods to use.</p>
+<p>See &lt;WEBSITE&gt; for a graphical description of the decision tree.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><p class="first"><strong>hist</strong> : pd.DataFrame</p>
+<blockquote>
+<div><p>historical data</p>
+</div></blockquote>
+<p><strong>model</strong> : pd.DataFrame</p>
+<blockquote>
+<div><p>model data</p>
+</div></blockquote>
+<p><strong>base_year</strong> : string, int</p>
+<blockquote>
+<div><p>column name of harmonization year</p>
+</div></blockquote>
+<p><strong>luc_method</strong> : string, optional</p>
+<blockquote>
+<div><p>method to use for high coefficient of variation</p>
+</div></blockquote>
+</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first"><strong>methods</strong> : pd.Series</p>
+<blockquote>
+<div><p>default harmonization methods</p>
+</div></blockquote>
+<p><strong>metadata</strong> : pd.DataFrame</p>
+<blockquote class="last">
+<div><p>metadata regarding why each method was chosen</p>
+</div></blockquote>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="function">
+<dt id="aneris.methods.harmonize_factors">
+<code class="descclassname">aneris.methods.</code><code class="descname">harmonize_factors</code><span class="sig-paren">(</span><em>df</em>, <em>hist</em>, <em>harmonize_year='2015'</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/aneris/methods.html#harmonize_factors"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#aneris.methods.harmonize_factors" title="Permalink to this definition">¶</a></dt>
+<dd><p>Calculate offset and ratio values between data and history</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><p class="first"><strong>df</strong> : pd.DataFrame</p>
+<blockquote>
+<div><p>model data</p>
+</div></blockquote>
+<p><strong>hist</strong> : pd.DataFrame</p>
+<blockquote>
+<div><p>historical data</p>
+</div></blockquote>
+<p><strong>harmonize_year</strong> : string, optional</p>
+<blockquote>
+<div><p>column name of harmonization year</p>
+</div></blockquote>
+</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first"><strong>offset</strong> : pd.Series</p>
+<blockquote>
+<div><p>offset (history - model)</p>
+</div></blockquote>
+<p><strong>ratio</strong> : pd.Series</p>
+<blockquote class="last">
+<div><p>ratio (history / model)</p>
+</div></blockquote>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="function">
+<dt id="aneris.methods.hist_zero">
+<code class="descclassname">aneris.methods.</code><code class="descname">hist_zero</code><span class="sig-paren">(</span><em>df</em>, <em>*args</em>, <em>**kwargs</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/aneris/methods.html#hist_zero"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#aneris.methods.hist_zero" title="Permalink to this definition">¶</a></dt>
+<dd><p>Returns df (no change)</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="aneris.methods.linear_interpolate">
+<code class="descclassname">aneris.methods.</code><code class="descname">linear_interpolate</code><span class="sig-paren">(</span><em>df</em>, <em>offset</em>, <em>final_year='2050'</em>, <em>harmonize_year='2015'</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/aneris/methods.html#linear_interpolate"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#aneris.methods.linear_interpolate" title="Permalink to this definition">¶</a></dt>
+<dd><p>Calculate linearly interpolated convergence harmonized trajectory</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><p class="first"><strong>df</strong> : pd.DataFrame</p>
+<blockquote>
+<div><p>model data</p>
+</div></blockquote>
+<p><strong>offset</strong> : pd.DataFrame</p>
+<blockquote>
+<div><p>offset data</p>
+</div></blockquote>
+<p><strong>final_year</strong> : string, optional</p>
+<blockquote>
+<div><p>column name of convergence year</p>
+</div></blockquote>
+<p><strong>harmonize_year</strong> : string, optional</p>
+<blockquote>
+<div><p>column name of harmonization year</p>
+</div></blockquote>
+</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first"><strong>df</strong> : pd.DataFrame</p>
+<blockquote class="last">
+<div><p>harmonized trajectories</p>
+</div></blockquote>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="function">
+<dt id="aneris.methods.model_zero">
+<code class="descclassname">aneris.methods.</code><code class="descname">model_zero</code><span class="sig-paren">(</span><em>df</em>, <em>offset</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/aneris/methods.html#model_zero"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#aneris.methods.model_zero" title="Permalink to this definition">¶</a></dt>
+<dd><p>Returns result of aneris.methods.constant_offset()</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="aneris.methods.reduce_offset">
+<code class="descclassname">aneris.methods.</code><code class="descname">reduce_offset</code><span class="sig-paren">(</span><em>df</em>, <em>offset</em>, <em>final_year='2050'</em>, <em>harmonize_year='2015'</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/aneris/methods.html#reduce_offset"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#aneris.methods.reduce_offset" title="Permalink to this definition">¶</a></dt>
+<dd><p>Calculate offset convergence harmonized trajectory</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><p class="first"><strong>df</strong> : pd.DataFrame</p>
+<blockquote>
+<div><p>model data</p>
+</div></blockquote>
+<p><strong>offset</strong> : pd.DataFrame</p>
+<blockquote>
+<div><p>offset data</p>
+</div></blockquote>
+<p><strong>final_year</strong> : string, optional</p>
+<blockquote>
+<div><p>column name of convergence year</p>
+</div></blockquote>
+<p><strong>harmonize_year</strong> : string, optional</p>
+<blockquote>
+<div><p>column name of harmonization year</p>
+</div></blockquote>
+</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first"><strong>df</strong> : pd.DataFrame</p>
+<blockquote class="last">
+<div><p>harmonized trajectories</p>
+</div></blockquote>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="function">
+<dt id="aneris.methods.reduce_ratio">
+<code class="descclassname">aneris.methods.</code><code class="descname">reduce_ratio</code><span class="sig-paren">(</span><em>df</em>, <em>ratios</em>, <em>final_year='2050'</em>, <em>harmonize_year='2015'</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/aneris/methods.html#reduce_ratio"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#aneris.methods.reduce_ratio" title="Permalink to this definition">¶</a></dt>
+<dd><p>Calculate ratio convergence harmonized trajectory</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><p class="first"><strong>df</strong> : pd.DataFrame</p>
+<blockquote>
+<div><p>model data</p>
+</div></blockquote>
+<p><strong>ratio</strong> : pd.DataFrame</p>
+<blockquote>
+<div><p>ratio data</p>
+</div></blockquote>
+<p><strong>final_year</strong> : string, optional</p>
+<blockquote>
+<div><p>column name of convergence year</p>
+</div></blockquote>
+<p><strong>harmonize_year</strong> : string, optional</p>
+<blockquote>
+<div><p>column name of harmonization year</p>
+</div></blockquote>
+</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first"><strong>df</strong> : pd.DataFrame</p>
+<blockquote class="last">
+<div><p>harmonized trajectories</p>
+</div></blockquote>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+</div>
+<div class="section" id="module-aneris.utils">
+<span id="tools-utilities-aneris-utils"></span><h2>Tools/Utilities: <code class="code docutils literal"><span class="pre">aneris.utils</span></code><a class="headerlink" href="#module-aneris.utils" title="Permalink to this headline">¶</a></h2>
+<span class="target" id="module-aneris.utils"></span><dl class="class">
+<dt id="aneris.utils.EmissionsAggregator">
+<em class="property">class </em><code class="descclassname">aneris.utils.</code><code class="descname">EmissionsAggregator</code><span class="sig-paren">(</span><em>df</em>, <em>model=None</em>, <em>scenario=None</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/aneris/utils.html#EmissionsAggregator"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#aneris.utils.EmissionsAggregator" title="Permalink to this definition">¶</a></dt>
+<dd><p>Helper class to aggregate emissions</p>
+<p class="rubric">Methods</p>
+<dl class="method">
+<dt id="aneris.utils.EmissionsAggregator.add_variables">
+<code class="descname">add_variables</code><span class="sig-paren">(</span><em>totals=None</em>, <em>aggregates=True</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/aneris/utils.html#EmissionsAggregator.add_variables"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#aneris.utils.EmissionsAggregator.add_variables" title="Permalink to this definition">¶</a></dt>
+<dd><p>Add aggregates and variables with direct mappings.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><p class="first"><strong>totals</strong> : list, optional</p>
+<blockquote>
+<div><p>sectors to compute totals for</p>
+</div></blockquote>
+<p><strong>add_aggregates</strong> : bool, optional</p>
+<blockquote class="last">
+<div><p>whether to add aggregate variables</p>
+</div></blockquote>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="aneris.utils.EmissionsAggregator.to_template">
+<code class="descname">to_template</code><span class="sig-paren">(</span><em>**kwargs</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/aneris/utils.html#EmissionsAggregator.to_template"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#aneris.utils.EmissionsAggregator.to_template" title="Permalink to this definition">¶</a></dt>
+<dd><p>Create an IAMC template out of the original data frame</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>first_year: optional, the first year to report values for</strong></td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="class">
+<dt id="aneris.utils.FormatTranslator">
+<em class="property">class </em><code class="descclassname">aneris.utils.</code><code class="descname">FormatTranslator</code><span class="sig-paren">(</span><em>df=None</em>, <em>prefix=''</em>, <em>suffix=''</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/aneris/utils.html#FormatTranslator"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#aneris.utils.FormatTranslator" title="Permalink to this definition">¶</a></dt>
+<dd><p>Helper class to translate between IAMC and calcluation formats</p>
+<p class="rubric">Methods</p>
+<dl class="method">
+<dt id="aneris.utils.FormatTranslator.to_std">
+<code class="descname">to_std</code><span class="sig-paren">(</span><em>df=None</em>, <em>set_metadata=True</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/aneris/utils.html#FormatTranslator.to_std"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#aneris.utils.FormatTranslator.to_std" title="Permalink to this definition">¶</a></dt>
+<dd><p>Translate a dataframe from IAMC to standard calculation format</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><p class="first"><strong>df</strong> : pd.DataFrame, optional</p>
+<p><strong>set_metadata</strong> : bool, optional</p>
+<blockquote class="last">
+<div><p>save metadata (model, scenario) for future use</p>
+</div></blockquote>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="aneris.utils.FormatTranslator.to_template">
+<code class="descname">to_template</code><span class="sig-paren">(</span><em>df=None</em>, <em>model=None</em>, <em>scenario=None</em>, <em>column_style=None</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/aneris/utils.html#FormatTranslator.to_template"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#aneris.utils.FormatTranslator.to_template" title="Permalink to this definition">¶</a></dt>
+<dd><p>Translate a dataframe from standard calculation format to IAMC</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><p class="first"><strong>df</strong> : pd.DataFrame, optional</p>
+<p><strong>model</strong> : string, optional</p>
+<blockquote>
+<div><p>model name</p>
+</div></blockquote>
+<p><strong>scenario</strong> : string, optional</p>
+<blockquote>
+<div><p>scenario name</p>
+</div></blockquote>
+<p><strong>column_style</strong> : string</p>
+<blockquote class="last">
+<div><p>column style (upper, lower, etc.) to use</p>
+</div></blockquote>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="function">
+<dt id="aneris.utils.agg_regions">
+<code class="descclassname">aneris.utils.</code><code class="descname">agg_regions</code><span class="sig-paren">(</span><em>df</em>, <em>rfrom='ISO Code'</em>, <em>rto='Native Region Code'</em>, <em>mapping=None</em>, <em>verify=True</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/aneris/utils.html#agg_regions"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#aneris.utils.agg_regions" title="Permalink to this definition">¶</a></dt>
+<dd><p>Aggregate values in a dataframe to a new regional composition</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><p class="first"><strong>df</strong> : pd.DataFrame</p>
+<p><strong>rfrom</strong> : string</p>
+<blockquote>
+<div><p>original regional composition column name in mapping</p>
+</div></blockquote>
+<p><strong>rto</strong> : string</p>
+<blockquote>
+<div><p>column name to use for aggregation in mapping</p>
+</div></blockquote>
+<p><strong>mapping</strong> : pd.DataFrame, optional</p>
+<blockquote>
+<div><p>mapping to use, otherwise MESSAGE mappings are read</p>
+</div></blockquote>
+<p><strong>verify</strong> : bool, optional</p>
+<blockquote>
+<div><p>if True, confirm that sum of original values == sum of aggregated values</p>
+</div></blockquote>
+</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first last"><strong>df</strong> : pd.DataFrame</p>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="function">
+<dt id="aneris.utils.check_null">
+<code class="descclassname">aneris.utils.</code><code class="descname">check_null</code><span class="sig-paren">(</span><em>df</em>, <em>name=None</em>, <em>fail=False</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/aneris/utils.html#check_null"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#aneris.utils.check_null" title="Permalink to this definition">¶</a></dt>
+<dd><p>Determines which values, if any in a dataframe are null</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><p class="first"><strong>df</strong> : pd.DataFrame</p>
+<p><strong>name</strong> : string, optional</p>
+<blockquote>
+<div><p>the name of the dataframe to use in a warning message</p>
+</div></blockquote>
+<p><strong>fail</strong> : bool, optional</p>
+<blockquote class="last">
+<div><p>if True, assert that no null values exist</p>
+</div></blockquote>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="function">
+<dt id="aneris.utils.combine_rows">
+<code class="descclassname">aneris.utils.</code><code class="descname">combine_rows</code><span class="sig-paren">(</span><em>df</em>, <em>level</em>, <em>main</em>, <em>others=None</em>, <em>sumall=True</em>, <em>dropothers=True</em>, <em>rowsonly=False</em>, <em>newlabel=None</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/aneris/utils.html#combine_rows"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#aneris.utils.combine_rows" title="Permalink to this definition">¶</a></dt>
+<dd><p>Combine rows (add values) in a dataframe. Rows corresponding to the main and
+other values in a given level (or column) are added together and reattached
+taking the main value in the new column.</p>
+<p>For example, countries can be combined using this strategy.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><p class="first"><strong>df</strong> : pd.DataFrame</p>
+<p><strong>level</strong> : string, int</p>
+<blockquote>
+<div><p>common level or column (e.g., &#8216;region&#8217;)</p>
+</div></blockquote>
+<p><strong>main</strong> : string</p>
+<blockquote>
+<div><p>the value of the level to aggregate on</p>
+</div></blockquote>
+<p><strong>others</strong> : string, optional</p>
+<blockquote>
+<div><p>a list of other values to aggregate</p>
+</div></blockquote>
+<p><strong>sumall</strong> : bool, optional</p>
+<blockquote>
+<div><p>sum main and other values (otherwise, only add other values)</p>
+</div></blockquote>
+<p><strong>dropothers</strong> : bool, optional</p>
+<blockquote>
+<div><p>remove rows with values provided in <cite>others</cite></p>
+</div></blockquote>
+<p><strong>rowsonly</strong> : bool, optional</p>
+<blockquote>
+<div><p>only return newly generated rows</p>
+</div></blockquote>
+<p><strong>newlabel</strong> : string, optional</p>
+<blockquote>
+<div><p>a new label for the level/column value, default is main</p>
+</div></blockquote>
+</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first"><strong>df</strong> : pd.DataFrame</p>
+<blockquote class="last">
+<div><p>resulting data</p>
+</div></blockquote>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="function">
+<dt id="aneris.utils.gases">
+<code class="descclassname">aneris.utils.</code><code class="descname">gases</code><span class="sig-paren">(</span><em>var_col</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/aneris/utils.html#gases"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#aneris.utils.gases" title="Permalink to this definition">¶</a></dt>
+<dd><p>The gas associated with each variable</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="aneris.utils.isnum">
+<code class="descclassname">aneris.utils.</code><code class="descname">isnum</code><span class="sig-paren">(</span><em>s</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/aneris/utils.html#isnum"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#aneris.utils.isnum" title="Permalink to this definition">¶</a></dt>
+<dd><p>Returns True if s is a number</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="aneris.utils.isstr">
+<code class="descclassname">aneris.utils.</code><code class="descname">isstr</code><span class="sig-paren">(</span><em>x</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/aneris/utils.html#isstr"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#aneris.utils.isstr" title="Permalink to this definition">¶</a></dt>
+<dd><p>Returns True if x is a string</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="aneris.utils.logger">
+<code class="descclassname">aneris.utils.</code><code class="descname">logger</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/aneris/utils.html#logger"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#aneris.utils.logger" title="Permalink to this definition">¶</a></dt>
+<dd><p>Global Logger used for aneris</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="aneris.utils.numcols">
+<code class="descclassname">aneris.utils.</code><code class="descname">numcols</code><span class="sig-paren">(</span><em>df</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/aneris/utils.html#numcols"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#aneris.utils.numcols" title="Permalink to this definition">¶</a></dt>
+<dd><p>Returns all columns in df that have data types of floats or ints</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="aneris.utils.remove_emissions_prefix">
+<code class="descclassname">aneris.utils.</code><code class="descname">remove_emissions_prefix</code><span class="sig-paren">(</span><em>x</em>, <em>gas='XXX'</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/aneris/utils.html#remove_emissions_prefix"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#aneris.utils.remove_emissions_prefix" title="Permalink to this definition">¶</a></dt>
+<dd><p>Return x with emissions prefix removed, e.g.,
+Emissions|XXX|foo|bar -&gt; foo|bar</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="aneris.utils.remove_recalculated_sectors">
+<code class="descclassname">aneris.utils.</code><code class="descname">remove_recalculated_sectors</code><span class="sig-paren">(</span><em>df</em>, <em>prefix=''</em>, <em>suffix=''</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/aneris/utils.html#remove_recalculated_sectors"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#aneris.utils.remove_recalculated_sectors" title="Permalink to this definition">¶</a></dt>
+<dd><p>Return df with Total gas (sum of all sectors) removed</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="aneris.utils.subtract_regions_from_world">
+<code class="descclassname">aneris.utils.</code><code class="descname">subtract_regions_from_world</code><span class="sig-paren">(</span><em>df</em>, <em>name=None</em>, <em>base_year='2015'</em>, <em>threshold=0.05</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/aneris/utils.html#subtract_regions_from_world"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#aneris.utils.subtract_regions_from_world" title="Permalink to this definition">¶</a></dt>
+<dd><p>Subtract the sum of regional results in each variable from the World total. 
+If the result is a World total below a threshold, set those values to 0.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><p class="first"><strong>df</strong> : pd.DataFrame</p>
+<p><strong>name</strong> : string, optional</p>
+<blockquote>
+<div><p>name to use in error checking</p>
+</div></blockquote>
+<p><strong>base_year</strong> : int, string, optional</p>
+<blockquote>
+<div><p>column to use in error checking</p>
+</div></blockquote>
+<p><strong>threshold</strong> : float, optional</p>
+<blockquote class="last">
+<div><p>threshold below which to set values to 0</p>
+</div></blockquote>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="function">
+<dt id="aneris.utils.units">
+<code class="descclassname">aneris.utils.</code><code class="descname">units</code><span class="sig-paren">(</span><em>var_col</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/aneris/utils.html#units"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#aneris.utils.units" title="Permalink to this definition">¶</a></dt>
+<dd><p>returns a units column given a variable column</p>
+</dd></dl>
+
+</div>
+</div>
+
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+            <p class="logo"><a href="index.html">
+              <img class="logo" src="_static/logo.svg" alt="Logo"/>
+            </a></p>
+  <h3><a href="index.html">Table Of Contents</a></h3>
+  <ul>
+<li><a class="reference internal" href="#">Python API</a><ul>
+<li><a class="reference internal" href="#module-aneris._io">Input/Output: <code class="code docutils literal"><span class="pre">aneris._io</span></code></a></li>
+<li><a class="reference internal" href="#module-aneris.harmonize">Harmonization: <code class="code docutils literal"><span class="pre">aneris.harmonize</span></code></a></li>
+<li><a class="reference internal" href="#module-aneris.methods">Methods: <code class="code docutils literal"><span class="pre">aneris.methods</span></code></a></li>
+<li><a class="reference internal" href="#module-aneris.utils">Tools/Utilities: <code class="code docutils literal"><span class="pre">aneris.utils</span></code></a></li>
+</ul>
+</li>
+</ul>
+<h3>Related Topics</h3>
+<ul>
+  <li><a href="index.html">Documentation overview</a><ul>
+      <li>Previous: <a href="cli.html" title="previous chapter">Command Line Interface</a></li>
+  </ul></li>
+</ul>
+  <div role="note" aria-label="source link">
+    <h3>This Page</h3>
+    <ul class="this-page-menu">
+      <li><a href="_sources/api.txt"
+            rel="nofollow">Show Source</a></li>
+    </ul>
+   </div>
+<div id="searchbox" style="display: none" role="search">
+  <h3>Quick search</h3>
+    <form class="search" action="search.html" method="get">
+      <div><input type="text" name="q" /></div>
+      <div><input type="submit" value="Go" /></div>
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="footer">
+      &copy; Copyright 2016, Matthew Gidden.
+    </div>
+  </body>
+</html>

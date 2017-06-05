@@ -1,0 +1,707 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>aneris.utils &#8212; aneris 0.1.0 documentation</title>
+    
+    <link rel="stylesheet" href="../../_static/flasky.css" type="text/css" />
+    <link rel="stylesheet" href="../../_static/pygments.css" type="text/css" />
+    <link rel="stylesheet" href="../../_static/table_styling.css" type="text/css" />
+    
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    '../../',
+        VERSION:     '0.1.0',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="../../_static/jquery.js"></script>
+    <script type="text/javascript" src="../../_static/underscore.js"></script>
+    <script type="text/javascript" src="../../_static/doctools.js"></script>
+    <script type="text/javascript" src="https://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+    <link rel="index" title="Index" href="../../genindex.html" />
+    <link rel="search" title="Search" href="../../search.html" />
+    <link rel="top" title="aneris 0.1.0 documentation" href="../../index.html" />
+    <link rel="up" title="Module code" href="../index.html" />
+   
+  
+  <link media="only screen and (max-device-width: 480px)" href="../../_static/small_flask.css" type= "text/css" rel="stylesheet" />
+  <meta name="viewport" content="width=device-width, initial-scale=0.9, maximum-scale=0.9">
+
+  </head>
+  <body role="document">
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../../genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="../../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="nav-item nav-item-0"><a href="../../index.html">aneris 0.1.0 documentation</a> &#187;</li>
+          <li class="nav-item nav-item-1"><a href="../index.html" accesskey="U">Module code</a> &#187;</li> 
+      </ul>
+    </div>  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body" role="main">
+            
+  <h1>Source code for aneris.utils</h1><div class="highlight"><pre>
+<span></span><span class="kn">import</span> <span class="nn">logging</span>
+<span class="kn">import</span> <span class="nn">os</span>
+<span class="kn">import</span> <span class="nn">re</span>
+
+<span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
+<span class="kn">import</span> <span class="nn">pandas</span> <span class="k">as</span> <span class="nn">pd</span>
+
+<span class="c1"># Index for iamc</span>
+<span class="n">iamc_idx</span> <span class="o">=</span> <span class="p">[</span><span class="s1">&#39;Model&#39;</span><span class="p">,</span> <span class="s1">&#39;Scenario&#39;</span><span class="p">,</span> <span class="s1">&#39;Region&#39;</span><span class="p">,</span> <span class="s1">&#39;Variable&#39;</span><span class="p">]</span>
+
+<span class="c1"># default dataframe index</span>
+<span class="n">df_idx</span> <span class="o">=</span> <span class="p">[</span><span class="s1">&#39;region&#39;</span><span class="p">,</span> <span class="s1">&#39;gas&#39;</span><span class="p">,</span> <span class="s1">&#39;sector&#39;</span><span class="p">,</span> <span class="s1">&#39;units&#39;</span><span class="p">]</span>
+
+<span class="c1"># paths to data dependencies</span>
+<span class="n">here</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">dirname</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">realpath</span><span class="p">(</span><span class="n">__file__</span><span class="p">)))</span>
+<span class="n">hist_path</span> <span class="o">=</span> <span class="k">lambda</span> <span class="n">f</span><span class="p">:</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">here</span><span class="p">,</span> <span class="s1">&#39;historical&#39;</span><span class="p">,</span> <span class="n">f</span><span class="p">)</span>
+<span class="n">iamc_path</span> <span class="o">=</span> <span class="k">lambda</span> <span class="n">f</span><span class="p">:</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">here</span><span class="p">,</span> <span class="s1">&#39;iamc_template&#39;</span><span class="p">,</span> <span class="n">f</span><span class="p">)</span>
+<span class="n">region_path</span> <span class="o">=</span> <span class="k">lambda</span> <span class="n">f</span><span class="p">:</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">here</span><span class="p">,</span> <span class="s1">&#39;regional_definitions&#39;</span><span class="p">,</span> <span class="n">f</span><span class="p">)</span>
+
+<span class="c1"># gases reported in kt of species</span>
+<span class="n">kt_gases</span> <span class="o">=</span> <span class="p">[</span>
+    <span class="s1">&#39;N2O&#39;</span><span class="p">,</span>
+    <span class="s1">&#39;SF6&#39;</span><span class="p">,</span>
+    <span class="s1">&#39;CF4&#39;</span><span class="p">,</span>  <span class="c1"># explicit species of PFC</span>
+    <span class="s1">&#39;C2F6&#39;</span><span class="p">,</span>  <span class="c1"># explicit species of PFC</span>
+    <span class="c1"># individual f gases removed for now</span>
+    <span class="c1"># # hfcs</span>
+    <span class="c1"># &#39;HFC23&#39;, &#39;HFC32&#39;, &#39;HFC43-10&#39;, &#39;HFC125&#39;, &#39;HFC134a&#39;, &#39;HFC143a&#39;, &#39;HFC227ea&#39;, &#39;HFC245fa&#39;,</span>
+    <span class="c1"># CFCs</span>
+    <span class="s1">&#39;CFC-11&#39;</span><span class="p">,</span>
+    <span class="s1">&#39;CFC-12&#39;</span><span class="p">,</span>
+    <span class="s1">&#39;CFC-113&#39;</span><span class="p">,</span>
+    <span class="s1">&#39;CFC-114&#39;</span><span class="p">,</span>
+    <span class="s1">&#39;CFC-115&#39;</span><span class="p">,</span>
+    <span class="s1">&#39;CH3CCl3&#39;</span><span class="p">,</span>
+    <span class="s1">&#39;CCl4&#39;</span><span class="p">,</span>
+    <span class="s1">&#39;HCFC-22&#39;</span><span class="p">,</span>
+    <span class="s1">&#39;HCFC-141b&#39;</span><span class="p">,</span>
+    <span class="s1">&#39;HCFC-142b&#39;</span><span class="p">,</span>
+    <span class="s1">&#39;Halon1211&#39;</span><span class="p">,</span>
+    <span class="s1">&#39;Halon1301&#39;</span><span class="p">,</span>
+    <span class="s1">&#39;Halon2402&#39;</span><span class="p">,</span>
+    <span class="s1">&#39;Halon1202&#39;</span><span class="p">,</span>
+    <span class="s1">&#39;CH3Br&#39;</span><span class="p">,</span>
+    <span class="s1">&#39;CH3Cl&#39;</span><span class="p">,</span>
+<span class="p">]</span>
+
+<span class="c1"># gases reported in co2-equiv</span>
+<span class="n">co2_eq_gases</span> <span class="o">=</span> <span class="p">[</span>
+    <span class="s1">&#39;HFC&#39;</span><span class="p">,</span>
+<span class="p">]</span>
+
+<span class="c1"># gases reported in Mt of species</span>
+<span class="n">mt_gases</span> <span class="o">=</span> <span class="p">[</span>
+    <span class="c1"># IAMC names</span>
+    <span class="s1">&#39;BC&#39;</span><span class="p">,</span> <span class="s1">&#39;CH4&#39;</span><span class="p">,</span> <span class="s1">&#39;CO2&#39;</span><span class="p">,</span> <span class="s1">&#39;CO&#39;</span><span class="p">,</span> <span class="s1">&#39;NOx&#39;</span><span class="p">,</span> <span class="s1">&#39;OC&#39;</span><span class="p">,</span> <span class="s1">&#39;Sulfur&#39;</span><span class="p">,</span> <span class="s1">&#39;NH3&#39;</span><span class="p">,</span> <span class="s1">&#39;VOC&#39;</span><span class="p">,</span>
+    <span class="c1"># non-IAMC names</span>
+    <span class="s1">&#39;SO2&#39;</span><span class="p">,</span> <span class="s1">&#39;NOX&#39;</span><span class="p">,</span> <span class="s1">&#39;NMVOC&#39;</span><span class="p">,</span>
+<span class="p">]</span>
+
+<span class="n">all_gases</span> <span class="o">=</span> <span class="nb">sorted</span><span class="p">(</span><span class="n">kt_gases</span> <span class="o">+</span> <span class="n">co2_eq_gases</span> <span class="o">+</span> <span class="n">mt_gases</span><span class="p">)</span>
+
+<span class="c1"># gases for which only sectoral totals are reported</span>
+<span class="n">total_gases</span> <span class="o">=</span> <span class="p">[</span><span class="s1">&#39;SF6&#39;</span><span class="p">,</span> <span class="s1">&#39;CF4&#39;</span><span class="p">,</span> <span class="s1">&#39;C2F6&#39;</span><span class="p">]</span> <span class="o">+</span> <span class="n">co2_eq_gases</span>
+
+<span class="c1"># gases for which only sectoral totals are harmonized</span>
+<span class="n">harmonize_total_gases</span> <span class="o">=</span> <span class="p">[</span><span class="s1">&#39;N2O&#39;</span><span class="p">]</span> <span class="o">+</span> <span class="n">total_gases</span>
+
+<span class="c1"># gases for which full sectoral breakdown is reported</span>
+<span class="n">sector_gases</span> <span class="o">=</span> <span class="nb">sorted</span><span class="p">(</span><span class="nb">set</span><span class="p">(</span><span class="n">all_gases</span><span class="p">)</span> <span class="o">-</span> <span class="nb">set</span><span class="p">(</span><span class="n">total_gases</span><span class="p">))</span>
+
+<span class="c1"># mapping for some gases whose names have changed recently</span>
+<span class="c1"># TODO: can we remove this?</span>
+<span class="c1"># TODO: should probably be a dictionary..</span>
+<span class="n">std_to_iamc_gases</span> <span class="o">=</span> <span class="p">[</span>
+    <span class="p">(</span><span class="s1">&#39;SO2&#39;</span><span class="p">,</span> <span class="s1">&#39;Sulfur&#39;</span><span class="p">),</span>
+    <span class="p">(</span><span class="s1">&#39;NOX&#39;</span><span class="p">,</span> <span class="s1">&#39;NOx&#39;</span><span class="p">),</span>
+    <span class="p">(</span><span class="s1">&#39;NMVOC&#39;</span><span class="p">,</span> <span class="s1">&#39;VOC&#39;</span><span class="p">),</span>
+<span class="p">]</span>
+
+<span class="c1"># mapping from gas name to name to use in units</span>
+<span class="n">unit_gas_names</span> <span class="o">=</span> <span class="p">{</span>
+    <span class="s1">&#39;Sulfur&#39;</span><span class="p">:</span> <span class="s1">&#39;SO2&#39;</span><span class="p">,</span>
+    <span class="s1">&#39;Kyoto Gases&#39;</span><span class="p">:</span> <span class="s1">&#39;CO2-equiv&#39;</span><span class="p">,</span>
+    <span class="s1">&#39;F-Gases&#39;</span><span class="p">:</span> <span class="s1">&#39;CO2-equiv&#39;</span><span class="p">,</span>
+    <span class="s1">&#39;HFC&#39;</span><span class="p">:</span> <span class="s1">&#39;CO2-equiv&#39;</span><span class="p">,</span>
+    <span class="s1">&#39;PFC&#39;</span><span class="p">:</span> <span class="s1">&#39;CO2-equiv&#39;</span><span class="p">,</span>
+    <span class="s1">&#39;CFC&#39;</span><span class="p">:</span> <span class="s1">&#39;CO2-equiv&#39;</span><span class="p">,</span>
+<span class="p">}</span>
+
+<span class="n">_logger</span> <span class="o">=</span> <span class="kc">None</span>
+
+
+<div class="viewcode-block" id="logger"><a class="viewcode-back" href="../../api.html#aneris.utils.logger">[docs]</a><span class="k">def</span> <span class="nf">logger</span><span class="p">():</span>
+    <span class="sd">&quot;&quot;&quot;Global Logger used for aneris&quot;&quot;&quot;</span>
+    <span class="k">global</span> <span class="n">_logger</span>
+    <span class="k">if</span> <span class="n">_logger</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="n">logging</span><span class="o">.</span><span class="n">basicConfig</span><span class="p">()</span>
+        <span class="n">_logger</span> <span class="o">=</span> <span class="n">logging</span><span class="o">.</span><span class="n">getLogger</span><span class="p">()</span>
+        <span class="n">_logger</span><span class="o">.</span><span class="n">setLevel</span><span class="p">(</span><span class="s1">&#39;INFO&#39;</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">_logger</span></div>
+
+
+<div class="viewcode-block" id="isstr"><a class="viewcode-back" href="../../api.html#aneris.utils.isstr">[docs]</a><span class="k">def</span> <span class="nf">isstr</span><span class="p">(</span><span class="n">x</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Returns True if x is a string&quot;&quot;&quot;</span>
+    <span class="k">try</span><span class="p">:</span>
+        <span class="k">return</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="p">(</span><span class="nb">str</span><span class="p">,</span> <span class="n">unicode</span><span class="p">))</span>
+    <span class="k">except</span> <span class="ne">NameError</span><span class="p">:</span>
+        <span class="k">return</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="nb">str</span><span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="isnum"><a class="viewcode-back" href="../../api.html#aneris.utils.isnum">[docs]</a><span class="k">def</span> <span class="nf">isnum</span><span class="p">(</span><span class="n">s</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Returns True if s is a number&quot;&quot;&quot;</span>
+    <span class="k">try</span><span class="p">:</span>
+        <span class="nb">float</span><span class="p">(</span><span class="n">s</span><span class="p">)</span>
+        <span class="k">return</span> <span class="kc">True</span>
+    <span class="k">except</span> <span class="ne">ValueError</span><span class="p">:</span>
+        <span class="k">return</span> <span class="kc">False</span></div>
+
+
+<div class="viewcode-block" id="numcols"><a class="viewcode-back" href="../../api.html#aneris.utils.numcols">[docs]</a><span class="k">def</span> <span class="nf">numcols</span><span class="p">(</span><span class="n">df</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Returns all columns in df that have data types of floats or ints&quot;&quot;&quot;</span>
+    <span class="n">dtypes</span> <span class="o">=</span> <span class="n">df</span><span class="o">.</span><span class="n">dtypes</span>
+    <span class="k">return</span> <span class="p">[</span><span class="n">i</span> <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="n">dtypes</span><span class="o">.</span><span class="n">index</span> <span class="k">if</span> <span class="n">dtypes</span><span class="o">.</span><span class="n">loc</span><span class="p">[</span><span class="n">i</span><span class="p">]</span><span class="o">.</span><span class="n">name</span><span class="o">.</span><span class="n">startswith</span><span class="p">((</span><span class="s1">&#39;float&#39;</span><span class="p">,</span> <span class="s1">&#39;int&#39;</span><span class="p">))]</span></div>
+
+
+<div class="viewcode-block" id="check_null"><a class="viewcode-back" href="../../api.html#aneris.utils.check_null">[docs]</a><span class="k">def</span> <span class="nf">check_null</span><span class="p">(</span><span class="n">df</span><span class="p">,</span> <span class="n">name</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">fail</span><span class="o">=</span><span class="kc">False</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Determines which values, if any in a dataframe are null</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    df : pd.DataFrame</span>
+<span class="sd">    name : string, optional</span>
+<span class="sd">        the name of the dataframe to use in a warning message</span>
+<span class="sd">    fail : bool, optional</span>
+<span class="sd">        if True, assert that no null values exist</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">anynull</span> <span class="o">=</span> <span class="n">df</span><span class="o">.</span><span class="n">isnull</span><span class="p">()</span><span class="o">.</span><span class="n">values</span><span class="o">.</span><span class="n">any</span><span class="p">()</span>
+    <span class="k">if</span> <span class="n">fail</span><span class="p">:</span>
+        <span class="k">assert</span><span class="p">(</span><span class="ow">not</span> <span class="n">anynull</span><span class="p">)</span>
+    <span class="k">if</span> <span class="n">anynull</span><span class="p">:</span>
+        <span class="n">msg</span> <span class="o">=</span> <span class="s1">&#39;Null (missing) values found for </span><span class="si">{}</span><span class="s1"> indicies: </span><span class="se">\n</span><span class="si">{}</span><span class="s1">&#39;</span>
+        <span class="n">_df</span> <span class="o">=</span> <span class="n">df</span><span class="p">[</span><span class="n">df</span><span class="o">.</span><span class="n">isnull</span><span class="p">()</span><span class="o">.</span><span class="n">any</span><span class="p">(</span><span class="n">axis</span><span class="o">=</span><span class="mi">1</span><span class="p">)]</span><span class="o">.</span><span class="n">reset_index</span><span class="p">()[</span><span class="n">df_idx</span><span class="p">]</span>
+        <span class="n">logger</span><span class="p">()</span><span class="o">.</span><span class="n">warning</span><span class="p">(</span><span class="n">msg</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">name</span><span class="p">,</span> <span class="n">_df</span><span class="p">))</span>
+        <span class="n">df</span><span class="o">.</span><span class="n">dropna</span><span class="p">(</span><span class="n">inplace</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="gases"><a class="viewcode-back" href="../../api.html#aneris.utils.gases">[docs]</a><span class="k">def</span> <span class="nf">gases</span><span class="p">(</span><span class="n">var_col</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;The gas associated with each variable&quot;&quot;&quot;</span>
+    <span class="n">gasidx</span> <span class="o">=</span> <span class="k">lambda</span> <span class="n">x</span><span class="p">:</span> <span class="n">x</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s1">&#39;|&#39;</span><span class="p">)</span><span class="o">.</span><span class="n">index</span><span class="p">(</span><span class="s1">&#39;Emissions&#39;</span><span class="p">)</span> <span class="o">+</span> <span class="mi">1</span>
+    <span class="k">return</span> <span class="n">var_col</span><span class="o">.</span><span class="n">apply</span><span class="p">(</span><span class="k">lambda</span> <span class="n">x</span><span class="p">:</span> <span class="n">x</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s1">&#39;|&#39;</span><span class="p">)[</span><span class="n">gasidx</span><span class="p">(</span><span class="n">x</span><span class="p">)])</span></div>
+
+
+<div class="viewcode-block" id="units"><a class="viewcode-back" href="../../api.html#aneris.utils.units">[docs]</a><span class="k">def</span> <span class="nf">units</span><span class="p">(</span><span class="n">var_col</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;returns a units column given a variable column&quot;&quot;&quot;</span>
+    <span class="n">gas_col</span> <span class="o">=</span> <span class="n">gases</span><span class="p">(</span><span class="n">var_col</span><span class="p">)</span>
+
+    <span class="c1"># replace all gas names where name in unit != name in variable,</span>
+    <span class="c1"># this can go away if we agree on the list</span>
+    <span class="n">replace</span> <span class="o">=</span> <span class="k">lambda</span> <span class="n">x</span><span class="p">:</span> <span class="n">x</span> <span class="k">if</span> <span class="n">x</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">unit_gas_names</span> <span class="k">else</span> <span class="n">unit_gas_names</span><span class="p">[</span><span class="n">x</span><span class="p">]</span>
+    <span class="n">gas_col</span> <span class="o">=</span> <span class="n">gas_col</span><span class="o">.</span><span class="n">apply</span><span class="p">(</span><span class="n">replace</span><span class="p">)</span>
+
+    <span class="k">return</span> <span class="n">gas_col</span><span class="o">.</span><span class="n">apply</span><span class="p">(</span>
+        <span class="k">lambda</span> <span class="n">gas</span><span class="p">:</span> <span class="s1">&#39;</span><span class="si">{}</span><span class="s1"> </span><span class="si">{}</span><span class="s1">/yr&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="s1">&#39;kt&#39;</span> <span class="k">if</span> <span class="n">gas</span> <span class="ow">in</span> <span class="n">kt_gases</span> <span class="k">else</span> <span class="s1">&#39;Mt&#39;</span><span class="p">,</span> <span class="n">gas</span><span class="p">))</span></div>
+
+
+<div class="viewcode-block" id="remove_emissions_prefix"><a class="viewcode-back" href="../../api.html#aneris.utils.remove_emissions_prefix">[docs]</a><span class="k">def</span> <span class="nf">remove_emissions_prefix</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">gas</span><span class="o">=</span><span class="s1">&#39;XXX&#39;</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Return x with emissions prefix removed, e.g.,</span>
+<span class="sd">    Emissions|XXX|foo|bar -&gt; foo|bar</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">return</span> <span class="n">re</span><span class="o">.</span><span class="n">sub</span><span class="p">(</span><span class="s1">&#39;^Emissions\|</span><span class="si">{}</span><span class="s1">\|&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">gas</span><span class="p">),</span> <span class="s1">&#39;&#39;</span><span class="p">,</span> <span class="n">x</span><span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="remove_recalculated_sectors"><a class="viewcode-back" href="../../api.html#aneris.utils.remove_recalculated_sectors">[docs]</a><span class="k">def</span> <span class="nf">remove_recalculated_sectors</span><span class="p">(</span><span class="n">df</span><span class="p">,</span> <span class="n">prefix</span><span class="o">=</span><span class="s1">&#39;&#39;</span><span class="p">,</span> <span class="n">suffix</span><span class="o">=</span><span class="s1">&#39;&#39;</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Return df with Total gas (sum of all sectors) removed</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="c1"># remove sectoral totals which will need to be recalculated after</span>
+    <span class="c1"># harmonization</span>
+    <span class="n">df</span> <span class="o">=</span> <span class="n">df</span><span class="o">.</span><span class="n">reset_index</span><span class="p">()</span>
+    <span class="c1"># TODO: THIS IS A HACK, CURRENT GASES DEFINITION ASSUME IAMC NAMES</span>
+    <span class="n">gases</span> <span class="o">=</span> <span class="n">df</span><span class="o">.</span><span class="n">gas</span><span class="o">.</span><span class="n">isin</span><span class="p">(</span><span class="n">sector_gases</span><span class="p">)</span>
+    <span class="n">sepcount</span> <span class="o">=</span> <span class="mi">2</span> <span class="o">+</span> <span class="n">prefix</span><span class="o">.</span><span class="n">count</span><span class="p">(</span><span class="s1">&#39;|&#39;</span><span class="p">)</span> <span class="o">+</span> <span class="n">suffix</span><span class="o">.</span><span class="n">count</span><span class="p">(</span><span class="s1">&#39;|&#39;</span><span class="p">)</span>
+    <span class="n">sectors</span> <span class="o">=</span> <span class="n">df</span><span class="o">.</span><span class="n">sector</span><span class="o">.</span><span class="n">apply</span><span class="p">(</span><span class="k">lambda</span> <span class="n">x</span><span class="p">:</span> <span class="nb">len</span><span class="p">(</span><span class="n">x</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s1">&#39;|&#39;</span><span class="p">))</span> <span class="o">==</span> <span class="n">sepcount</span><span class="p">)</span>
+    <span class="n">keep</span> <span class="o">=</span> <span class="o">~</span><span class="p">(</span><span class="n">gases</span> <span class="o">&amp;</span> <span class="n">sectors</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">df</span><span class="p">[</span><span class="n">keep</span><span class="p">]</span><span class="o">.</span><span class="n">set_index</span><span class="p">(</span><span class="n">df_idx</span><span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="subtract_regions_from_world"><a class="viewcode-back" href="../../api.html#aneris.utils.subtract_regions_from_world">[docs]</a><span class="k">def</span> <span class="nf">subtract_regions_from_world</span><span class="p">(</span><span class="n">df</span><span class="p">,</span> <span class="n">name</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">base_year</span><span class="o">=</span><span class="s1">&#39;2015&#39;</span><span class="p">,</span> <span class="n">threshold</span><span class="o">=</span><span class="mi">5</span><span class="n">e</span><span class="o">-</span><span class="mi">2</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Subtract the sum of regional results in each variable from the World total. </span>
+<span class="sd">    If the result is a World total below a threshold, set those values to 0.</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    df : pd.DataFrame</span>
+<span class="sd">    name : string, optional</span>
+<span class="sd">        name to use in error checking</span>
+<span class="sd">    base_year : int, string, optional</span>
+<span class="sd">        column to use in error checking</span>
+<span class="sd">    threshold : float, optional</span>
+<span class="sd">        threshold below which to set values to 0</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="c1"># make global only global (not global + sum of regions)</span>
+    <span class="n">check_null</span><span class="p">(</span><span class="n">df</span><span class="p">,</span> <span class="n">name</span><span class="p">)</span>
+    <span class="k">if</span> <span class="p">(</span><span class="n">df</span><span class="o">.</span><span class="n">loc</span><span class="p">[</span><span class="s1">&#39;World&#39;</span><span class="p">][</span><span class="n">base_year</span><span class="p">]</span> <span class="o">==</span> <span class="mi">0</span><span class="p">)</span><span class="o">.</span><span class="n">all</span><span class="p">():</span>
+        <span class="c1"># some models (gcam) are not reporting any values in World</span>
+        <span class="c1"># without this, you get `0 - sum(other regions)`</span>
+        <span class="n">logger</span><span class="p">()</span><span class="o">.</span><span class="n">warning</span><span class="p">(</span><span class="s1">&#39;Empty global region found in &#39;</span> <span class="o">+</span> <span class="n">name</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">df</span>
+
+    <span class="c1"># sum all rows where region == World</span>
+    <span class="n">total</span> <span class="o">=</span> <span class="n">combine_rows</span><span class="p">(</span><span class="n">df</span><span class="p">,</span> <span class="s1">&#39;region&#39;</span><span class="p">,</span> <span class="s1">&#39;World&#39;</span><span class="p">,</span> <span class="n">sumall</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
+                         <span class="n">others</span><span class="o">=</span><span class="p">[],</span> <span class="n">rowsonly</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+    <span class="c1"># sum all rows where region != World</span>
+    <span class="n">nonglb</span> <span class="o">=</span> <span class="n">combine_rows</span><span class="p">(</span><span class="n">df</span><span class="p">,</span> <span class="s1">&#39;region&#39;</span><span class="p">,</span> <span class="s1">&#39;World&#39;</span><span class="p">,</span> <span class="n">sumall</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
+                          <span class="n">others</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">rowsonly</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+    <span class="n">glb</span> <span class="o">=</span> <span class="n">total</span><span class="o">.</span><span class="n">subtract</span><span class="p">(</span><span class="n">nonglb</span><span class="p">,</span> <span class="n">fill_value</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span>
+    <span class="c1"># pick up some precision issues</span>
+    <span class="c1"># TODO: this precision is large because I have seen model results</span>
+    <span class="c1"># be reported with this large of difference due to round off and values</span>
+    <span class="c1"># approaching 0</span>
+    <span class="n">glb</span><span class="p">[(</span><span class="n">glb</span> <span class="o">/</span> <span class="n">total</span><span class="p">)</span><span class="o">.</span><span class="n">abs</span><span class="p">()</span> <span class="o">&lt;</span> <span class="n">threshold</span><span class="p">]</span> <span class="o">=</span> <span class="mf">0.</span>
+    <span class="n">df</span> <span class="o">=</span> <span class="n">glb</span><span class="o">.</span><span class="n">combine_first</span><span class="p">(</span><span class="n">df</span><span class="p">)</span>
+    <span class="n">check_null</span><span class="p">(</span><span class="n">df</span><span class="p">,</span> <span class="n">name</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">df</span></div>
+
+
+<div class="viewcode-block" id="combine_rows"><a class="viewcode-back" href="../../api.html#aneris.utils.combine_rows">[docs]</a><span class="k">def</span> <span class="nf">combine_rows</span><span class="p">(</span><span class="n">df</span><span class="p">,</span> <span class="n">level</span><span class="p">,</span> <span class="n">main</span><span class="p">,</span> <span class="n">others</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">sumall</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">dropothers</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
+                 <span class="n">rowsonly</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">newlabel</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Combine rows (add values) in a dataframe. Rows corresponding to the main and</span>
+<span class="sd">    other values in a given level (or column) are added together and reattached</span>
+<span class="sd">    taking the main value in the new column.</span>
+
+<span class="sd">    For example, countries can be combined using this strategy.</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    df : pd.DataFrame</span>
+<span class="sd">    level : string, int</span>
+<span class="sd">        common level or column (e.g., &#39;region&#39;)</span>
+<span class="sd">    main : string</span>
+<span class="sd">        the value of the level to aggregate on</span>
+<span class="sd">    others : string, optional</span>
+<span class="sd">        a list of other values to aggregate</span>
+<span class="sd">    sumall : bool, optional</span>
+<span class="sd">        sum main and other values (otherwise, only add other values)</span>
+<span class="sd">    dropothers : bool, optional</span>
+<span class="sd">        remove rows with values provided in `others`</span>
+<span class="sd">    rowsonly : bool, optional</span>
+<span class="sd">        only return newly generated rows</span>
+<span class="sd">    newlabel : string, optional</span>
+<span class="sd">        a new label for the level/column value, default is main</span>
+
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+<span class="sd">    df : pd.DataFrame</span>
+<span class="sd">        resulting data</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">newlabel</span> <span class="o">=</span> <span class="n">newlabel</span> <span class="ow">or</span> <span class="n">main</span>
+    <span class="n">multi_idx</span> <span class="o">=</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">df</span><span class="o">.</span><span class="n">index</span><span class="p">,</span> <span class="n">pd</span><span class="o">.</span><span class="n">MultiIndex</span><span class="p">)</span>
+
+    <span class="k">if</span> <span class="n">multi_idx</span><span class="p">:</span>
+        <span class="n">df</span><span class="o">.</span><span class="n">reset_index</span><span class="p">(</span><span class="n">inplace</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+
+    <span class="c1"># get all values in level column</span>
+    <span class="n">lvl_values</span> <span class="o">=</span> <span class="n">df</span><span class="p">[</span><span class="n">level</span><span class="p">]</span><span class="o">.</span><span class="n">unique</span><span class="p">()</span>
+
+    <span class="c1"># if others is none, then its everything other than the primary</span>
+    <span class="n">others</span> <span class="o">=</span> <span class="n">others</span> <span class="k">if</span> <span class="n">others</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span> <span class="k">else</span> \
+        <span class="nb">list</span><span class="p">(</span><span class="nb">set</span><span class="p">(</span><span class="n">lvl_values</span><span class="p">)</span> <span class="o">-</span> <span class="nb">set</span><span class="p">([</span><span class="n">main</span><span class="p">]))</span>
+
+    <span class="c1"># set up df idx for operations</span>
+    <span class="n">grp_idx</span> <span class="o">=</span> <span class="p">[</span><span class="n">x</span> <span class="k">for</span> <span class="n">x</span> <span class="ow">in</span> <span class="n">df_idx</span> <span class="k">if</span> <span class="n">x</span> <span class="o">!=</span> <span class="n">level</span><span class="p">]</span>
+    <span class="n">df</span><span class="o">.</span><span class="n">set_index</span><span class="p">([</span><span class="n">level</span><span class="p">]</span> <span class="o">+</span> <span class="n">grp_idx</span><span class="p">,</span> <span class="n">inplace</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+
+    <span class="c1"># generate new rows which are summation of subset of old rows</span>
+    <span class="n">sum_subset</span> <span class="o">=</span> <span class="p">[</span><span class="n">main</span><span class="p">]</span> <span class="o">+</span> <span class="n">others</span> <span class="k">if</span> <span class="n">sumall</span> <span class="k">else</span> <span class="n">others</span>
+    <span class="n">rows</span> <span class="o">=</span> <span class="p">(</span>
+        <span class="n">df</span><span class="o">.</span><span class="n">loc</span><span class="p">[</span><span class="n">sum_subset</span><span class="p">]</span>
+        <span class="o">.</span><span class="n">groupby</span><span class="p">(</span><span class="n">level</span><span class="o">=</span><span class="n">grp_idx</span><span class="p">)</span>
+        <span class="o">.</span><span class="n">sum</span><span class="p">()</span>
+    <span class="p">)</span>
+    <span class="n">rows</span><span class="p">[</span><span class="n">level</span><span class="p">]</span> <span class="o">=</span> <span class="n">newlabel</span>
+    <span class="n">rows</span> <span class="o">=</span> <span class="p">(</span>
+        <span class="n">rows</span>
+        <span class="o">.</span><span class="n">set_index</span><span class="p">(</span><span class="n">level</span><span class="p">,</span> <span class="n">append</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+        <span class="o">.</span><span class="n">reorder_levels</span><span class="p">(</span><span class="n">df_idx</span><span class="p">)</span>
+        <span class="o">.</span><span class="n">sort_index</span><span class="p">()</span>
+    <span class="p">)</span>
+
+    <span class="c1"># get rid of rows that aren&#39;t needed in final dataframe</span>
+    <span class="n">drop</span> <span class="o">=</span> <span class="p">[</span><span class="n">main</span><span class="p">]</span> <span class="o">+</span> <span class="n">others</span> <span class="k">if</span> <span class="n">dropothers</span> <span class="k">else</span> <span class="p">[</span><span class="n">main</span><span class="p">]</span>
+    <span class="n">drop</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span><span class="nb">set</span><span class="p">(</span><span class="n">drop</span><span class="p">)</span> <span class="o">&amp;</span> <span class="nb">set</span><span class="p">(</span><span class="n">lvl_values</span><span class="p">))</span>
+    <span class="n">df</span> <span class="o">=</span> <span class="p">(</span>
+        <span class="n">df</span><span class="o">.</span><span class="n">drop</span><span class="p">(</span><span class="n">drop</span><span class="p">)</span>
+        <span class="o">.</span><span class="n">reset_index</span><span class="p">()</span>
+        <span class="o">.</span><span class="n">set_index</span><span class="p">(</span><span class="n">df_idx</span><span class="p">)</span>
+    <span class="p">)</span>
+
+    <span class="c1"># construct final dataframe</span>
+    <span class="n">df</span> <span class="o">=</span> <span class="n">rows</span> <span class="k">if</span> <span class="n">rowsonly</span> <span class="k">else</span> <span class="n">pd</span><span class="o">.</span><span class="n">concat</span><span class="p">([</span><span class="n">df</span><span class="p">,</span> <span class="n">rows</span><span class="p">])</span><span class="o">.</span><span class="n">sort_index</span><span class="p">()</span>
+
+    <span class="k">if</span> <span class="ow">not</span> <span class="n">multi_idx</span><span class="p">:</span>
+        <span class="n">df</span><span class="o">.</span><span class="n">reset_index</span><span class="p">(</span><span class="n">inplace</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+
+    <span class="k">return</span> <span class="n">df</span></div>
+
+
+<div class="viewcode-block" id="agg_regions"><a class="viewcode-back" href="../../api.html#aneris.utils.agg_regions">[docs]</a><span class="k">def</span> <span class="nf">agg_regions</span><span class="p">(</span><span class="n">df</span><span class="p">,</span> <span class="n">rfrom</span><span class="o">=</span><span class="s1">&#39;ISO Code&#39;</span><span class="p">,</span> <span class="n">rto</span><span class="o">=</span><span class="s1">&#39;Native Region Code&#39;</span><span class="p">,</span> <span class="n">mapping</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+                <span class="n">verify</span><span class="o">=</span><span class="kc">True</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Aggregate values in a dataframe to a new regional composition</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    df : pd.DataFrame</span>
+<span class="sd">    rfrom : string</span>
+<span class="sd">        original regional composition column name in mapping</span>
+<span class="sd">    rto : string</span>
+<span class="sd">        column name to use for aggregation in mapping</span>
+<span class="sd">    mapping : pd.DataFrame, optional</span>
+<span class="sd">        mapping to use, otherwise MESSAGE mappings are read</span>
+<span class="sd">    verify : bool, optional</span>
+<span class="sd">        if True, confirm that sum of original values == sum of aggregated values</span>
+
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+<span class="sd">    df : pd.DataFrame</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">mapping</span> <span class="o">=</span> <span class="n">mapping</span> <span class="k">if</span> <span class="n">mapping</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span> <span class="k">else</span> \
+        <span class="n">pd</span><span class="o">.</span><span class="n">read_csv</span><span class="p">(</span><span class="n">region_path</span><span class="p">(</span><span class="s1">&#39;message.csv&#39;</span><span class="p">))</span>
+    <span class="n">mapping</span><span class="p">[</span><span class="n">rfrom</span><span class="p">]</span> <span class="o">=</span> <span class="n">mapping</span><span class="p">[</span><span class="n">rfrom</span><span class="p">]</span><span class="o">.</span><span class="n">str</span><span class="o">.</span><span class="n">upper</span><span class="p">()</span>
+    <span class="n">case_map</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">Series</span><span class="p">(</span><span class="n">mapping</span><span class="p">[</span><span class="n">rto</span><span class="p">]</span><span class="o">.</span><span class="n">unique</span><span class="p">(),</span>
+                         <span class="n">index</span><span class="o">=</span><span class="n">mapping</span><span class="p">[</span><span class="n">rto</span><span class="p">]</span><span class="o">.</span><span class="n">str</span><span class="o">.</span><span class="n">upper</span><span class="p">()</span><span class="o">.</span><span class="n">unique</span><span class="p">())</span>
+    <span class="n">mapping</span><span class="p">[</span><span class="n">rto</span><span class="p">]</span> <span class="o">=</span> <span class="n">mapping</span><span class="p">[</span><span class="n">rto</span><span class="p">]</span><span class="o">.</span><span class="n">str</span><span class="o">.</span><span class="n">upper</span><span class="p">()</span>
+    <span class="n">mapping</span> <span class="o">=</span> <span class="n">mapping</span><span class="p">[[</span><span class="n">rfrom</span><span class="p">,</span> <span class="n">rto</span><span class="p">]]</span><span class="o">.</span><span class="n">drop_duplicates</span><span class="p">()</span><span class="o">.</span><span class="n">dropna</span><span class="p">()</span>
+
+    <span class="c1"># unindex and set up values in correct form</span>
+    <span class="n">multi_idx</span> <span class="o">=</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">df</span><span class="o">.</span><span class="n">index</span><span class="p">,</span> <span class="n">pd</span><span class="o">.</span><span class="n">MultiIndex</span><span class="p">)</span>
+    <span class="k">if</span> <span class="n">multi_idx</span><span class="p">:</span>
+        <span class="n">df</span> <span class="o">=</span> <span class="n">df</span><span class="o">.</span><span class="n">reset_index</span><span class="p">()</span>
+    <span class="n">df</span><span class="o">.</span><span class="n">region</span> <span class="o">=</span> <span class="n">df</span><span class="o">.</span><span class="n">region</span><span class="o">.</span><span class="n">str</span><span class="o">.</span><span class="n">upper</span><span class="p">()</span>
+
+    <span class="c1"># remove regions without mappings</span>
+    <span class="n">check</span> <span class="o">=</span> <span class="n">mapping</span><span class="p">[</span><span class="n">rfrom</span><span class="p">]</span>
+    <span class="n">notin</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span><span class="nb">set</span><span class="p">(</span><span class="n">df</span><span class="o">.</span><span class="n">region</span><span class="p">)</span> <span class="o">-</span> <span class="nb">set</span><span class="p">(</span><span class="n">check</span><span class="p">))</span>
+    <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">notin</span><span class="p">)</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">:</span>
+        <span class="n">logger</span><span class="p">()</span><span class="o">.</span><span class="n">warning</span><span class="p">(</span>
+            <span class="s1">&#39;Removing regions without direct mapping: </span><span class="si">{}</span><span class="s1">&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">notin</span><span class="p">))</span>
+        <span class="n">df</span> <span class="o">=</span> <span class="n">df</span><span class="p">[</span><span class="n">df</span><span class="o">.</span><span class="n">region</span><span class="o">.</span><span class="n">isin</span><span class="p">(</span><span class="n">check</span><span class="p">)]</span>
+
+    <span class="c1"># map and sum</span>
+    <span class="n">dfto</span> <span class="o">=</span> <span class="p">(</span>
+        <span class="n">df</span>
+        <span class="o">.</span><span class="n">merge</span><span class="p">(</span><span class="n">mapping</span><span class="p">,</span> <span class="n">left_on</span><span class="o">=</span><span class="s1">&#39;region&#39;</span><span class="p">,</span> <span class="n">right_on</span><span class="o">=</span><span class="n">rfrom</span><span class="p">,</span> <span class="n">how</span><span class="o">=</span><span class="s1">&#39;outer&#39;</span><span class="p">)</span>
+        <span class="o">.</span><span class="n">drop</span><span class="p">([</span><span class="n">rfrom</span><span class="p">,</span> <span class="s1">&#39;region&#39;</span><span class="p">],</span> <span class="n">axis</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
+        <span class="o">.</span><span class="n">rename</span><span class="p">(</span><span class="n">columns</span><span class="o">=</span><span class="p">{</span><span class="n">rto</span><span class="p">:</span> <span class="s1">&#39;region&#39;</span><span class="p">})</span>
+        <span class="o">.</span><span class="n">groupby</span><span class="p">(</span><span class="n">df_idx</span><span class="p">)</span><span class="o">.</span><span class="n">sum</span><span class="p">()</span><span class="o">.</span><span class="n">reset_index</span><span class="p">()</span>
+    <span class="p">)</span>
+    <span class="n">dfto</span><span class="o">.</span><span class="n">region</span> <span class="o">=</span> <span class="n">dfto</span><span class="o">.</span><span class="n">region</span><span class="o">.</span><span class="n">map</span><span class="p">(</span><span class="n">case_map</span><span class="p">)</span>
+    <span class="n">dfto</span> <span class="o">=</span> <span class="n">dfto</span><span class="o">.</span><span class="n">set_index</span><span class="p">(</span><span class="n">df_idx</span><span class="p">)</span><span class="o">.</span><span class="n">sort_index</span><span class="p">()</span>
+
+    <span class="k">if</span> <span class="n">verify</span><span class="p">:</span>
+        <span class="c1"># contract on exit</span>
+        <span class="n">start</span> <span class="o">=</span> <span class="n">df</span><span class="p">[</span><span class="n">numcols</span><span class="p">(</span><span class="n">df</span><span class="p">)]</span><span class="o">.</span><span class="n">values</span><span class="o">.</span><span class="n">sum</span><span class="p">()</span>
+        <span class="n">end</span> <span class="o">=</span> <span class="n">dfto</span><span class="p">[</span><span class="n">numcols</span><span class="p">(</span><span class="n">dfto</span><span class="p">)]</span><span class="o">.</span><span class="n">values</span><span class="o">.</span><span class="n">sum</span><span class="p">()</span>
+        <span class="n">diff</span> <span class="o">=</span> <span class="nb">abs</span><span class="p">(</span><span class="n">start</span> <span class="o">-</span> <span class="n">end</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">np</span><span class="o">.</span><span class="n">isnan</span><span class="p">(</span><span class="n">diff</span><span class="p">)</span> <span class="ow">or</span> <span class="n">diff</span> <span class="o">/</span> <span class="n">start</span> <span class="o">&gt;</span> <span class="mi">1</span><span class="n">e</span><span class="o">-</span><span class="mi">6</span><span class="p">:</span>
+            <span class="n">msg</span> <span class="o">=</span> <span class="s1">&#39;Difference between before and after is large: </span><span class="si">{}</span><span class="s1">&#39;</span>
+            <span class="k">raise</span><span class="p">(</span><span class="ne">ValueError</span><span class="p">(</span><span class="n">msg</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">diff</span><span class="p">)))</span>
+
+    <span class="c1"># revert form if needed</span>
+    <span class="k">if</span> <span class="ow">not</span> <span class="n">multi_idx</span><span class="p">:</span>
+        <span class="n">dfto</span><span class="o">.</span><span class="n">reset_index</span><span class="p">(</span><span class="n">inplace</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">dfto</span></div>
+
+
+<div class="viewcode-block" id="EmissionsAggregator"><a class="viewcode-back" href="../../api.html#aneris.utils.EmissionsAggregator">[docs]</a><span class="k">class</span> <span class="nc">EmissionsAggregator</span><span class="p">(</span><span class="nb">object</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Helper class to aggregate emissions&quot;&quot;&quot;</span>
+
+    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">df</span><span class="p">,</span> <span class="n">model</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">scenario</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        df : pd.DataFrame</span>
+<span class="sd">            original data</span>
+<span class="sd">        model : string, optional</span>
+<span class="sd">            model name</span>
+<span class="sd">        scenario : string, optional</span>
+<span class="sd">            scenario name</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">multi_idx</span> <span class="o">=</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">df</span><span class="o">.</span><span class="n">index</span><span class="p">,</span> <span class="n">pd</span><span class="o">.</span><span class="n">MultiIndex</span><span class="p">)</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">multi_idx</span><span class="p">:</span>
+            <span class="n">df</span> <span class="o">=</span> <span class="n">df</span><span class="o">.</span><span class="n">reset_index</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">df</span> <span class="o">=</span> <span class="n">df</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">model</span> <span class="o">=</span> <span class="n">model</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">scenario</span> <span class="o">=</span> <span class="n">scenario</span>
+        <span class="k">assert</span><span class="p">((</span><span class="bp">self</span><span class="o">.</span><span class="n">df</span><span class="o">.</span><span class="n">units</span> <span class="o">==</span> <span class="s1">&#39;kt&#39;</span><span class="p">)</span><span class="o">.</span><span class="n">all</span><span class="p">())</span>
+
+<div class="viewcode-block" id="EmissionsAggregator.add_variables"><a class="viewcode-back" href="../../api.html#aneris.utils.EmissionsAggregator.add_variables">[docs]</a>    <span class="k">def</span> <span class="nf">add_variables</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">totals</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">aggregates</span><span class="o">=</span><span class="kc">True</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Add aggregates and variables with direct mappings.</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        totals : list, optional</span>
+<span class="sd">             sectors to compute totals for</span>
+<span class="sd">        add_aggregates : bool, optional </span>
+<span class="sd">            whether to add aggregate variables</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="n">totals</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_add_totals</span><span class="p">(</span><span class="n">totals</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">aggregates</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_add_aggregates</span><span class="p">()</span>
+        <span class="k">return</span> <span class="bp">self</span></div>
+
+<div class="viewcode-block" id="EmissionsAggregator.to_template"><a class="viewcode-back" href="../../api.html#aneris.utils.EmissionsAggregator.to_template">[docs]</a>    <span class="k">def</span> <span class="nf">to_template</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Create an IAMC template out of the original data frame</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        first_year: optional, the first year to report values for</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">df</span> <span class="o">=</span> <span class="n">FormatTranslator</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">df</span><span class="p">)</span><span class="o">.</span><span class="n">to_template</span><span class="p">(</span>
+            <span class="n">model</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">model</span><span class="p">,</span> <span class="n">scenario</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">scenario</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">df</span></div>
+
+    <span class="k">def</span> <span class="nf">_add_totals</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">totals</span><span class="p">):</span>
+        <span class="k">assert</span><span class="p">(</span><span class="ow">not</span> <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">df</span><span class="o">.</span><span class="n">sector</span> <span class="o">==</span> <span class="n">totals</span><span class="p">)</span><span class="o">.</span><span class="n">any</span><span class="p">())</span>
+        <span class="n">grp_idx</span> <span class="o">=</span> <span class="p">[</span><span class="n">x</span> <span class="k">for</span> <span class="n">x</span> <span class="ow">in</span> <span class="n">df_idx</span> <span class="k">if</span> <span class="n">x</span> <span class="o">!=</span> <span class="s1">&#39;sector&#39;</span><span class="p">]</span>
+        <span class="n">rows</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">df</span><span class="o">.</span><span class="n">groupby</span><span class="p">(</span><span class="n">grp_idx</span><span class="p">)</span><span class="o">.</span><span class="n">sum</span><span class="p">()</span><span class="o">.</span><span class="n">reset_index</span><span class="p">()</span>
+        <span class="n">rows</span><span class="p">[</span><span class="s1">&#39;sector&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">totals</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">df</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">df</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">rows</span><span class="p">)</span>
+
+    <span class="k">def</span> <span class="nf">_add_aggregates</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="n">mapping</span> <span class="o">=</span> <span class="n">pd_read</span><span class="p">(</span><span class="n">iamc_path</span><span class="p">(</span><span class="s1">&#39;sector_mapping.xlsx&#39;</span><span class="p">),</span>
+                          <span class="n">sheetname</span><span class="o">=</span><span class="s1">&#39;Aggregates&#39;</span><span class="p">)</span>
+        <span class="n">mapping</span> <span class="o">=</span> <span class="n">mapping</span><span class="o">.</span><span class="n">applymap</span><span class="p">(</span><span class="n">remove_emissions_prefix</span><span class="p">)</span>
+
+        <span class="n">rows</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">(</span><span class="n">columns</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">df</span><span class="o">.</span><span class="n">columns</span><span class="p">)</span>
+        <span class="k">for</span> <span class="n">sector</span> <span class="ow">in</span> <span class="n">mapping</span><span class="p">[</span><span class="s1">&#39;IAMC Parent&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">unique</span><span class="p">():</span>
+            <span class="c1"># mapping for aggregate sector for all gases</span>
+            <span class="n">_map</span> <span class="o">=</span> <span class="n">mapping</span><span class="p">[</span><span class="n">mapping</span><span class="p">[</span><span class="s1">&#39;IAMC Parent&#39;</span><span class="p">]</span> <span class="o">==</span> <span class="n">sector</span><span class="p">]</span>
+            <span class="n">_map</span> <span class="o">=</span> <span class="n">_map</span><span class="o">.</span><span class="n">set_index</span><span class="p">(</span><span class="s1">&#39;IAMC Child&#39;</span><span class="p">)[</span><span class="s1">&#39;IAMC Parent&#39;</span><span class="p">]</span>
+
+            <span class="c1"># rename variable column for subset of rows</span>
+            <span class="n">subset</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">df</span><span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">df</span><span class="o">.</span><span class="n">sector</span><span class="o">.</span><span class="n">isin</span><span class="p">(</span><span class="n">_map</span><span class="o">.</span><span class="n">index</span><span class="p">)]</span><span class="o">.</span><span class="n">copy</span><span class="p">()</span>
+            <span class="n">subset</span><span class="o">.</span><span class="n">sector</span> <span class="o">=</span> <span class="n">subset</span><span class="o">.</span><span class="n">sector</span><span class="o">.</span><span class="n">apply</span><span class="p">(</span><span class="k">lambda</span> <span class="n">x</span><span class="p">:</span> <span class="n">_map</span><span class="o">.</span><span class="n">loc</span><span class="p">[</span><span class="n">x</span><span class="p">])</span>
+
+            <span class="c1"># add aggregate to rows</span>
+            <span class="n">subset</span> <span class="o">=</span> <span class="n">subset</span><span class="o">.</span><span class="n">groupby</span><span class="p">(</span><span class="n">df_idx</span><span class="p">)</span><span class="o">.</span><span class="n">sum</span><span class="p">()</span><span class="o">.</span><span class="n">reset_index</span><span class="p">()</span>
+            <span class="n">rows</span> <span class="o">=</span> <span class="n">rows</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">subset</span><span class="p">)</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">df</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">df</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">rows</span><span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="FormatTranslator"><a class="viewcode-back" href="../../api.html#aneris.utils.FormatTranslator">[docs]</a><span class="k">class</span> <span class="nc">FormatTranslator</span><span class="p">(</span><span class="nb">object</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Helper class to translate between IAMC and calcluation formats&quot;&quot;&quot;</span>
+
+    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">df</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">prefix</span><span class="o">=</span><span class="s1">&#39;&#39;</span><span class="p">,</span> <span class="n">suffix</span><span class="o">=</span><span class="s1">&#39;&#39;</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">df</span> <span class="o">=</span> <span class="n">df</span> <span class="k">if</span> <span class="n">df</span> <span class="ow">is</span> <span class="kc">None</span> <span class="k">else</span> <span class="n">df</span><span class="o">.</span><span class="n">copy</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">model</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">scenario</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">prefix</span> <span class="o">=</span> <span class="n">prefix</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">suffix</span> <span class="o">=</span> <span class="n">suffix</span>
+
+<div class="viewcode-block" id="FormatTranslator.to_std"><a class="viewcode-back" href="../../api.html#aneris.utils.FormatTranslator.to_std">[docs]</a>    <span class="k">def</span> <span class="nf">to_std</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">df</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">set_metadata</span><span class="o">=</span><span class="kc">True</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Translate a dataframe from IAMC to standard calculation format</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        df : pd.DataFrame, optional</span>
+<span class="sd">        set_metadata : bool, optional</span>
+<span class="sd">            save metadata (model, scenario) for future use</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">df</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">df</span> <span class="k">if</span> <span class="n">df</span> <span class="ow">is</span> <span class="kc">None</span> <span class="k">else</span> <span class="n">df</span>
+        <span class="n">multi_idx</span> <span class="o">=</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">df</span><span class="o">.</span><span class="n">index</span><span class="p">,</span> <span class="n">pd</span><span class="o">.</span><span class="n">MultiIndex</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">multi_idx</span><span class="p">:</span>
+            <span class="n">df</span><span class="o">.</span><span class="n">reset_index</span><span class="p">(</span><span class="n">inplace</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+
+        <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="nb">set</span><span class="p">(</span><span class="n">iamc_idx</span><span class="p">)</span> <span class="o">-</span> <span class="nb">set</span><span class="p">(</span><span class="n">df</span><span class="o">.</span><span class="n">columns</span><span class="p">)):</span>
+            <span class="n">msg</span> <span class="o">=</span> <span class="s1">&#39;Columns do not conform with IAMC index: </span><span class="si">{}</span><span class="s1">&#39;</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="n">msg</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">df</span><span class="o">.</span><span class="n">columns</span><span class="p">))</span>
+
+        <span class="c1"># make sure we&#39;re working with good data</span>
+        <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">df</span><span class="p">[</span><span class="s1">&#39;Model&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">unique</span><span class="p">())</span> <span class="o">&gt;</span> <span class="mi">1</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span>
+                <span class="s1">&#39;Model not unique: </span><span class="si">{}</span><span class="s1">&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">df</span><span class="p">[</span><span class="s1">&#39;Model&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">unique</span><span class="p">()))</span>
+        <span class="k">assert</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">df</span><span class="p">[</span><span class="s1">&#39;Scenario&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">unique</span><span class="p">())</span> <span class="o">&lt;=</span> <span class="mi">1</span><span class="p">)</span>
+        <span class="k">assert</span><span class="p">(</span><span class="n">df</span><span class="p">[</span><span class="s1">&#39;Variable&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">apply</span><span class="p">(</span><span class="k">lambda</span> <span class="n">x</span><span class="p">:</span> <span class="s1">&#39;Emissions&#39;</span> <span class="ow">in</span> <span class="n">x</span><span class="p">)</span><span class="o">.</span><span class="n">all</span><span class="p">())</span>
+
+        <span class="c1"># save data</span>
+        <span class="k">if</span> <span class="n">set_metadata</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">model</span> <span class="o">=</span> <span class="n">df</span><span class="p">[</span><span class="s1">&#39;Model&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">iloc</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">scenario</span> <span class="o">=</span> <span class="n">df</span><span class="p">[</span><span class="s1">&#39;Scenario&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">iloc</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+
+        <span class="c1"># add std columns needed for conversions</span>
+        <span class="n">df</span><span class="p">[</span><span class="s1">&#39;region&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">df</span><span class="p">[</span><span class="s1">&#39;Region&#39;</span><span class="p">]</span>
+        <span class="n">df</span><span class="p">[</span><span class="s1">&#39;gas&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">gases</span><span class="p">(</span><span class="n">df</span><span class="p">[</span><span class="s1">&#39;Variable&#39;</span><span class="p">])</span>
+        <span class="n">df</span><span class="p">[</span><span class="s1">&#39;units&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">df</span><span class="p">[</span><span class="s1">&#39;Unit&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">apply</span><span class="p">(</span><span class="k">lambda</span> <span class="n">x</span><span class="p">:</span> <span class="n">x</span><span class="o">.</span><span class="n">split</span><span class="p">()[</span><span class="mi">0</span><span class="p">])</span>
+        <span class="n">df</span><span class="p">[</span><span class="s1">&#39;sector&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">df</span><span class="p">[</span><span class="s1">&#39;Variable&#39;</span><span class="p">]</span>
+
+        <span class="c1"># convert gas names</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_convert_gases</span><span class="p">(</span><span class="n">df</span><span class="p">,</span> <span class="n">tostd</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+
+        <span class="c1"># convert units</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_convert_units</span><span class="p">(</span><span class="n">df</span><span class="p">,</span> <span class="n">tostd</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+
+        <span class="c1"># remove emissions prefix</span>
+        <span class="k">def</span> <span class="nf">update_sector</span><span class="p">(</span><span class="n">row</span><span class="p">):</span>
+            <span class="n">sectors</span> <span class="o">=</span> <span class="n">row</span><span class="o">.</span><span class="n">sector</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s1">&#39;|&#39;</span><span class="p">)</span>
+            <span class="n">idx</span> <span class="o">=</span> <span class="n">sectors</span><span class="o">.</span><span class="n">index</span><span class="p">(</span><span class="s1">&#39;Emissions&#39;</span><span class="p">)</span>
+            <span class="n">sectors</span><span class="o">.</span><span class="n">pop</span><span class="p">(</span><span class="n">idx</span><span class="p">)</span>  <span class="c1"># emissions</span>
+            <span class="n">sectors</span><span class="o">.</span><span class="n">pop</span><span class="p">(</span><span class="n">idx</span><span class="p">)</span>  <span class="c1"># gas</span>
+            <span class="k">return</span> <span class="s1">&#39;|&#39;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">sectors</span><span class="p">)</span><span class="o">.</span><span class="n">strip</span><span class="p">(</span><span class="s1">&#39;|&#39;</span><span class="p">)</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">df</span><span class="o">.</span><span class="n">empty</span><span class="p">:</span>
+            <span class="n">df</span><span class="p">[</span><span class="s1">&#39;sector&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">df</span><span class="o">.</span><span class="n">apply</span><span class="p">(</span><span class="n">update_sector</span><span class="p">,</span> <span class="n">axis</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
+        <span class="c1"># drop old columns</span>
+        <span class="n">df</span><span class="o">.</span><span class="n">drop</span><span class="p">(</span><span class="n">iamc_idx</span> <span class="o">+</span> <span class="p">[</span><span class="s1">&#39;Unit&#39;</span><span class="p">],</span> <span class="n">axis</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">inplace</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+
+        <span class="c1"># set up index and column order</span>
+        <span class="n">df</span><span class="o">.</span><span class="n">set_index</span><span class="p">(</span><span class="n">df_idx</span><span class="p">,</span> <span class="n">inplace</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+        <span class="n">df</span><span class="o">.</span><span class="n">sort_index</span><span class="p">(</span><span class="n">inplace</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">multi_idx</span><span class="p">:</span>
+            <span class="n">df</span><span class="o">.</span><span class="n">reset_index</span><span class="p">(</span><span class="n">inplace</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+
+        <span class="k">return</span> <span class="n">df</span></div>
+
+<div class="viewcode-block" id="FormatTranslator.to_template"><a class="viewcode-back" href="../../api.html#aneris.utils.FormatTranslator.to_template">[docs]</a>    <span class="k">def</span> <span class="nf">to_template</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">df</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">model</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">scenario</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+                    <span class="n">column_style</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Translate a dataframe from standard calculation format to IAMC</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        df : pd.DataFrame, optional</span>
+<span class="sd">        model : string, optional</span>
+<span class="sd">            model name</span>
+<span class="sd">        scenario : string, optional</span>
+<span class="sd">            scenario name</span>
+<span class="sd">        column_style : string</span>
+<span class="sd">            column style (upper, lower, etc.) to use</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">df</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">df</span> <span class="k">if</span> <span class="n">df</span> <span class="ow">is</span> <span class="kc">None</span> <span class="k">else</span> <span class="n">df</span>
+        <span class="n">multi_idx</span> <span class="o">=</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">df</span><span class="o">.</span><span class="n">index</span><span class="p">,</span> <span class="n">pd</span><span class="o">.</span><span class="n">MultiIndex</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">multi_idx</span><span class="p">:</span>
+            <span class="n">df</span><span class="o">.</span><span class="n">reset_index</span><span class="p">(</span><span class="n">inplace</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+        <span class="n">model</span> <span class="o">=</span> <span class="n">model</span> <span class="ow">or</span> <span class="bp">self</span><span class="o">.</span><span class="n">model</span>
+        <span class="n">scenario</span> <span class="o">=</span> <span class="n">scenario</span> <span class="ow">or</span> <span class="bp">self</span><span class="o">.</span><span class="n">scenario</span>
+
+        <span class="k">if</span> <span class="nb">set</span><span class="p">(</span><span class="n">df</span><span class="o">.</span><span class="n">columns</span><span class="p">)</span> <span class="o">!=</span> <span class="nb">set</span><span class="p">(</span><span class="n">df_idx</span> <span class="o">+</span> <span class="n">numcols</span><span class="p">(</span><span class="n">df</span><span class="p">)):</span>
+            <span class="n">msg</span> <span class="o">=</span> <span class="s1">&#39;Columns do not conform with standard index: </span><span class="si">{}</span><span class="s1">&#39;</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="n">msg</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">df</span><span class="o">.</span><span class="n">columns</span><span class="p">))</span>
+
+        <span class="c1"># convert gas names</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_convert_gases</span><span class="p">(</span><span class="n">df</span><span class="p">,</span> <span class="n">tostd</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
+
+        <span class="c1"># convert units</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_convert_units</span><span class="p">(</span><span class="n">df</span><span class="p">,</span> <span class="n">tostd</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
+
+        <span class="c1"># inject emissions prefix</span>
+        <span class="k">def</span> <span class="nf">update_sector</span><span class="p">(</span><span class="n">row</span><span class="p">):</span>
+            <span class="n">sectors</span> <span class="o">=</span> <span class="n">row</span><span class="o">.</span><span class="n">sector</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s1">&#39;|&#39;</span><span class="p">)</span>
+            <span class="n">idx</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">prefix</span><span class="o">.</span><span class="n">count</span><span class="p">(</span><span class="s1">&#39;|&#39;</span><span class="p">)</span> <span class="o">+</span> <span class="mi">1</span>
+            <span class="n">sectors</span><span class="o">.</span><span class="n">insert</span><span class="p">(</span><span class="n">idx</span><span class="p">,</span> <span class="s1">&#39;Emissions&#39;</span><span class="p">)</span>
+            <span class="n">sectors</span><span class="o">.</span><span class="n">insert</span><span class="p">(</span><span class="n">idx</span> <span class="o">+</span> <span class="mi">1</span><span class="p">,</span> <span class="n">row</span><span class="o">.</span><span class="n">gas</span><span class="p">)</span>
+            <span class="k">return</span> <span class="s1">&#39;|&#39;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">sectors</span><span class="p">)</span><span class="o">.</span><span class="n">strip</span><span class="p">(</span><span class="s1">&#39;|&#39;</span><span class="p">)</span>
+        <span class="n">df</span><span class="p">[</span><span class="s1">&#39;sector&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">df</span><span class="o">.</span><span class="n">apply</span><span class="p">(</span><span class="n">update_sector</span><span class="p">,</span> <span class="n">axis</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
+        <span class="c1"># write units correctly</span>
+        <span class="n">df</span><span class="p">[</span><span class="s1">&#39;units&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">units</span><span class="p">(</span><span class="n">df</span><span class="o">.</span><span class="n">sector</span><span class="p">)</span>
+
+        <span class="c1"># add new columns, remove old</span>
+        <span class="n">df</span><span class="p">[</span><span class="s1">&#39;Model&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">model</span>
+        <span class="n">df</span><span class="p">[</span><span class="s1">&#39;Scenario&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">scenario</span>
+        <span class="n">df</span><span class="p">[</span><span class="s1">&#39;Variable&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">df</span><span class="o">.</span><span class="n">sector</span>
+        <span class="n">df</span><span class="p">[</span><span class="s1">&#39;Region&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">df</span><span class="o">.</span><span class="n">region</span>
+        <span class="n">df</span><span class="p">[</span><span class="s1">&#39;Unit&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">df</span><span class="o">.</span><span class="n">units</span>
+        <span class="n">df</span><span class="o">.</span><span class="n">drop</span><span class="p">(</span><span class="n">df_idx</span><span class="p">,</span> <span class="n">axis</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">inplace</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+
+        <span class="c1"># unit magic to make it always first, would be easier if it was in idx.</span>
+        <span class="n">hold</span> <span class="o">=</span> <span class="n">df</span><span class="p">[</span><span class="s1">&#39;Unit&#39;</span><span class="p">]</span>
+        <span class="n">df</span><span class="o">.</span><span class="n">drop</span><span class="p">(</span><span class="s1">&#39;Unit&#39;</span><span class="p">,</span> <span class="n">axis</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">inplace</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+        <span class="n">df</span><span class="o">.</span><span class="n">insert</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="s1">&#39;Unit&#39;</span><span class="p">,</span> <span class="n">hold</span><span class="p">)</span>
+
+        <span class="c1"># set up index and column order</span>
+        <span class="n">idx</span> <span class="o">=</span> <span class="n">iamc_idx</span>
+        <span class="k">if</span> <span class="n">column_style</span> <span class="o">==</span> <span class="s1">&#39;upper&#39;</span><span class="p">:</span>
+            <span class="n">df</span><span class="o">.</span><span class="n">columns</span> <span class="o">=</span> <span class="n">df</span><span class="o">.</span><span class="n">columns</span><span class="o">.</span><span class="n">str</span><span class="o">.</span><span class="n">upper</span><span class="p">()</span>
+            <span class="n">idx</span> <span class="o">=</span> <span class="p">[</span><span class="n">x</span><span class="o">.</span><span class="n">upper</span><span class="p">()</span> <span class="k">for</span> <span class="n">x</span> <span class="ow">in</span> <span class="n">idx</span><span class="p">]</span>
+        <span class="n">df</span><span class="o">.</span><span class="n">set_index</span><span class="p">(</span><span class="n">idx</span><span class="p">,</span> <span class="n">inplace</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+        <span class="n">df</span><span class="o">.</span><span class="n">sort_index</span><span class="p">(</span><span class="n">inplace</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">multi_idx</span><span class="p">:</span>
+            <span class="n">df</span><span class="o">.</span><span class="n">reset_index</span><span class="p">(</span><span class="n">inplace</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+
+        <span class="k">return</span> <span class="n">df</span></div>
+
+    <span class="k">def</span> <span class="nf">_convert_gases</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">df</span><span class="p">,</span> <span class="n">tostd</span><span class="o">=</span><span class="kc">True</span><span class="p">):</span>
+        <span class="c1"># std to template</span>
+        <span class="n">convert</span> <span class="o">=</span> <span class="n">std_to_iamc_gases</span>
+
+        <span class="k">if</span> <span class="n">tostd</span><span class="p">:</span>  <span class="c1"># template to std</span>
+            <span class="n">convert</span> <span class="o">=</span> <span class="p">[(</span><span class="n">t</span><span class="p">,</span> <span class="n">s</span><span class="p">)</span> <span class="k">for</span> <span class="n">s</span><span class="p">,</span> <span class="n">t</span> <span class="ow">in</span> <span class="n">convert</span><span class="p">]</span>
+
+        <span class="c1"># from, to</span>
+        <span class="k">for</span> <span class="n">f</span><span class="p">,</span> <span class="n">t</span> <span class="ow">in</span> <span class="n">convert</span><span class="p">:</span>
+            <span class="k">for</span> <span class="n">col</span> <span class="ow">in</span> <span class="p">[</span><span class="s1">&#39;gas&#39;</span><span class="p">,</span> <span class="s1">&#39;sector&#39;</span><span class="p">]:</span>
+                <span class="n">df</span><span class="p">[</span><span class="n">col</span><span class="p">]</span> <span class="o">=</span> <span class="n">df</span><span class="p">[</span><span class="n">col</span><span class="p">]</span><span class="o">.</span><span class="n">replace</span><span class="p">(</span><span class="n">f</span><span class="p">,</span> <span class="n">t</span><span class="p">)</span>
+
+    <span class="k">def</span> <span class="nf">_convert_units</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">df</span><span class="p">,</span> <span class="n">tostd</span><span class="o">=</span><span class="kc">True</span><span class="p">):</span>
+        <span class="n">where</span> <span class="o">=</span> <span class="o">~</span><span class="n">df</span><span class="o">.</span><span class="n">gas</span><span class="o">.</span><span class="n">isin</span><span class="p">(</span><span class="n">kt_gases</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">tostd</span><span class="p">:</span>
+            <span class="n">df</span><span class="o">.</span><span class="n">loc</span><span class="p">[</span><span class="n">where</span><span class="p">,</span> <span class="n">numcols</span><span class="p">(</span><span class="n">df</span><span class="p">)]</span> <span class="o">*=</span> <span class="mi">1</span><span class="n">e3</span>
+            <span class="n">df</span><span class="o">.</span><span class="n">loc</span><span class="p">[</span><span class="n">where</span><span class="p">,</span> <span class="s1">&#39;units&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="s1">&#39;kt&#39;</span>
+            <span class="k">assert</span><span class="p">((</span><span class="n">df</span><span class="o">.</span><span class="n">units</span> <span class="o">==</span> <span class="s1">&#39;kt&#39;</span><span class="p">)</span><span class="o">.</span><span class="n">all</span><span class="p">())</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">assert</span><span class="p">((</span><span class="n">df</span><span class="o">.</span><span class="n">units</span> <span class="o">==</span> <span class="s1">&#39;kt&#39;</span><span class="p">)</span><span class="o">.</span><span class="n">all</span><span class="p">())</span>
+            <span class="n">df</span><span class="o">.</span><span class="n">loc</span><span class="p">[</span><span class="n">where</span><span class="p">,</span> <span class="n">numcols</span><span class="p">(</span><span class="n">df</span><span class="p">)]</span> <span class="o">/=</span> <span class="mi">1</span><span class="n">e3</span>
+            <span class="n">df</span><span class="o">.</span><span class="n">loc</span><span class="p">[</span><span class="n">where</span><span class="p">,</span> <span class="s1">&#39;units&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="s1">&#39;Mt&#39;</span></div>
+</pre></div>
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+            <p class="logo"><a href="../../index.html">
+              <img class="logo" src="../../_static/logo.svg" alt="Logo"/>
+            </a></p><h3>Related Topics</h3>
+<ul>
+  <li><a href="../../index.html">Documentation overview</a><ul>
+  <li><a href="../index.html">Module code</a><ul>
+  </ul></li>
+  </ul></li>
+</ul>
+<div id="searchbox" style="display: none" role="search">
+  <h3>Quick search</h3>
+    <form class="search" action="../../search.html" method="get">
+      <div><input type="text" name="q" /></div>
+      <div><input type="submit" value="Go" /></div>
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="footer">
+      &copy; Copyright 2016, Matthew Gidden.
+    </div>
+  </body>
+</html>

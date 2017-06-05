@@ -1,0 +1,402 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>aneris.methods &#8212; aneris 0.1.0 documentation</title>
+    
+    <link rel="stylesheet" href="../../_static/flasky.css" type="text/css" />
+    <link rel="stylesheet" href="../../_static/pygments.css" type="text/css" />
+    <link rel="stylesheet" href="../../_static/table_styling.css" type="text/css" />
+    
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    '../../',
+        VERSION:     '0.1.0',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="../../_static/jquery.js"></script>
+    <script type="text/javascript" src="../../_static/underscore.js"></script>
+    <script type="text/javascript" src="../../_static/doctools.js"></script>
+    <script type="text/javascript" src="https://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+    <link rel="index" title="Index" href="../../genindex.html" />
+    <link rel="search" title="Search" href="../../search.html" />
+    <link rel="top" title="aneris 0.1.0 documentation" href="../../index.html" />
+    <link rel="up" title="Module code" href="../index.html" />
+   
+  
+  <link media="only screen and (max-device-width: 480px)" href="../../_static/small_flask.css" type= "text/css" rel="stylesheet" />
+  <meta name="viewport" content="width=device-width, initial-scale=0.9, maximum-scale=0.9">
+
+  </head>
+  <body role="document">
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../../genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="../../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="nav-item nav-item-0"><a href="../../index.html">aneris 0.1.0 documentation</a> &#187;</li>
+          <li class="nav-item nav-item-1"><a href="../index.html" accesskey="U">Module code</a> &#187;</li> 
+      </ul>
+    </div>  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body" role="main">
+            
+  <h1>Source code for aneris.methods</h1><div class="highlight"><pre>
+<span></span><span class="sd">&quot;&quot;&quot;This module defines all possible functional forms of harmonization methods</span>
+<span class="sd">and the default decision tree for choosing which method to use.</span>
+
+<span class="sd">&quot;&quot;&quot;</span>
+
+<span class="kn">import</span> <span class="nn">pandas</span> <span class="k">as</span> <span class="nn">pd</span>
+<span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
+
+<span class="kn">from</span> <span class="nn">aneris</span> <span class="k">import</span> <span class="n">utils</span>
+
+
+<div class="viewcode-block" id="harmonize_factors"><a class="viewcode-back" href="../../api.html#aneris.methods.harmonize_factors">[docs]</a><span class="k">def</span> <span class="nf">harmonize_factors</span><span class="p">(</span><span class="n">df</span><span class="p">,</span> <span class="n">hist</span><span class="p">,</span> <span class="n">harmonize_year</span><span class="o">=</span><span class="s1">&#39;2015&#39;</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Calculate offset and ratio values between data and history</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    df : pd.DataFrame</span>
+<span class="sd">        model data</span>
+<span class="sd">    hist : pd.DataFrame</span>
+<span class="sd">        historical data</span>
+<span class="sd">    harmonize_year : string, optional</span>
+<span class="sd">        column name of harmonization year </span>
+
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+<span class="sd">    offset : pd.Series</span>
+<span class="sd">       offset (history - model)</span>
+<span class="sd">    ratio : pd.Series</span>
+<span class="sd">       ratio (history / model)</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">c</span><span class="p">,</span> <span class="n">m</span> <span class="o">=</span> <span class="n">hist</span><span class="p">[</span><span class="n">harmonize_year</span><span class="p">],</span> <span class="n">df</span><span class="p">[</span><span class="n">harmonize_year</span><span class="p">]</span>
+    <span class="n">offset</span> <span class="o">=</span> <span class="p">(</span><span class="n">c</span> <span class="o">-</span> <span class="n">m</span><span class="p">)</span><span class="o">.</span><span class="n">fillna</span><span class="p">(</span><span class="mi">0</span><span class="p">)</span>
+    <span class="n">offset</span><span class="o">.</span><span class="n">name</span> <span class="o">=</span> <span class="s1">&#39;offset&#39;</span>
+    <span class="n">ratios</span> <span class="o">=</span> <span class="p">(</span><span class="n">c</span> <span class="o">/</span> <span class="n">m</span><span class="p">)</span><span class="o">.</span><span class="n">replace</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">inf</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">nan</span><span class="p">)</span><span class="o">.</span><span class="n">fillna</span><span class="p">(</span><span class="mi">0</span><span class="p">)</span>
+    <span class="n">ratios</span><span class="o">.</span><span class="n">name</span> <span class="o">=</span> <span class="s1">&#39;ratio&#39;</span>
+    <span class="k">return</span> <span class="n">offset</span><span class="p">,</span> <span class="n">ratios</span></div>
+
+
+<div class="viewcode-block" id="constant_offset"><a class="viewcode-back" href="../../api.html#aneris.methods.constant_offset">[docs]</a><span class="k">def</span> <span class="nf">constant_offset</span><span class="p">(</span><span class="n">df</span><span class="p">,</span> <span class="n">offset</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Calculate constant offset harmonized trajectory</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    df : pd.DataFrame</span>
+<span class="sd">        model data</span>
+<span class="sd">    offset : pd.DataFrame</span>
+<span class="sd">        offset data</span>
+
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+<span class="sd">    df : pd.DataFrame</span>
+<span class="sd">        harmonized trajectories</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">df</span> <span class="o">=</span> <span class="n">df</span><span class="o">.</span><span class="n">copy</span><span class="p">()</span>
+    <span class="n">numcols</span> <span class="o">=</span> <span class="n">utils</span><span class="o">.</span><span class="n">numcols</span><span class="p">(</span><span class="n">df</span><span class="p">)</span>
+    <span class="c1"># just add offset to all values</span>
+    <span class="n">df</span><span class="p">[</span><span class="n">numcols</span><span class="p">]</span> <span class="o">=</span> <span class="n">df</span><span class="p">[</span><span class="n">numcols</span><span class="p">]</span><span class="o">.</span><span class="n">add</span><span class="p">(</span><span class="n">offset</span><span class="p">,</span> <span class="n">axis</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">df</span></div>
+
+
+<div class="viewcode-block" id="constant_ratio"><a class="viewcode-back" href="../../api.html#aneris.methods.constant_ratio">[docs]</a><span class="k">def</span> <span class="nf">constant_ratio</span><span class="p">(</span><span class="n">df</span><span class="p">,</span> <span class="n">ratios</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Calculate constant ratio harmonized trajectory</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    df : pd.DataFrame</span>
+<span class="sd">        model data</span>
+<span class="sd">    ratio : pd.DataFrame</span>
+<span class="sd">        ratio data</span>
+
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+<span class="sd">    df : pd.DataFrame</span>
+<span class="sd">        harmonized trajectories</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">df</span> <span class="o">=</span> <span class="n">df</span><span class="o">.</span><span class="n">copy</span><span class="p">()</span>
+    <span class="n">numcols</span> <span class="o">=</span> <span class="n">utils</span><span class="o">.</span><span class="n">numcols</span><span class="p">(</span><span class="n">df</span><span class="p">)</span>
+    <span class="c1"># just add offset to all values</span>
+    <span class="n">df</span><span class="p">[</span><span class="n">numcols</span><span class="p">]</span> <span class="o">=</span> <span class="n">df</span><span class="p">[</span><span class="n">numcols</span><span class="p">]</span><span class="o">.</span><span class="n">multiply</span><span class="p">(</span><span class="n">ratios</span><span class="p">,</span> <span class="n">axis</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">df</span></div>
+
+
+<div class="viewcode-block" id="linear_interpolate"><a class="viewcode-back" href="../../api.html#aneris.methods.linear_interpolate">[docs]</a><span class="k">def</span> <span class="nf">linear_interpolate</span><span class="p">(</span><span class="n">df</span><span class="p">,</span> <span class="n">offset</span><span class="p">,</span> <span class="n">final_year</span><span class="o">=</span><span class="s1">&#39;2050&#39;</span><span class="p">,</span> <span class="n">harmonize_year</span><span class="o">=</span><span class="s1">&#39;2015&#39;</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Calculate linearly interpolated convergence harmonized trajectory</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    df : pd.DataFrame</span>
+<span class="sd">        model data</span>
+<span class="sd">    offset : pd.DataFrame</span>
+<span class="sd">        offset data</span>
+<span class="sd">    final_year : string, optional</span>
+<span class="sd">        column name of convergence year </span>
+<span class="sd">    harmonize_year : string, optional</span>
+<span class="sd">        column name of harmonization year </span>
+
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+<span class="sd">    df : pd.DataFrame</span>
+<span class="sd">        harmonized trajectories</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">df</span> <span class="o">=</span> <span class="n">df</span><span class="o">.</span><span class="n">copy</span><span class="p">()</span>
+    <span class="n">x1</span><span class="p">,</span> <span class="n">x2</span> <span class="o">=</span> <span class="n">harmonize_year</span><span class="p">,</span> <span class="n">final_year</span>
+    <span class="n">y1</span><span class="p">,</span> <span class="n">y2</span> <span class="o">=</span> <span class="n">offset</span> <span class="o">+</span> <span class="n">df</span><span class="p">[</span><span class="n">x1</span><span class="p">],</span> <span class="n">df</span><span class="p">[</span><span class="n">x2</span><span class="p">]</span>
+    <span class="n">m</span> <span class="o">=</span> <span class="p">(</span><span class="n">y2</span> <span class="o">-</span> <span class="n">y1</span><span class="p">)</span> <span class="o">/</span> <span class="p">(</span><span class="nb">float</span><span class="p">(</span><span class="n">x2</span><span class="p">)</span> <span class="o">-</span> <span class="nb">float</span><span class="p">(</span><span class="n">x1</span><span class="p">))</span>
+    <span class="n">b</span> <span class="o">=</span> <span class="n">y1</span> <span class="o">-</span> <span class="n">m</span> <span class="o">*</span> <span class="nb">float</span><span class="p">(</span><span class="n">x1</span><span class="p">)</span>
+
+    <span class="n">cols</span> <span class="o">=</span> <span class="p">[</span><span class="n">x</span> <span class="k">for</span> <span class="n">x</span> <span class="ow">in</span> <span class="n">utils</span><span class="o">.</span><span class="n">numcols</span><span class="p">(</span><span class="n">df</span><span class="p">)</span> <span class="k">if</span> <span class="nb">int</span><span class="p">(</span><span class="n">x</span><span class="p">)</span> <span class="o">&lt;</span> <span class="nb">int</span><span class="p">(</span><span class="n">final_year</span><span class="p">)]</span>
+    <span class="k">for</span> <span class="n">c</span> <span class="ow">in</span> <span class="n">cols</span><span class="p">:</span>
+        <span class="n">df</span><span class="p">[</span><span class="n">c</span><span class="p">]</span> <span class="o">=</span> <span class="n">m</span> <span class="o">*</span> <span class="nb">float</span><span class="p">(</span><span class="n">c</span><span class="p">)</span> <span class="o">+</span> <span class="n">b</span>
+    <span class="k">return</span> <span class="n">df</span></div>
+
+
+<div class="viewcode-block" id="reduce_offset"><a class="viewcode-back" href="../../api.html#aneris.methods.reduce_offset">[docs]</a><span class="k">def</span> <span class="nf">reduce_offset</span><span class="p">(</span><span class="n">df</span><span class="p">,</span> <span class="n">offset</span><span class="p">,</span> <span class="n">final_year</span><span class="o">=</span><span class="s1">&#39;2050&#39;</span><span class="p">,</span> <span class="n">harmonize_year</span><span class="o">=</span><span class="s1">&#39;2015&#39;</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Calculate offset convergence harmonized trajectory</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    df : pd.DataFrame</span>
+<span class="sd">        model data</span>
+<span class="sd">    offset : pd.DataFrame</span>
+<span class="sd">        offset data</span>
+<span class="sd">    final_year : string, optional</span>
+<span class="sd">        column name of convergence year </span>
+<span class="sd">    harmonize_year : string, optional</span>
+<span class="sd">        column name of harmonization year </span>
+
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+<span class="sd">    df : pd.DataFrame</span>
+<span class="sd">        harmonized trajectories</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">df</span> <span class="o">=</span> <span class="n">df</span><span class="o">.</span><span class="n">copy</span><span class="p">()</span>
+    <span class="n">yi</span><span class="p">,</span> <span class="n">yf</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">harmonize_year</span><span class="p">),</span> <span class="nb">int</span><span class="p">(</span><span class="n">final_year</span><span class="p">)</span>
+    <span class="n">numcols</span> <span class="o">=</span> <span class="n">utils</span><span class="o">.</span><span class="n">numcols</span><span class="p">(</span><span class="n">df</span><span class="p">)</span>
+    <span class="c1"># get factors that reduce from 1 to 0; factors before base year are &gt; 1</span>
+    <span class="n">f</span> <span class="o">=</span> <span class="k">lambda</span> <span class="n">year</span><span class="p">:</span> <span class="o">-</span><span class="p">(</span><span class="n">year</span> <span class="o">-</span> <span class="n">yi</span><span class="p">)</span> <span class="o">/</span> <span class="nb">float</span><span class="p">(</span><span class="n">yf</span> <span class="o">-</span> <span class="n">yi</span><span class="p">)</span> <span class="o">+</span> <span class="mi">1</span>
+    <span class="n">factors</span> <span class="o">=</span> <span class="p">[</span><span class="n">f</span><span class="p">(</span><span class="nb">int</span><span class="p">(</span><span class="n">year</span><span class="p">))</span> <span class="k">if</span> <span class="n">year</span> <span class="o">&lt;=</span> <span class="n">final_year</span> <span class="k">else</span> <span class="mf">0.0</span> <span class="k">for</span> <span class="n">year</span> <span class="ow">in</span> <span class="n">numcols</span><span class="p">]</span>
+    <span class="c1"># add existing values to offset time series</span>
+    <span class="n">offsets</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">outer</span><span class="p">(</span><span class="n">offset</span><span class="p">,</span> <span class="n">factors</span><span class="p">),</span>
+                           <span class="n">columns</span><span class="o">=</span><span class="n">numcols</span><span class="p">,</span> <span class="n">index</span><span class="o">=</span><span class="n">offset</span><span class="o">.</span><span class="n">index</span><span class="p">)</span>
+    <span class="n">df</span><span class="p">[</span><span class="n">numcols</span><span class="p">]</span> <span class="o">=</span> <span class="n">df</span><span class="p">[</span><span class="n">numcols</span><span class="p">]</span> <span class="o">+</span> <span class="n">offsets</span>
+    <span class="k">return</span> <span class="n">df</span></div>
+
+
+<div class="viewcode-block" id="reduce_ratio"><a class="viewcode-back" href="../../api.html#aneris.methods.reduce_ratio">[docs]</a><span class="k">def</span> <span class="nf">reduce_ratio</span><span class="p">(</span><span class="n">df</span><span class="p">,</span> <span class="n">ratios</span><span class="p">,</span> <span class="n">final_year</span><span class="o">=</span><span class="s1">&#39;2050&#39;</span><span class="p">,</span> <span class="n">harmonize_year</span><span class="o">=</span><span class="s1">&#39;2015&#39;</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Calculate ratio convergence harmonized trajectory</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    df : pd.DataFrame</span>
+<span class="sd">        model data</span>
+<span class="sd">    ratio : pd.DataFrame</span>
+<span class="sd">        ratio data</span>
+<span class="sd">    final_year : string, optional</span>
+<span class="sd">        column name of convergence year </span>
+<span class="sd">    harmonize_year : string, optional</span>
+<span class="sd">        column name of harmonization year </span>
+
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+<span class="sd">    df : pd.DataFrame</span>
+<span class="sd">        harmonized trajectories</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">df</span> <span class="o">=</span> <span class="n">df</span><span class="o">.</span><span class="n">copy</span><span class="p">()</span>
+    <span class="n">yi</span><span class="p">,</span> <span class="n">yf</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">harmonize_year</span><span class="p">),</span> <span class="nb">int</span><span class="p">(</span><span class="n">final_year</span><span class="p">)</span>
+    <span class="n">numcols</span> <span class="o">=</span> <span class="n">utils</span><span class="o">.</span><span class="n">numcols</span><span class="p">(</span><span class="n">df</span><span class="p">)</span>
+    <span class="c1"># get factors that reduce from 1 to 0, but replace with 1s in years prior</span>
+    <span class="c1"># to harmonization</span>
+    <span class="n">f</span> <span class="o">=</span> <span class="k">lambda</span> <span class="n">year</span><span class="p">:</span> <span class="o">-</span><span class="p">(</span><span class="n">year</span> <span class="o">-</span> <span class="n">yi</span><span class="p">)</span> <span class="o">/</span> <span class="nb">float</span><span class="p">(</span><span class="n">yf</span> <span class="o">-</span> <span class="n">yi</span><span class="p">)</span> <span class="o">+</span> <span class="mi">1</span>
+    <span class="n">prefactors</span> <span class="o">=</span> <span class="p">[</span><span class="n">f</span><span class="p">(</span><span class="nb">int</span><span class="p">(</span><span class="n">harmonize_year</span><span class="p">))</span>
+                  <span class="k">for</span> <span class="n">year</span> <span class="ow">in</span> <span class="n">numcols</span> <span class="k">if</span> <span class="n">year</span> <span class="o">&lt;</span> <span class="n">harmonize_year</span><span class="p">]</span>
+    <span class="n">postfactors</span> <span class="o">=</span> <span class="p">[</span><span class="n">f</span><span class="p">(</span><span class="nb">int</span><span class="p">(</span><span class="n">year</span><span class="p">))</span> <span class="k">if</span> <span class="n">year</span> <span class="o">&lt;=</span>
+                   <span class="n">final_year</span> <span class="k">else</span> <span class="mf">0.0</span> <span class="k">for</span> <span class="n">year</span> <span class="ow">in</span> <span class="n">numcols</span> <span class="k">if</span> <span class="n">year</span> <span class="o">&gt;=</span> <span class="n">harmonize_year</span><span class="p">]</span>
+    <span class="n">factors</span> <span class="o">=</span> <span class="n">prefactors</span> <span class="o">+</span> <span class="n">postfactors</span>
+    <span class="c1"># multiply existing values by ratio time series</span>
+    <span class="n">ratios</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">outer</span><span class="p">(</span><span class="n">ratios</span> <span class="o">-</span> <span class="mi">1</span><span class="p">,</span> <span class="n">factors</span><span class="p">),</span>
+                          <span class="n">columns</span><span class="o">=</span><span class="n">numcols</span><span class="p">,</span> <span class="n">index</span><span class="o">=</span><span class="n">ratios</span><span class="o">.</span><span class="n">index</span><span class="p">)</span> <span class="o">+</span> <span class="mi">1</span>
+    <span class="n">df</span><span class="p">[</span><span class="n">numcols</span><span class="p">]</span> <span class="o">=</span> <span class="n">df</span><span class="p">[</span><span class="n">numcols</span><span class="p">]</span> <span class="o">*</span> <span class="n">ratios</span>
+    <span class="k">return</span> <span class="n">df</span></div>
+
+
+<div class="viewcode-block" id="model_zero"><a class="viewcode-back" href="../../api.html#aneris.methods.model_zero">[docs]</a><span class="k">def</span> <span class="nf">model_zero</span><span class="p">(</span><span class="n">df</span><span class="p">,</span> <span class="n">offset</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Returns result of aneris.methods.constant_offset()&quot;&quot;&quot;</span>
+    <span class="c1"># current decision is to return a simple offset, this will be a straight</span>
+    <span class="c1"># line for all time periods. previous behavior was to set df[numcols] = 0,</span>
+    <span class="c1"># i.e., report 0 if model reports 0.</span>
+    <span class="k">return</span> <span class="n">constant_offset</span><span class="p">(</span><span class="n">df</span><span class="p">,</span> <span class="n">offset</span><span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="hist_zero"><a class="viewcode-back" href="../../api.html#aneris.methods.hist_zero">[docs]</a><span class="k">def</span> <span class="nf">hist_zero</span><span class="p">(</span><span class="n">df</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Returns df (no change)&quot;&quot;&quot;</span>
+    <span class="c1"># TODO: should this set values to 0?</span>
+    <span class="n">df</span> <span class="o">=</span> <span class="n">df</span><span class="o">.</span><span class="n">copy</span><span class="p">()</span>
+    <span class="k">return</span> <span class="n">df</span></div>
+
+
+<div class="viewcode-block" id="coeff_of_var"><a class="viewcode-back" href="../../api.html#aneris.methods.coeff_of_var">[docs]</a><span class="k">def</span> <span class="nf">coeff_of_var</span><span class="p">(</span><span class="n">s</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Returns coefficient of variation of a Series </span>
+
+<span class="sd">    .. math:: c_v = \\frac{\\sigma(s^{\\prime}(t))}{\\mu(s^{\\prime}(t))}</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    s : pd.Series</span>
+<span class="sd">        timeseries</span>
+
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+<span class="sd">    c_v : float</span>
+<span class="sd">        coefficient of variation</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">x</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">diff</span><span class="p">(</span><span class="n">s</span><span class="o">.</span><span class="n">values</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">np</span><span class="o">.</span><span class="n">abs</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">std</span><span class="p">(</span><span class="n">x</span><span class="p">)</span> <span class="o">/</span> <span class="n">np</span><span class="o">.</span><span class="n">mean</span><span class="p">(</span><span class="n">x</span><span class="p">))</span></div>
+
+
+<div class="viewcode-block" id="default_methods"><a class="viewcode-back" href="../../api.html#aneris.methods.default_methods">[docs]</a><span class="k">def</span> <span class="nf">default_methods</span><span class="p">(</span><span class="n">hist</span><span class="p">,</span> <span class="n">model</span><span class="p">,</span> <span class="n">base_year</span><span class="p">,</span> <span class="n">luc_method</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Determine default harmonization methods to use.</span>
+
+<span class="sd">    See &lt;WEBSITE&gt; for a graphical description of the decision tree.</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    hist : pd.DataFrame</span>
+<span class="sd">        historical data</span>
+<span class="sd">    model : pd.DataFrame</span>
+<span class="sd">        model data</span>
+<span class="sd">    base_year : string, int</span>
+<span class="sd">        column name of harmonization year </span>
+<span class="sd">    luc_method : string, optional</span>
+<span class="sd">        method to use for high coefficient of variation</span>
+
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+<span class="sd">    methods : pd.Series</span>
+<span class="sd">       default harmonization methods</span>
+<span class="sd">    metadata : pd.DataFrame</span>
+<span class="sd">       metadata regarding why each method was chosen</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">luc_method</span> <span class="o">=</span> <span class="n">luc_method</span> <span class="ow">or</span> <span class="s1">&#39;reduce_offset_2150_cov&#39;</span>
+    <span class="n">y</span> <span class="o">=</span> <span class="nb">str</span><span class="p">(</span><span class="n">base_year</span><span class="p">)</span>
+    <span class="n">h</span> <span class="o">=</span> <span class="n">hist</span><span class="p">[</span><span class="n">y</span><span class="p">]</span>
+    <span class="n">m</span> <span class="o">=</span> <span class="n">model</span><span class="p">[</span><span class="n">y</span><span class="p">]</span>
+    <span class="n">dH</span> <span class="o">=</span> <span class="p">(</span><span class="n">h</span> <span class="o">-</span> <span class="n">m</span><span class="p">)</span><span class="o">.</span><span class="n">abs</span><span class="p">()</span> <span class="o">/</span> <span class="n">h</span>
+    <span class="n">f</span> <span class="o">=</span> <span class="n">h</span> <span class="o">/</span> <span class="n">m</span>
+    <span class="n">dM</span> <span class="o">=</span> <span class="p">(</span><span class="n">model</span><span class="o">.</span><span class="n">max</span><span class="p">(</span><span class="n">axis</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span> <span class="o">-</span> <span class="n">model</span><span class="o">.</span><span class="n">min</span><span class="p">(</span><span class="n">axis</span><span class="o">=</span><span class="mi">1</span><span class="p">))</span><span class="o">.</span><span class="n">abs</span><span class="p">()</span> <span class="o">/</span> <span class="n">model</span><span class="o">.</span><span class="n">max</span><span class="p">(</span><span class="n">axis</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
+    <span class="n">neg_m</span> <span class="o">=</span> <span class="p">(</span><span class="n">model</span> <span class="o">&lt;</span> <span class="mi">0</span><span class="p">)</span><span class="o">.</span><span class="n">any</span><span class="p">(</span><span class="n">axis</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
+    <span class="n">pos_m</span> <span class="o">=</span> <span class="p">(</span><span class="n">model</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">)</span><span class="o">.</span><span class="n">any</span><span class="p">(</span><span class="n">axis</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
+    <span class="n">zero_m</span> <span class="o">=</span> <span class="p">(</span><span class="n">model</span> <span class="o">==</span> <span class="mi">0</span><span class="p">)</span><span class="o">.</span><span class="n">all</span><span class="p">(</span><span class="n">axis</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
+    <span class="n">go_neg</span> <span class="o">=</span> <span class="p">((</span><span class="n">model</span><span class="o">.</span><span class="n">min</span><span class="p">(</span><span class="n">axis</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span> <span class="o">-</span> <span class="n">h</span><span class="p">)</span> <span class="o">&lt;</span> <span class="mi">0</span><span class="p">)</span><span class="o">.</span><span class="n">any</span><span class="p">()</span>
+    <span class="n">cov</span> <span class="o">=</span> <span class="n">hist</span><span class="o">.</span><span class="n">apply</span><span class="p">(</span><span class="n">coeff_of_var</span><span class="p">,</span> <span class="n">axis</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
+
+    <span class="c1"># special override for co2</span>
+    <span class="c1"># do this check for testing purposes</span>
+    <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">model</span><span class="o">.</span><span class="n">index</span><span class="p">,</span> <span class="n">pd</span><span class="o">.</span><span class="n">MultiIndex</span><span class="p">)</span> <span class="ow">and</span> <span class="s1">&#39;gas&#39;</span> <span class="ow">in</span> <span class="n">model</span><span class="o">.</span><span class="n">index</span><span class="o">.</span><span class="n">names</span><span class="p">:</span>
+        <span class="n">isco2</span> <span class="o">=</span> <span class="n">model</span><span class="o">.</span><span class="n">reset_index</span><span class="p">()</span><span class="o">.</span><span class="n">gas</span> <span class="o">==</span> <span class="s1">&#39;CO2&#39;</span>
+        <span class="n">isco2</span> <span class="o">=</span> <span class="n">isco2</span><span class="o">.</span><span class="n">values</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="n">isco2</span> <span class="o">=</span> <span class="kc">False</span>
+
+    <span class="n">df</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">({</span>
+        <span class="s1">&#39;dH&#39;</span><span class="p">:</span> <span class="n">dH</span><span class="p">,</span> <span class="s1">&#39;f&#39;</span><span class="p">:</span> <span class="n">f</span><span class="p">,</span> <span class="s1">&#39;dM&#39;</span><span class="p">:</span> <span class="n">dM</span><span class="p">,</span>
+        <span class="s1">&#39;neg_m&#39;</span><span class="p">:</span> <span class="n">neg_m</span><span class="p">,</span> <span class="s1">&#39;pos_m&#39;</span><span class="p">:</span> <span class="n">pos_m</span><span class="p">,</span>
+        <span class="s1">&#39;zero_m&#39;</span><span class="p">:</span> <span class="n">zero_m</span><span class="p">,</span> <span class="s1">&#39;go_neg&#39;</span><span class="p">:</span> <span class="n">go_neg</span><span class="p">,</span>
+        <span class="s1">&#39;cov&#39;</span><span class="p">:</span> <span class="n">cov</span><span class="p">,</span> <span class="s1">&#39;isco2&#39;</span><span class="p">:</span> <span class="n">isco2</span><span class="p">,</span>
+        <span class="s1">&#39;h&#39;</span><span class="p">:</span> <span class="n">h</span><span class="p">,</span> <span class="s1">&#39;m&#39;</span><span class="p">:</span> <span class="n">m</span><span class="p">,</span>
+    <span class="p">})</span>
+
+    <span class="c1"># for choice flow chart see</span>
+    <span class="c1"># https://drive.google.com/drive/folders/0B6_Oqvcg8eP9QXVKX2lFVUJiZHc</span>
+    <span class="k">def</span> <span class="nf">choice</span><span class="p">(</span><span class="n">row</span><span class="p">):</span>
+        <span class="c1"># special cases</span>
+        <span class="k">if</span> <span class="n">row</span><span class="o">.</span><span class="n">h</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
+            <span class="k">return</span> <span class="s1">&#39;hist_zero&#39;</span>
+        <span class="k">if</span> <span class="n">row</span><span class="o">.</span><span class="n">zero_m</span><span class="p">:</span>
+            <span class="k">return</span> <span class="s1">&#39;model_zero&#39;</span>
+        <span class="k">if</span> <span class="n">np</span><span class="o">.</span><span class="n">isinf</span><span class="p">(</span><span class="n">row</span><span class="o">.</span><span class="n">f</span><span class="p">)</span> <span class="ow">and</span> <span class="n">row</span><span class="o">.</span><span class="n">neg_m</span> <span class="ow">and</span> <span class="n">row</span><span class="o">.</span><span class="n">pos_m</span><span class="p">:</span>
+            <span class="c1"># model == 0 in base year, and model goes negative</span>
+            <span class="c1"># and positive</span>
+            <span class="k">return</span> <span class="s1">&#39;unicorn&#39;</span>  <span class="c1"># this shouldn&#39;t exist!</span>
+
+        <span class="c1"># model 0 in base year?</span>
+        <span class="k">if</span> <span class="n">np</span><span class="o">.</span><span class="n">isclose</span><span class="p">(</span><span class="n">row</span><span class="o">.</span><span class="n">m</span><span class="p">,</span> <span class="mi">0</span><span class="p">):</span>
+            <span class="c1"># goes negative?</span>
+            <span class="k">if</span> <span class="n">row</span><span class="o">.</span><span class="n">neg_m</span><span class="p">:</span>
+                <span class="k">return</span> <span class="s1">&#39;reduce_offset_2080&#39;</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="k">return</span> <span class="s1">&#39;constant_offset&#39;</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="c1"># is this co2?</span>
+            <span class="k">if</span> <span class="n">row</span><span class="p">[</span><span class="s1">&#39;isco2&#39;</span><span class="p">]:</span>
+                <span class="k">return</span> <span class="s1">&#39;reduce_ratio_2080&#39;</span>
+            <span class="c1"># is cov big?</span>
+            <span class="k">if</span> <span class="n">np</span><span class="o">.</span><span class="n">isfinite</span><span class="p">(</span><span class="n">row</span><span class="p">[</span><span class="s1">&#39;cov&#39;</span><span class="p">])</span> <span class="ow">and</span> <span class="n">row</span><span class="p">[</span><span class="s1">&#39;cov&#39;</span><span class="p">]</span> <span class="o">&gt;</span> <span class="mi">10</span><span class="p">:</span>
+                <span class="k">return</span> <span class="n">luc_method</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="c1"># dH small?</span>
+                <span class="k">if</span> <span class="n">row</span><span class="o">.</span><span class="n">dH</span> <span class="o">&lt;</span> <span class="mf">0.5</span><span class="p">:</span>
+                    <span class="k">return</span> <span class="s1">&#39;reduce_ratio_2080&#39;</span>
+                <span class="k">else</span><span class="p">:</span>
+                    <span class="c1"># goes negative?</span>
+                    <span class="k">if</span> <span class="n">row</span><span class="o">.</span><span class="n">neg_m</span><span class="p">:</span>
+                        <span class="k">return</span> <span class="s1">&#39;reduce_ratio_2100&#39;</span>
+                    <span class="k">else</span><span class="p">:</span>
+                        <span class="k">return</span> <span class="s1">&#39;constant_ratio&#39;</span>
+
+    <span class="n">ret</span> <span class="o">=</span> <span class="n">df</span><span class="o">.</span><span class="n">apply</span><span class="p">(</span><span class="n">choice</span><span class="p">,</span> <span class="n">axis</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
+    <span class="n">ret</span><span class="o">.</span><span class="n">name</span> <span class="o">=</span> <span class="s1">&#39;method&#39;</span>
+    <span class="k">return</span> <span class="n">ret</span><span class="p">,</span> <span class="n">df</span></div>
+</pre></div>
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+            <p class="logo"><a href="../../index.html">
+              <img class="logo" src="../../_static/logo.svg" alt="Logo"/>
+            </a></p><h3>Related Topics</h3>
+<ul>
+  <li><a href="../../index.html">Documentation overview</a><ul>
+  <li><a href="../index.html">Module code</a><ul>
+  </ul></li>
+  </ul></li>
+</ul>
+<div id="searchbox" style="display: none" role="search">
+  <h3>Quick search</h3>
+    <form class="search" action="../../search.html" method="get">
+      <div><input type="text" name="q" /></div>
+      <div><input type="submit" value="Go" /></div>
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="footer">
+      &copy; Copyright 2016, Matthew Gidden.
+    </div>
+  </body>
+</html>

@@ -1,0 +1,778 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>aneris.harmonize &#8212; aneris 0.1.0 documentation</title>
+    
+    <link rel="stylesheet" href="../../_static/flasky.css" type="text/css" />
+    <link rel="stylesheet" href="../../_static/pygments.css" type="text/css" />
+    <link rel="stylesheet" href="../../_static/table_styling.css" type="text/css" />
+    
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    '../../',
+        VERSION:     '0.1.0',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="../../_static/jquery.js"></script>
+    <script type="text/javascript" src="../../_static/underscore.js"></script>
+    <script type="text/javascript" src="../../_static/doctools.js"></script>
+    <script type="text/javascript" src="https://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+    <link rel="index" title="Index" href="../../genindex.html" />
+    <link rel="search" title="Search" href="../../search.html" />
+    <link rel="top" title="aneris 0.1.0 documentation" href="../../index.html" />
+    <link rel="up" title="Module code" href="../index.html" />
+   
+  
+  <link media="only screen and (max-device-width: 480px)" href="../../_static/small_flask.css" type= "text/css" rel="stylesheet" />
+  <meta name="viewport" content="width=device-width, initial-scale=0.9, maximum-scale=0.9">
+
+  </head>
+  <body role="document">
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../../genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="../../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="nav-item nav-item-0"><a href="../../index.html">aneris 0.1.0 documentation</a> &#187;</li>
+          <li class="nav-item nav-item-1"><a href="../index.html" accesskey="U">Module code</a> &#187;</li> 
+      </ul>
+    </div>  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body" role="main">
+            
+  <h1>Source code for aneris.harmonize</h1><div class="highlight"><pre>
+<span></span><span class="kn">import</span> <span class="nn">pandas</span> <span class="k">as</span> <span class="nn">pd</span>
+
+<span class="kn">from</span> <span class="nn">aneris</span> <span class="k">import</span> <span class="n">utils</span>
+<span class="kn">from</span> <span class="nn">aneris</span> <span class="k">import</span> <span class="n">pd_read</span>
+<span class="kn">from</span> <span class="nn">aneris.methods</span> <span class="k">import</span> <span class="n">harmonize_factors</span><span class="p">,</span> <span class="n">constant_offset</span><span class="p">,</span> <span class="n">reduce_offset</span><span class="p">,</span> \
+    <span class="n">constant_ratio</span><span class="p">,</span> <span class="n">reduce_ratio</span><span class="p">,</span> <span class="n">linear_interpolate</span><span class="p">,</span> <span class="n">model_zero</span><span class="p">,</span> <span class="n">hist_zero</span><span class="p">,</span> \
+    <span class="n">coeff_of_var</span><span class="p">,</span> <span class="n">default_methods</span>
+
+
+<span class="k">def</span> <span class="nf">_log</span><span class="p">(</span><span class="n">msg</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+    <span class="n">utils</span><span class="o">.</span><span class="n">logger</span><span class="p">()</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="n">msg</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
+
+
+<span class="k">def</span> <span class="nf">_warn</span><span class="p">(</span><span class="n">msg</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+    <span class="n">utils</span><span class="o">.</span><span class="n">logger</span><span class="p">()</span><span class="o">.</span><span class="n">warning</span><span class="p">(</span><span class="n">msg</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
+
+
+<div class="viewcode-block" id="Harmonizer"><a class="viewcode-back" href="../../api.html#aneris.harmonize.Harmonizer">[docs]</a><span class="k">class</span> <span class="nc">Harmonizer</span><span class="p">(</span><span class="nb">object</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;A class used to harmonize model data to historical data in the </span>
+<span class="sd">    standard calculation format</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="c1"># WARNING: it is not possible to programmatically do the offset methods</span>
+    <span class="c1"># because they use lambdas. you can&#39;t do `for y in years: lambda x: f(x,</span>
+    <span class="c1"># kwarg=str(y))` because y is evaluated when the lambda is executed, not in</span>
+    <span class="c1"># this block</span>
+    <span class="n">_methods</span> <span class="o">=</span> <span class="p">{</span>
+        <span class="s1">&#39;model_zero&#39;</span><span class="p">:</span> <span class="n">model_zero</span><span class="p">,</span>
+        <span class="s1">&#39;hist_zero&#39;</span><span class="p">:</span> <span class="n">hist_zero</span><span class="p">,</span>
+        <span class="s1">&#39;constant_ratio&#39;</span><span class="p">:</span> <span class="n">constant_ratio</span><span class="p">,</span>
+        <span class="s1">&#39;constant_offset&#39;</span><span class="p">:</span> <span class="n">constant_offset</span><span class="p">,</span>
+        <span class="s1">&#39;reduce_offset_2150_cov&#39;</span><span class="p">:</span>
+        <span class="k">lambda</span> <span class="n">df</span><span class="p">,</span> <span class="n">offsets</span><span class="p">:</span> <span class="n">reduce_offset</span><span class="p">(</span><span class="n">df</span><span class="p">,</span> <span class="n">offsets</span><span class="p">,</span> <span class="n">final_year</span><span class="o">=</span><span class="s1">&#39;2150&#39;</span><span class="p">),</span>
+        <span class="s1">&#39;reduce_ratio_2150_cov&#39;</span><span class="p">:</span>
+        <span class="k">lambda</span> <span class="n">df</span><span class="p">,</span> <span class="n">ratios</span><span class="p">:</span> <span class="n">reduce_ratio</span><span class="p">(</span><span class="n">df</span><span class="p">,</span> <span class="n">ratios</span><span class="p">,</span> <span class="n">final_year</span><span class="o">=</span><span class="s1">&#39;2150&#39;</span><span class="p">),</span>
+        <span class="s1">&#39;reduce_offset_2020&#39;</span><span class="p">:</span>
+        <span class="k">lambda</span> <span class="n">df</span><span class="p">,</span> <span class="n">offsets</span><span class="p">:</span> <span class="n">reduce_offset</span><span class="p">(</span><span class="n">df</span><span class="p">,</span> <span class="n">offsets</span><span class="p">,</span> <span class="n">final_year</span><span class="o">=</span><span class="s1">&#39;2020&#39;</span><span class="p">),</span>
+        <span class="s1">&#39;reduce_offset_2040&#39;</span><span class="p">:</span>
+        <span class="k">lambda</span> <span class="n">df</span><span class="p">,</span> <span class="n">offsets</span><span class="p">:</span> <span class="n">reduce_offset</span><span class="p">(</span><span class="n">df</span><span class="p">,</span> <span class="n">offsets</span><span class="p">,</span> <span class="n">final_year</span><span class="o">=</span><span class="s1">&#39;2040&#39;</span><span class="p">),</span>
+        <span class="s1">&#39;reduce_offset_2050&#39;</span><span class="p">:</span>
+        <span class="k">lambda</span> <span class="n">df</span><span class="p">,</span> <span class="n">offsets</span><span class="p">:</span> <span class="n">reduce_offset</span><span class="p">(</span><span class="n">df</span><span class="p">,</span> <span class="n">offsets</span><span class="p">,</span> <span class="n">final_year</span><span class="o">=</span><span class="s1">&#39;2050&#39;</span><span class="p">),</span>
+        <span class="s1">&#39;reduce_offset_2080&#39;</span><span class="p">:</span>
+        <span class="k">lambda</span> <span class="n">df</span><span class="p">,</span> <span class="n">offsets</span><span class="p">:</span> <span class="n">reduce_offset</span><span class="p">(</span><span class="n">df</span><span class="p">,</span> <span class="n">offsets</span><span class="p">,</span> <span class="n">final_year</span><span class="o">=</span><span class="s1">&#39;2080&#39;</span><span class="p">),</span>
+        <span class="s1">&#39;reduce_offset_2090&#39;</span><span class="p">:</span>
+        <span class="k">lambda</span> <span class="n">df</span><span class="p">,</span> <span class="n">offsets</span><span class="p">:</span> <span class="n">reduce_offset</span><span class="p">(</span><span class="n">df</span><span class="p">,</span> <span class="n">offsets</span><span class="p">,</span> <span class="n">final_year</span><span class="o">=</span><span class="s1">&#39;2090&#39;</span><span class="p">),</span>
+        <span class="s1">&#39;reduce_offset_2100&#39;</span><span class="p">:</span>
+        <span class="k">lambda</span> <span class="n">df</span><span class="p">,</span> <span class="n">offsets</span><span class="p">:</span> <span class="n">reduce_offset</span><span class="p">(</span><span class="n">df</span><span class="p">,</span> <span class="n">offsets</span><span class="p">,</span> <span class="n">final_year</span><span class="o">=</span><span class="s1">&#39;2100&#39;</span><span class="p">),</span>
+        <span class="s1">&#39;reduce_offset_2150&#39;</span><span class="p">:</span>
+        <span class="k">lambda</span> <span class="n">df</span><span class="p">,</span> <span class="n">offsets</span><span class="p">:</span> <span class="n">reduce_offset</span><span class="p">(</span><span class="n">df</span><span class="p">,</span> <span class="n">offsets</span><span class="p">,</span> <span class="n">final_year</span><span class="o">=</span><span class="s1">&#39;2150&#39;</span><span class="p">),</span>
+        <span class="s1">&#39;reduce_ratio_2020&#39;</span><span class="p">:</span>
+        <span class="k">lambda</span> <span class="n">df</span><span class="p">,</span> <span class="n">ratios</span><span class="p">:</span> <span class="n">reduce_ratio</span><span class="p">(</span><span class="n">df</span><span class="p">,</span> <span class="n">ratios</span><span class="p">,</span> <span class="n">final_year</span><span class="o">=</span><span class="s1">&#39;2020&#39;</span><span class="p">),</span>
+        <span class="s1">&#39;reduce_ratio_2050&#39;</span><span class="p">:</span>
+        <span class="k">lambda</span> <span class="n">df</span><span class="p">,</span> <span class="n">ratios</span><span class="p">:</span> <span class="n">reduce_ratio</span><span class="p">(</span><span class="n">df</span><span class="p">,</span> <span class="n">ratios</span><span class="p">,</span> <span class="n">final_year</span><span class="o">=</span><span class="s1">&#39;2050&#39;</span><span class="p">),</span>
+        <span class="s1">&#39;reduce_ratio_2080&#39;</span><span class="p">:</span>
+        <span class="k">lambda</span> <span class="n">df</span><span class="p">,</span> <span class="n">ratios</span><span class="p">:</span> <span class="n">reduce_ratio</span><span class="p">(</span><span class="n">df</span><span class="p">,</span> <span class="n">ratios</span><span class="p">,</span> <span class="n">final_year</span><span class="o">=</span><span class="s1">&#39;2080&#39;</span><span class="p">),</span>
+        <span class="s1">&#39;reduce_ratio_2090&#39;</span><span class="p">:</span>
+        <span class="k">lambda</span> <span class="n">df</span><span class="p">,</span> <span class="n">ratios</span><span class="p">:</span> <span class="n">reduce_ratio</span><span class="p">(</span><span class="n">df</span><span class="p">,</span> <span class="n">ratios</span><span class="p">,</span> <span class="n">final_year</span><span class="o">=</span><span class="s1">&#39;2090&#39;</span><span class="p">),</span>
+        <span class="s1">&#39;reduce_ratio_2100&#39;</span><span class="p">:</span>
+        <span class="k">lambda</span> <span class="n">df</span><span class="p">,</span> <span class="n">ratios</span><span class="p">:</span> <span class="n">reduce_ratio</span><span class="p">(</span><span class="n">df</span><span class="p">,</span> <span class="n">ratios</span><span class="p">,</span> <span class="n">final_year</span><span class="o">=</span><span class="s1">&#39;2100&#39;</span><span class="p">),</span>
+        <span class="s1">&#39;reduce_ratio_2150&#39;</span><span class="p">:</span>
+        <span class="k">lambda</span> <span class="n">df</span><span class="p">,</span> <span class="n">ratios</span><span class="p">:</span> <span class="n">reduce_ratio</span><span class="p">(</span><span class="n">df</span><span class="p">,</span> <span class="n">ratios</span><span class="p">,</span> <span class="n">final_year</span><span class="o">=</span><span class="s1">&#39;2150&#39;</span><span class="p">),</span>
+        <span class="s1">&#39;linear_interpolate_2020&#39;</span><span class="p">:</span>
+        <span class="k">lambda</span> <span class="n">df</span><span class="p">,</span> <span class="n">offsets</span><span class="p">:</span> <span class="n">linear_interpolate</span><span class="p">(</span><span class="n">df</span><span class="p">,</span> <span class="n">offsets</span><span class="p">,</span> <span class="n">final_year</span><span class="o">=</span><span class="s1">&#39;2020&#39;</span><span class="p">),</span>
+        <span class="s1">&#39;linear_interpolate_2050&#39;</span><span class="p">:</span>
+        <span class="k">lambda</span> <span class="n">df</span><span class="p">,</span> <span class="n">offsets</span><span class="p">:</span> <span class="n">linear_interpolate</span><span class="p">(</span><span class="n">df</span><span class="p">,</span> <span class="n">offsets</span><span class="p">,</span> <span class="n">final_year</span><span class="o">=</span><span class="s1">&#39;2050&#39;</span><span class="p">),</span>
+        <span class="s1">&#39;linear_interpolate_2060&#39;</span><span class="p">:</span>
+        <span class="k">lambda</span> <span class="n">df</span><span class="p">,</span> <span class="n">offsets</span><span class="p">:</span> <span class="n">linear_interpolate</span><span class="p">(</span><span class="n">df</span><span class="p">,</span> <span class="n">offsets</span><span class="p">,</span> <span class="n">final_year</span><span class="o">=</span><span class="s1">&#39;2060&#39;</span><span class="p">),</span>
+        <span class="s1">&#39;linear_interpolate_2080&#39;</span><span class="p">:</span>
+        <span class="k">lambda</span> <span class="n">df</span><span class="p">,</span> <span class="n">offsets</span><span class="p">:</span> <span class="n">linear_interpolate</span><span class="p">(</span><span class="n">df</span><span class="p">,</span> <span class="n">offsets</span><span class="p">,</span> <span class="n">final_year</span><span class="o">=</span><span class="s1">&#39;2080&#39;</span><span class="p">),</span>
+        <span class="s1">&#39;linear_interpolate_2090&#39;</span><span class="p">:</span>
+        <span class="k">lambda</span> <span class="n">df</span><span class="p">,</span> <span class="n">offsets</span><span class="p">:</span> <span class="n">linear_interpolate</span><span class="p">(</span><span class="n">df</span><span class="p">,</span> <span class="n">offsets</span><span class="p">,</span> <span class="n">final_year</span><span class="o">=</span><span class="s1">&#39;2090&#39;</span><span class="p">),</span>
+        <span class="s1">&#39;linear_interpolate_2100&#39;</span><span class="p">:</span>
+        <span class="k">lambda</span> <span class="n">df</span><span class="p">,</span> <span class="n">offsets</span><span class="p">:</span> <span class="n">linear_interpolate</span><span class="p">(</span><span class="n">df</span><span class="p">,</span> <span class="n">offsets</span><span class="p">,</span> <span class="n">final_year</span><span class="o">=</span><span class="s1">&#39;2100&#39;</span><span class="p">),</span>
+        <span class="s1">&#39;linear_interpolate_2150&#39;</span><span class="p">:</span>
+        <span class="k">lambda</span> <span class="n">df</span><span class="p">,</span> <span class="n">offsets</span><span class="p">:</span> <span class="n">linear_interpolate</span><span class="p">(</span><span class="n">df</span><span class="p">,</span> <span class="n">offsets</span><span class="p">,</span> <span class="n">final_year</span><span class="o">=</span><span class="s1">&#39;2150&#39;</span><span class="p">),</span>
+
+    <span class="p">}</span>
+
+    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">data</span><span class="p">,</span> <span class="n">history</span><span class="p">,</span> <span class="n">config</span><span class="o">=</span><span class="p">{},</span> <span class="n">verify_indicies</span><span class="o">=</span><span class="kc">True</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        data : pd.DataFrame</span>
+<span class="sd">            model data in standard calculation format</span>
+<span class="sd">        history : pd.DataFrame</span>
+<span class="sd">            history data in standard calculation format</span>
+<span class="sd">        config : dict, optional</span>
+<span class="sd">            configuration dictionary (see &lt;WEBSITE&gt; for options)</span>
+<span class="sd">        verify_indicies : bool, optional</span>
+<span class="sd">            check indicies of data and history, provide warning message if </span>
+<span class="sd">            different</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">data</span><span class="o">.</span><span class="n">index</span><span class="p">,</span> <span class="n">pd</span><span class="o">.</span><span class="n">MultiIndex</span><span class="p">):</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s1">&#39;Data must use utils.df_idx&#39;</span><span class="p">)</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">history</span><span class="o">.</span><span class="n">index</span><span class="p">,</span> <span class="n">pd</span><span class="o">.</span><span class="n">MultiIndex</span><span class="p">):</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s1">&#39;History must use utils.df_idx&#39;</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">verify_indicies</span> <span class="ow">and</span> <span class="ow">not</span> <span class="n">data</span><span class="o">.</span><span class="n">index</span><span class="o">.</span><span class="n">equals</span><span class="p">(</span><span class="n">history</span><span class="o">.</span><span class="n">index</span><span class="p">):</span>
+            <span class="n">idx</span> <span class="o">=</span> <span class="n">history</span><span class="o">.</span><span class="n">index</span><span class="o">.</span><span class="n">difference</span><span class="p">(</span><span class="n">data</span><span class="o">.</span><span class="n">index</span><span class="p">)</span>
+            <span class="n">msg</span> <span class="o">=</span> <span class="s1">&#39;More history than model reports, adding 0 values </span><span class="si">{}</span><span class="s1">&#39;</span>
+            <span class="n">_warn</span><span class="p">(</span><span class="n">msg</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">idx</span><span class="o">.</span><span class="n">to_series</span><span class="p">()</span><span class="o">.</span><span class="n">head</span><span class="p">()))</span>
+            <span class="n">df</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="n">columns</span><span class="o">=</span><span class="n">data</span><span class="o">.</span><span class="n">columns</span><span class="p">,</span> <span class="n">index</span><span class="o">=</span><span class="n">idx</span><span class="p">)</span>
+            <span class="n">data</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">concat</span><span class="p">([</span><span class="n">data</span><span class="p">,</span> <span class="n">df</span><span class="p">])</span><span class="o">.</span><span class="n">sort_index</span><span class="p">()</span><span class="o">.</span><span class="n">loc</span><span class="p">[</span><span class="n">history</span><span class="o">.</span><span class="n">index</span><span class="p">]</span>
+            <span class="k">assert</span> <span class="n">data</span><span class="o">.</span><span class="n">index</span><span class="o">.</span><span class="n">equals</span><span class="p">(</span><span class="n">history</span><span class="o">.</span><span class="n">index</span><span class="p">)</span>
+
+        <span class="n">key</span> <span class="o">=</span> <span class="s1">&#39;harmonize_year&#39;</span>
+        <span class="c1"># TODO type</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">base_year</span> <span class="o">=</span> <span class="nb">str</span><span class="p">(</span><span class="n">config</span><span class="p">[</span><span class="n">key</span><span class="p">])</span> <span class="k">if</span> <span class="n">key</span> <span class="ow">in</span> <span class="n">config</span> <span class="k">else</span> <span class="s1">&#39;2015&#39;</span>
+        <span class="n">numcols</span> <span class="o">=</span> <span class="n">utils</span><span class="o">.</span><span class="n">numcols</span><span class="p">(</span><span class="n">data</span><span class="p">)</span>
+        <span class="n">cols</span> <span class="o">=</span> <span class="p">[</span><span class="n">x</span> <span class="k">for</span> <span class="n">x</span> <span class="ow">in</span> <span class="n">numcols</span> <span class="k">if</span> <span class="nb">int</span><span class="p">(</span><span class="n">x</span><span class="p">)</span> <span class="o">&gt;=</span> <span class="nb">int</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">base_year</span><span class="p">)]</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">data</span> <span class="o">=</span> <span class="n">data</span><span class="p">[</span><span class="n">cols</span><span class="p">]</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">model</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">Series</span><span class="p">(</span><span class="n">index</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">data</span><span class="o">.</span><span class="n">index</span><span class="p">,</span>
+                               <span class="n">name</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">base_year</span><span class="p">)</span><span class="o">.</span><span class="n">to_frame</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">history</span> <span class="o">=</span> <span class="n">history</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">methods_used</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">offsets</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">ratios</span> <span class="o">=</span> <span class="n">harmonize_factors</span><span class="p">(</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">data</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">history</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">base_year</span><span class="p">)</span>
+
+        <span class="n">key</span> <span class="o">=</span> <span class="s1">&#39;default_luc_method&#39;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">luc_method</span> <span class="o">=</span> <span class="n">config</span><span class="p">[</span><span class="n">key</span><span class="p">]</span> <span class="k">if</span> <span class="n">key</span> <span class="ow">in</span> <span class="n">config</span> <span class="k">else</span> <span class="kc">None</span>
+
+<div class="viewcode-block" id="Harmonizer.metadata"><a class="viewcode-back" href="../../api.html#aneris.harmonize.Harmonizer.metadata">[docs]</a>    <span class="k">def</span> <span class="nf">metadata</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Return pd.DataFrame of method choice metadata&quot;&quot;&quot;</span>
+        <span class="n">methods</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">methods_used</span>
+        <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">methods</span><span class="p">,</span> <span class="n">pd</span><span class="o">.</span><span class="n">Series</span><span class="p">):</span>  <span class="c1"># only defaults used</span>
+            <span class="n">methods</span> <span class="o">=</span> <span class="n">methods</span><span class="o">.</span><span class="n">to_frame</span><span class="p">()</span>
+            <span class="n">methods</span><span class="p">[</span><span class="s1">&#39;default&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">methods</span><span class="p">[</span><span class="s1">&#39;method&#39;</span><span class="p">]</span>
+            <span class="n">methods</span><span class="p">[</span><span class="s1">&#39;override&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="s1">&#39;&#39;</span>
+
+        <span class="n">meta</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">concat</span><span class="p">([</span>
+            <span class="n">methods</span><span class="p">[</span><span class="s1">&#39;method&#39;</span><span class="p">],</span>
+            <span class="n">methods</span><span class="p">[</span><span class="s1">&#39;default&#39;</span><span class="p">],</span>
+            <span class="n">methods</span><span class="p">[</span><span class="s1">&#39;override&#39;</span><span class="p">],</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">offsets</span><span class="p">,</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">ratios</span><span class="p">,</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">history</span><span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">base_year</span><span class="p">],</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">history</span><span class="o">.</span><span class="n">apply</span><span class="p">(</span><span class="n">coeff_of_var</span><span class="p">,</span> <span class="n">axis</span><span class="o">=</span><span class="mi">1</span><span class="p">),</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">data</span><span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">base_year</span><span class="p">],</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">model</span><span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">base_year</span><span class="p">],</span>
+        <span class="p">],</span> <span class="n">axis</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
+        <span class="n">meta</span><span class="o">.</span><span class="n">columns</span> <span class="o">=</span> <span class="p">[</span>
+            <span class="s1">&#39;method&#39;</span><span class="p">,</span>
+            <span class="s1">&#39;default&#39;</span><span class="p">,</span>
+            <span class="s1">&#39;override&#39;</span><span class="p">,</span>
+            <span class="s1">&#39;offset&#39;</span><span class="p">,</span>
+            <span class="s1">&#39;ratio&#39;</span><span class="p">,</span>
+            <span class="s1">&#39;history&#39;</span><span class="p">,</span>
+            <span class="s1">&#39;cov&#39;</span><span class="p">,</span>
+            <span class="s1">&#39;unharmonized&#39;</span><span class="p">,</span>
+            <span class="s1">&#39;harmonized&#39;</span><span class="p">,</span>
+        <span class="p">]</span>
+        <span class="k">return</span> <span class="n">meta</span></div>
+
+    <span class="k">def</span> <span class="nf">_default_methods</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="n">methods</span><span class="p">,</span> <span class="n">diagnostics</span> <span class="o">=</span> <span class="n">default_methods</span><span class="p">(</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">history</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">data</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">base_year</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">luc_method</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">methods</span>
+
+    <span class="k">def</span> <span class="nf">_harmonize</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">method</span><span class="p">,</span> <span class="n">idx</span><span class="p">,</span> <span class="n">check_len</span><span class="p">):</span>
+        <span class="c1"># get data</span>
+        <span class="n">model</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">data</span><span class="o">.</span><span class="n">loc</span><span class="p">[</span><span class="n">idx</span><span class="p">]</span>
+        <span class="n">hist</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">history</span><span class="o">.</span><span class="n">loc</span><span class="p">[</span><span class="n">idx</span><span class="p">]</span>
+        <span class="n">offsets</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">offsets</span><span class="o">.</span><span class="n">loc</span><span class="p">[</span><span class="n">idx</span><span class="p">]</span>
+        <span class="n">ratios</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">ratios</span><span class="o">.</span><span class="n">loc</span><span class="p">[</span><span class="n">idx</span><span class="p">]</span>
+        <span class="c1"># get delta</span>
+        <span class="n">delta</span> <span class="o">=</span> <span class="n">ratios</span> <span class="k">if</span> <span class="s1">&#39;ratio&#39;</span> <span class="ow">in</span> <span class="n">method</span> <span class="k">else</span> <span class="n">offsets</span>
+
+        <span class="c1"># checks</span>
+        <span class="k">assert</span><span class="p">(</span><span class="ow">not</span> <span class="n">model</span><span class="o">.</span><span class="n">isnull</span><span class="p">()</span><span class="o">.</span><span class="n">values</span><span class="o">.</span><span class="n">any</span><span class="p">())</span>
+        <span class="k">assert</span><span class="p">(</span><span class="ow">not</span> <span class="n">hist</span><span class="o">.</span><span class="n">isnull</span><span class="p">()</span><span class="o">.</span><span class="n">values</span><span class="o">.</span><span class="n">any</span><span class="p">())</span>
+        <span class="k">assert</span><span class="p">(</span><span class="ow">not</span> <span class="n">delta</span><span class="o">.</span><span class="n">isnull</span><span class="p">()</span><span class="o">.</span><span class="n">values</span><span class="o">.</span><span class="n">any</span><span class="p">())</span>
+        <span class="k">if</span> <span class="n">check_len</span><span class="p">:</span>
+            <span class="k">assert</span><span class="p">((</span><span class="nb">len</span><span class="p">(</span><span class="n">model</span><span class="p">)</span> <span class="o">&lt;</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">data</span><span class="p">))</span> <span class="o">&amp;</span>
+                   <span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">hist</span><span class="p">)</span> <span class="o">&lt;</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">history</span><span class="p">)))</span>
+
+        <span class="c1"># harmonize</span>
+        <span class="n">model</span> <span class="o">=</span> <span class="n">Harmonizer</span><span class="o">.</span><span class="n">_methods</span><span class="p">[</span><span class="n">method</span><span class="p">](</span><span class="n">model</span><span class="p">,</span> <span class="n">delta</span><span class="p">)</span>
+
+        <span class="n">y</span> <span class="o">=</span> <span class="nb">str</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">base_year</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">model</span><span class="o">.</span><span class="n">isnull</span><span class="p">()</span><span class="o">.</span><span class="n">values</span><span class="o">.</span><span class="n">any</span><span class="p">():</span>
+            <span class="n">msg</span> <span class="o">=</span> <span class="s1">&#39;</span><span class="si">{}</span><span class="s1"> method produced NaNs: </span><span class="si">{}</span><span class="s1">, </span><span class="si">{}</span><span class="s1">&#39;</span>
+            <span class="n">where</span> <span class="o">=</span> <span class="n">model</span><span class="o">.</span><span class="n">isnull</span><span class="p">()</span><span class="o">.</span><span class="n">any</span><span class="p">(</span><span class="n">axis</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="n">msg</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">method</span><span class="p">,</span>
+                                        <span class="n">model</span><span class="o">.</span><span class="n">loc</span><span class="p">[</span><span class="n">where</span><span class="p">,</span> <span class="n">y</span><span class="p">],</span>
+                                        <span class="n">delta</span><span class="o">.</span><span class="n">loc</span><span class="p">[</span><span class="n">where</span><span class="p">]))</span>
+
+        <span class="c1"># construct the full df of history and future</span>
+        <span class="k">return</span> <span class="n">model</span>
+
+<div class="viewcode-block" id="Harmonizer.methods"><a class="viewcode-back" href="../../api.html#aneris.harmonize.Harmonizer.methods">[docs]</a>    <span class="k">def</span> <span class="nf">methods</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">overrides</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Return pd.DataFrame of methods to use for harmonization given </span>
+<span class="sd">        pd.DataFrame of overrides</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="c1"># get method listing</span>
+        <span class="n">methods</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_default_methods</span><span class="p">()</span>
+        <span class="k">if</span> <span class="n">overrides</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">midx</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">model</span><span class="o">.</span><span class="n">index</span>
+            <span class="n">oidx</span> <span class="o">=</span> <span class="n">overrides</span><span class="o">.</span><span class="n">index</span>
+
+            <span class="c1"># remove duplicate values</span>
+            <span class="n">dup</span> <span class="o">=</span> <span class="n">oidx</span><span class="o">.</span><span class="n">duplicated</span><span class="p">(</span><span class="n">keep</span><span class="o">=</span><span class="s1">&#39;last&#39;</span><span class="p">)</span>
+            <span class="k">if</span> <span class="n">dup</span><span class="o">.</span><span class="n">any</span><span class="p">():</span>
+                <span class="n">msg</span> <span class="o">=</span> <span class="s1">&#39;Removing duplicated override entries found: </span><span class="si">{}</span><span class="se">\n</span><span class="s1">&#39;</span>
+                <span class="n">_warn</span><span class="p">(</span><span class="n">msg</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">overrides</span><span class="o">.</span><span class="n">loc</span><span class="p">[</span><span class="n">dup</span><span class="p">]))</span>
+                <span class="n">overrides</span> <span class="o">=</span> <span class="n">overrides</span><span class="o">.</span><span class="n">loc</span><span class="p">[</span><span class="o">~</span><span class="n">dup</span><span class="p">]</span>
+
+            <span class="c1"># get subset of overrides which are in model</span>
+            <span class="n">outidx</span> <span class="o">=</span> <span class="n">oidx</span><span class="o">.</span><span class="n">difference</span><span class="p">(</span><span class="n">midx</span><span class="p">)</span>
+            <span class="k">if</span> <span class="n">outidx</span><span class="o">.</span><span class="n">size</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">:</span>
+                <span class="n">msg</span> <span class="o">=</span> <span class="s1">&#39;Removing override methods not in processed model output:</span><span class="se">\n</span><span class="si">{}</span><span class="s1">&#39;</span>
+                <span class="n">_warn</span><span class="p">(</span><span class="n">msg</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">overrides</span><span class="o">.</span><span class="n">loc</span><span class="p">[</span><span class="n">outidx</span><span class="p">]))</span>
+                <span class="n">inidx</span> <span class="o">=</span> <span class="n">oidx</span><span class="o">.</span><span class="n">intersection</span><span class="p">(</span><span class="n">midx</span><span class="p">)</span>
+                <span class="n">overrides</span> <span class="o">=</span> <span class="n">overrides</span><span class="o">.</span><span class="n">loc</span><span class="p">[</span><span class="n">inidx</span><span class="p">]</span>
+
+            <span class="c1"># overwrite defaults with overrides</span>
+            <span class="n">final_methods</span> <span class="o">=</span> <span class="n">overrides</span><span class="o">.</span><span class="n">combine_first</span><span class="p">(</span><span class="n">methods</span><span class="p">)</span><span class="o">.</span><span class="n">to_frame</span><span class="p">()</span>
+            <span class="n">final_methods</span><span class="p">[</span><span class="s1">&#39;default&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">methods</span>
+            <span class="n">final_methods</span><span class="p">[</span><span class="s1">&#39;override&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">overrides</span>
+            <span class="n">methods</span> <span class="o">=</span> <span class="n">final_methods</span>
+
+        <span class="k">return</span> <span class="n">methods</span></div>
+
+<div class="viewcode-block" id="Harmonizer.harmonize"><a class="viewcode-back" href="../../api.html#aneris.harmonize.Harmonizer.harmonize">[docs]</a>    <span class="k">def</span> <span class="nf">harmonize</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">overrides</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Return pd.DataFrame of harmonized trajectories given pd.DataFrame </span>
+<span class="sd">        overrides</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="c1"># get special configurations</span>
+        <span class="n">methods</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">methods</span><span class="p">(</span><span class="n">overrides</span><span class="o">=</span><span class="n">overrides</span><span class="p">)</span>
+
+        <span class="c1"># save for future inspection</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">methods_used</span> <span class="o">=</span> <span class="n">methods</span>
+        <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">methods</span><span class="p">,</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">):</span>
+            <span class="n">methods</span> <span class="o">=</span> <span class="n">methods</span><span class="p">[</span><span class="s1">&#39;method&#39;</span><span class="p">]</span>  <span class="c1"># drop default and override info</span>
+        <span class="k">if</span> <span class="p">(</span><span class="n">methods</span> <span class="o">==</span> <span class="s1">&#39;unicorn&#39;</span><span class="p">)</span><span class="o">.</span><span class="n">any</span><span class="p">():</span>
+            <span class="n">msg</span> <span class="o">=</span> <span class="s2">&quot;&quot;&quot;Values found where model has positive and negative values</span>
+<span class="s2">            and is zero in base year. Unsure how to proceed:</span><span class="se">\n</span><span class="si">{}</span><span class="se">\n</span><span class="si">{}</span><span class="s2">&quot;&quot;&quot;</span>
+            <span class="n">cols</span> <span class="o">=</span> <span class="p">[</span><span class="s1">&#39;history&#39;</span><span class="p">,</span> <span class="s1">&#39;unharmonized&#39;</span><span class="p">]</span>
+            <span class="n">df1</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">metadata</span><span class="p">()</span><span class="o">.</span><span class="n">loc</span><span class="p">[</span><span class="n">methods</span> <span class="o">==</span> <span class="s1">&#39;unicorn&#39;</span><span class="p">,</span> <span class="n">cols</span><span class="p">]</span>
+            <span class="n">df2</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">data</span><span class="o">.</span><span class="n">loc</span><span class="p">[</span><span class="n">methods</span> <span class="o">==</span> <span class="s1">&#39;unicorn&#39;</span><span class="p">]</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="n">msg</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">df1</span><span class="o">.</span><span class="n">reset_index</span><span class="p">(),</span> <span class="n">df2</span><span class="o">.</span><span class="n">reset_index</span><span class="p">()))</span>
+
+        <span class="n">dfs</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="n">y</span> <span class="o">=</span> <span class="nb">str</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">base_year</span><span class="p">)</span>
+        <span class="k">for</span> <span class="n">method</span> <span class="ow">in</span> <span class="n">methods</span><span class="o">.</span><span class="n">unique</span><span class="p">():</span>
+            <span class="n">_log</span><span class="p">(</span><span class="s1">&#39;Harmonizing with </span><span class="si">{}</span><span class="s1">&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">method</span><span class="p">))</span>
+            <span class="c1"># get subset indicies</span>
+            <span class="n">idx</span> <span class="o">=</span> <span class="n">methods</span><span class="p">[</span><span class="n">methods</span> <span class="o">==</span> <span class="n">method</span><span class="p">]</span><span class="o">.</span><span class="n">index</span>
+            <span class="n">check_len</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">methods</span><span class="o">.</span><span class="n">unique</span><span class="p">())</span> <span class="o">&gt;</span> <span class="mi">1</span>
+            <span class="c1"># harmonize</span>
+            <span class="n">df</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_harmonize</span><span class="p">(</span><span class="n">method</span><span class="p">,</span> <span class="n">idx</span><span class="p">,</span> <span class="n">check_len</span><span class="p">)</span>
+            <span class="k">if</span> <span class="n">method</span> <span class="ow">not</span> <span class="ow">in</span> <span class="p">[</span><span class="s1">&#39;model_zero&#39;</span><span class="p">,</span> <span class="s1">&#39;hist_zero&#39;</span><span class="p">]:</span>
+                <span class="n">close</span> <span class="o">=</span> <span class="p">(</span><span class="n">df</span><span class="p">[</span><span class="n">y</span><span class="p">]</span> <span class="o">-</span> <span class="bp">self</span><span class="o">.</span><span class="n">history</span><span class="o">.</span><span class="n">loc</span><span class="p">[</span><span class="n">df</span><span class="o">.</span><span class="n">index</span><span class="p">,</span> <span class="n">y</span><span class="p">])</span><span class="o">.</span><span class="n">abs</span><span class="p">()</span> <span class="o">&lt;</span> <span class="mi">1</span><span class="n">e</span><span class="o">-</span><span class="mi">5</span>
+                <span class="k">if</span> <span class="ow">not</span> <span class="n">close</span><span class="o">.</span><span class="n">all</span><span class="p">():</span>
+                    <span class="n">report</span> <span class="o">=</span> <span class="n">df</span><span class="p">[</span><span class="o">~</span><span class="n">close</span><span class="p">][</span><span class="n">y</span><span class="p">]</span><span class="o">.</span><span class="n">reset_index</span><span class="p">()</span>
+                    <span class="n">msg</span> <span class="o">=</span> <span class="s2">&quot;&quot;&quot;Harmonization failed with method </span><span class="si">{}</span><span class="s2"> harmonized </span><span class="se">\</span>
+<span class="s2">                    values != historical values. This is likely due to an </span><span class="se">\</span>
+<span class="s2">                    override in the following variables:</span><span class="se">\n\n</span><span class="si">{}</span><span class="s2"></span>
+<span class="s2">                    &quot;&quot;&quot;</span>
+                    <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="n">msg</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">method</span><span class="p">,</span> <span class="n">report</span><span class="p">))</span>
+            <span class="n">dfs</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">df</span><span class="p">)</span>
+
+        <span class="n">df</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">concat</span><span class="p">(</span><span class="n">dfs</span><span class="p">)</span><span class="o">.</span><span class="n">sort_index</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">model</span> <span class="o">=</span> <span class="n">df</span>
+        <span class="k">return</span> <span class="n">df</span></div></div>
+
+
+<span class="k">class</span> <span class="nc">_TrajectoryPreprocessor</span><span class="p">(</span><span class="nb">object</span><span class="p">):</span>
+    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">hist</span><span class="p">,</span> <span class="n">model</span><span class="p">,</span> <span class="n">overrides</span><span class="p">,</span> <span class="n">regions</span><span class="p">,</span> <span class="n">prefix</span><span class="p">,</span> <span class="n">suffix</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">hist</span> <span class="o">=</span> <span class="n">hist</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">model</span> <span class="o">=</span> <span class="n">model</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">overrides</span> <span class="o">=</span> <span class="n">overrides</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">prefix</span> <span class="o">=</span> <span class="n">prefix</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">suffix</span> <span class="o">=</span> <span class="n">suffix</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">regions</span> <span class="o">=</span> <span class="n">regions</span>
+
+    <span class="k">def</span> <span class="nf">_downselect_scen</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">scenario</span><span class="p">):</span>
+        <span class="n">isscen</span> <span class="o">=</span> <span class="k">lambda</span> <span class="n">df</span><span class="p">:</span> <span class="n">df</span><span class="o">.</span><span class="n">Scenario</span> <span class="o">==</span> <span class="n">scenario</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">model</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">model</span><span class="p">[</span><span class="n">isscen</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">model</span><span class="p">)]</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">overrides</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">overrides</span><span class="p">[</span><span class="n">isscen</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">overrides</span><span class="p">)]</span>
+
+    <span class="k">def</span> <span class="nf">_downselect_var</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="c1"># separate data</span>
+        <span class="n">select</span> <span class="o">=</span> <span class="s1">&#39;|&#39;</span><span class="o">.</span><span class="n">join</span><span class="p">([</span><span class="bp">self</span><span class="o">.</span><span class="n">prefix</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">suffix</span><span class="p">])</span>
+        <span class="n">_log</span><span class="p">(</span><span class="s1">&#39;Downselecting </span><span class="si">{}</span><span class="s1"> variables&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">select</span><span class="p">))</span>
+
+        <span class="n">hasprefix</span> <span class="o">=</span> <span class="k">lambda</span> <span class="n">df</span><span class="p">:</span> <span class="n">df</span><span class="o">.</span><span class="n">Variable</span><span class="o">.</span><span class="n">str</span><span class="o">.</span><span class="n">startswith</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">prefix</span><span class="p">)</span>
+        <span class="n">hassuffix</span> <span class="o">=</span> <span class="k">lambda</span> <span class="n">df</span><span class="p">:</span> <span class="n">df</span><span class="o">.</span><span class="n">Variable</span><span class="o">.</span><span class="n">str</span><span class="o">.</span><span class="n">endswith</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">suffix</span><span class="p">)</span>
+        <span class="n">subset</span> <span class="o">=</span> <span class="k">lambda</span> <span class="n">df</span><span class="p">:</span> <span class="n">df</span><span class="p">[</span><span class="n">hasprefix</span><span class="p">(</span><span class="n">df</span><span class="p">)</span> <span class="o">&amp;</span> <span class="n">hassuffix</span><span class="p">(</span><span class="n">df</span><span class="p">)]</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">model</span> <span class="o">=</span> <span class="n">subset</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">model</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">hist</span> <span class="o">=</span> <span class="n">subset</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">hist</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">overrides</span> <span class="o">=</span> <span class="n">subset</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">overrides</span><span class="p">)</span>
+
+        <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">model</span><span class="p">)</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
+            <span class="n">msg</span> <span class="o">=</span> <span class="s1">&#39;No Variables found for harmonization. Searched for </span><span class="si">{}</span><span class="s1">.&#39;</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="n">msg</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">select</span><span class="p">))</span>
+        <span class="k">assert</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">hist</span><span class="p">)</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">)</span>
+
+    <span class="k">def</span> <span class="nf">_to_std</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="n">_log</span><span class="p">(</span><span class="s1">&#39;Translating to standard format&#39;</span><span class="p">)</span>
+        <span class="n">xlator</span> <span class="o">=</span> <span class="n">utils</span><span class="o">.</span><span class="n">FormatTranslator</span><span class="p">()</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">model</span> <span class="o">=</span> <span class="p">(</span>
+            <span class="n">xlator</span><span class="o">.</span><span class="n">to_std</span><span class="p">(</span><span class="n">df</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">model</span><span class="o">.</span><span class="n">copy</span><span class="p">(),</span> <span class="n">set_metadata</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+            <span class="o">.</span><span class="n">set_index</span><span class="p">(</span><span class="n">utils</span><span class="o">.</span><span class="n">df_idx</span><span class="p">)</span>
+            <span class="o">.</span><span class="n">sort_index</span><span class="p">()</span>
+        <span class="p">)</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">hist</span> <span class="o">=</span> <span class="p">(</span>
+            <span class="n">xlator</span><span class="o">.</span><span class="n">to_std</span><span class="p">(</span><span class="n">df</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">hist</span><span class="o">.</span><span class="n">copy</span><span class="p">(),</span> <span class="n">set_metadata</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
+            <span class="o">.</span><span class="n">set_index</span><span class="p">(</span><span class="n">utils</span><span class="o">.</span><span class="n">df_idx</span><span class="p">)</span>
+            <span class="o">.</span><span class="n">sort_index</span><span class="p">()</span>
+        <span class="p">)</span>
+        <span class="c1"># override with special cases if more are found in history</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">hist</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">hist</span><span class="p">[</span><span class="o">~</span><span class="bp">self</span><span class="o">.</span><span class="n">hist</span><span class="o">.</span><span class="n">index</span><span class="o">.</span><span class="n">duplicated</span><span class="p">(</span><span class="n">keep</span><span class="o">=</span><span class="s1">&#39;last&#39;</span><span class="p">)]</span>
+
+        <span class="c1"># hackery required because unit needed for df_idx</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">overrides</span><span class="o">.</span><span class="n">empty</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">overrides</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">overrides</span><span class="p">[</span><span class="s1">&#39;Unit&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="s1">&#39;kt&#39;</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">overrides</span> <span class="o">=</span> <span class="p">(</span>
+                <span class="n">xlator</span><span class="o">.</span><span class="n">to_std</span><span class="p">(</span><span class="n">df</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">overrides</span><span class="o">.</span><span class="n">copy</span><span class="p">(),</span> <span class="n">set_metadata</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
+                <span class="o">.</span><span class="n">set_index</span><span class="p">(</span><span class="n">utils</span><span class="o">.</span><span class="n">df_idx</span><span class="p">)</span>
+                <span class="o">.</span><span class="n">sort_index</span><span class="p">()</span>
+            <span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">overrides</span><span class="o">.</span><span class="n">columns</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">overrides</span><span class="o">.</span><span class="n">columns</span><span class="o">.</span><span class="n">str</span><span class="o">.</span><span class="n">lower</span><span class="p">()</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">overrides</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">overrides</span><span class="p">[</span><span class="s1">&#39;method&#39;</span><span class="p">]</span>
+
+    <span class="k">def</span> <span class="nf">_agg_hist</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="c1"># aggregate and clean hist</span>
+        <span class="n">_log</span><span class="p">(</span><span class="s1">&#39;Aggregating historical values to native regions&#39;</span><span class="p">)</span>
+        <span class="c1"># must set verify to false for now because some isos aren&#39;t included!</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">hist</span> <span class="o">=</span> <span class="n">utils</span><span class="o">.</span><span class="n">agg_regions</span><span class="p">(</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">hist</span><span class="p">,</span> <span class="n">verify</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">mapping</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">regions</span><span class="p">,</span>
+            <span class="n">rfrom</span><span class="o">=</span><span class="s1">&#39;ISO Code&#39;</span><span class="p">,</span> <span class="n">rto</span><span class="o">=</span><span class="s1">&#39;Native Region Code&#39;</span>
+        <span class="p">)</span>
+
+    <span class="k">def</span> <span class="nf">_fill_model_trajectories</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+            <span class="c1"># add zeros to model values if not covered</span>
+        <span class="n">idx</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">hist</span><span class="o">.</span><span class="n">index</span>
+        <span class="n">notin</span> <span class="o">=</span> <span class="o">~</span><span class="n">idx</span><span class="o">.</span><span class="n">isin</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">model</span><span class="o">.</span><span class="n">index</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">notin</span><span class="o">.</span><span class="n">any</span><span class="p">():</span>
+            <span class="n">msg</span> <span class="o">=</span> <span class="s1">&#39;Not all of self.history is covered by self.model: </span><span class="se">\n</span><span class="si">{}</span><span class="s1">&#39;</span>
+            <span class="n">_df</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">hist</span><span class="o">.</span><span class="n">loc</span><span class="p">[</span><span class="n">notin</span><span class="p">]</span><span class="o">.</span><span class="n">reset_index</span><span class="p">()[</span><span class="n">utils</span><span class="o">.</span><span class="n">df_idx</span><span class="p">]</span>
+            <span class="n">_warn</span><span class="p">(</span><span class="n">msg</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">_df</span><span class="o">.</span><span class="n">head</span><span class="p">()))</span>
+            <span class="n">zeros</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="n">index</span><span class="o">=</span><span class="n">idx</span><span class="p">,</span> <span class="n">columns</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">model</span><span class="o">.</span><span class="n">columns</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">model</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">model</span><span class="o">.</span><span class="n">combine_first</span><span class="p">(</span><span class="n">zeros</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">model</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">model</span><span class="o">.</span><span class="n">loc</span><span class="p">[</span><span class="n">idx</span><span class="p">]</span>
+
+    <span class="k">def</span> <span class="nf">process</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">scenario</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_downselect_scen</span><span class="p">(</span><span class="n">scenario</span><span class="p">)</span>  <span class="c1"># only model and scen</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_downselect_var</span><span class="p">()</span>  <span class="c1"># only prefix|*|suffix</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_to_std</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_agg_hist</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_fill_model_trajectories</span><span class="p">()</span>
+        <span class="k">return</span> <span class="bp">self</span>
+
+    <span class="k">def</span> <span class="nf">results</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">hist</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">model</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">overrides</span>
+
+
+<div class="viewcode-block" id="HarmonizationDriver"><a class="viewcode-back" href="../../api.html#aneris.harmonize.HarmonizationDriver">[docs]</a><span class="k">class</span> <span class="nc">HarmonizationDriver</span><span class="p">(</span><span class="nb">object</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;A helper class to harmonize all scenarios for a model.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">rc</span><span class="p">,</span> <span class="n">hist</span><span class="p">,</span> <span class="n">model</span><span class="p">,</span> <span class="n">overrides</span><span class="p">,</span> <span class="n">regions</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        rc : aneris.RunControl</span>
+<span class="sd">        hist : pd.DataFrame</span>
+<span class="sd">            history in IAMC format</span>
+<span class="sd">        model : pd.DataFrame</span>
+<span class="sd">            model data in IAMC format</span>
+<span class="sd">        overrides : pd.DataFrame</span>
+<span class="sd">            harmonization overrides in IAMC format</span>
+<span class="sd">        regions : pd.DataFrame</span>
+<span class="sd">            regional aggregation mapping (ISO -&gt; model regions)</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">prefix</span> <span class="o">=</span> <span class="n">rc</span><span class="p">[</span><span class="s1">&#39;prefix&#39;</span><span class="p">]</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">suffix</span> <span class="o">=</span> <span class="n">rc</span><span class="p">[</span><span class="s1">&#39;suffix&#39;</span><span class="p">]</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">config</span> <span class="o">=</span> <span class="n">rc</span><span class="p">[</span><span class="s1">&#39;config&#39;</span><span class="p">]</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">add_5regions</span> <span class="o">=</span> <span class="n">rc</span><span class="p">[</span><span class="s1">&#39;add_5regions&#39;</span><span class="p">]</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">exog_files</span> <span class="o">=</span> <span class="n">rc</span><span class="p">[</span><span class="s1">&#39;exogenous&#39;</span><span class="p">]</span> <span class="k">if</span> <span class="s1">&#39;exogenous&#39;</span> <span class="ow">in</span> <span class="n">rc</span> <span class="k">else</span> <span class="p">[]</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">model</span> <span class="o">=</span> <span class="n">model</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">hist</span> <span class="o">=</span> <span class="n">hist</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">overrides</span> <span class="o">=</span> <span class="n">overrides</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">regions</span> <span class="o">=</span> <span class="n">regions</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">regions</span><span class="p">[</span><span class="s1">&#39;ISO Code&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">isin</span><span class="p">([</span><span class="s1">&#39;World&#39;</span><span class="p">])</span><span class="o">.</span><span class="n">any</span><span class="p">():</span>
+            <span class="n">glb</span> <span class="o">=</span> <span class="p">{</span>
+                <span class="s1">&#39;ISO Code&#39;</span><span class="p">:</span> <span class="s1">&#39;World&#39;</span><span class="p">,</span>
+                <span class="s1">&#39;Country&#39;</span><span class="p">:</span> <span class="s1">&#39;World&#39;</span><span class="p">,</span>
+                <span class="s1">&#39;Native Region Code&#39;</span><span class="p">:</span> <span class="s1">&#39;World&#39;</span><span class="p">,</span>
+            <span class="p">}</span>
+            <span class="n">_log</span><span class="p">(</span><span class="s1">&#39;Manually adding global regional definition: </span><span class="si">{}</span><span class="s1">&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">glb</span><span class="p">))</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">regions</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">regions</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">glb</span><span class="p">,</span> <span class="n">ignore_index</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+
+        <span class="n">model_names</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">model</span><span class="o">.</span><span class="n">Model</span><span class="o">.</span><span class="n">unique</span><span class="p">()</span>
+        <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">model_names</span><span class="p">)</span> <span class="o">&gt;</span> <span class="mi">1</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s1">&#39;Can not have more than one model to harmonize&#39;</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">model_name</span> <span class="o">=</span> <span class="n">model_names</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_xlator</span> <span class="o">=</span> <span class="n">utils</span><span class="o">.</span><span class="n">FormatTranslator</span><span class="p">(</span><span class="n">prefix</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">prefix</span><span class="p">,</span>
+                                              <span class="n">suffix</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">suffix</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_model_dfs</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_metadata_dfs</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">exogenous_trajectories</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_exogenous_trajectories</span><span class="p">()</span>
+
+        <span class="c1"># TODO better type checking?</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">config</span><span class="p">[</span><span class="s1">&#39;harmonize_year&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="nb">str</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">config</span><span class="p">[</span><span class="s1">&#39;harmonize_year&#39;</span><span class="p">])</span>
+        <span class="n">y</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">config</span><span class="p">[</span><span class="s1">&#39;harmonize_year&#39;</span><span class="p">]</span>
+        <span class="k">if</span> <span class="n">y</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">model</span><span class="o">.</span><span class="n">columns</span><span class="p">:</span>
+            <span class="n">msg</span> <span class="o">=</span> <span class="s1">&#39;Base year </span><span class="si">{}</span><span class="s1"> not found in model data. Existing columns are </span><span class="si">{}</span><span class="s1">.&#39;</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="n">msg</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">y</span><span class="p">,</span> <span class="n">model</span><span class="o">.</span><span class="n">columns</span><span class="p">))</span>
+        <span class="k">if</span> <span class="n">y</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">hist</span><span class="o">.</span><span class="n">columns</span><span class="p">:</span>
+            <span class="n">msg</span> <span class="o">=</span> <span class="s1">&#39;Base year </span><span class="si">{}</span><span class="s1"> not found in hist data. Existing columns are </span><span class="si">{}</span><span class="s1">.&#39;</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="n">msg</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">y</span><span class="p">,</span> <span class="n">hist</span><span class="o">.</span><span class="n">columns</span><span class="p">))</span>
+
+    <span class="k">def</span> <span class="nf">_exogenous_trajectories</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="c1"># add exogenous variables</span>
+        <span class="n">dfs</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="k">for</span> <span class="n">fname</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">exog_files</span><span class="p">:</span>
+            <span class="n">exog</span> <span class="o">=</span> <span class="n">pd_read</span><span class="p">(</span><span class="n">fname</span><span class="p">,</span> <span class="n">sheetname</span><span class="o">=</span><span class="s1">&#39;data&#39;</span><span class="p">)</span>
+            <span class="n">exog</span><span class="o">.</span><span class="n">columns</span> <span class="o">=</span> <span class="p">[</span><span class="nb">str</span><span class="p">(</span><span class="n">x</span><span class="p">)</span> <span class="k">for</span> <span class="n">x</span> <span class="ow">in</span> <span class="n">exog</span><span class="o">.</span><span class="n">columns</span><span class="p">]</span>
+            <span class="n">exog</span><span class="p">[</span><span class="s1">&#39;Model&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">model_name</span>
+            <span class="n">dfs</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">exog</span><span class="p">)</span>
+        <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">dfs</span><span class="p">)</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>  <span class="c1"># add empty df if none were provided</span>
+            <span class="n">dfs</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">(</span><span class="n">columns</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">model</span><span class="o">.</span><span class="n">columns</span><span class="p">))</span>
+        <span class="k">return</span> <span class="n">pd</span><span class="o">.</span><span class="n">concat</span><span class="p">(</span><span class="n">dfs</span><span class="p">)</span>
+
+    <span class="k">def</span> <span class="nf">_postprocess_trajectories</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">scenario</span><span class="p">):</span>
+        <span class="n">_log</span><span class="p">(</span><span class="s1">&#39;Translating to IAMC template&#39;</span><span class="p">)</span>
+        <span class="c1"># update variable name</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_model</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_model</span><span class="o">.</span><span class="n">reset_index</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_model</span><span class="o">.</span><span class="n">sector</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_model</span><span class="o">.</span><span class="n">sector</span><span class="o">.</span><span class="n">str</span><span class="o">.</span><span class="n">replace</span><span class="p">(</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">suffix</span><span class="p">,</span> <span class="s1">&#39;Harmonized-DB&#39;</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_model</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_model</span><span class="o">.</span><span class="n">set_index</span><span class="p">(</span><span class="n">utils</span><span class="o">.</span><span class="n">df_idx</span><span class="p">)</span>
+        <span class="c1"># from native to iamc format</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_model</span> <span class="o">=</span> <span class="p">(</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_xlator</span><span class="o">.</span><span class="n">to_template</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_model</span><span class="p">,</span> <span class="n">model</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">model_name</span><span class="p">,</span>
+                                     <span class="n">scenario</span><span class="o">=</span><span class="n">scenario</span><span class="p">)</span>
+            <span class="o">.</span><span class="n">sort_index</span><span class="p">()</span>
+            <span class="o">.</span><span class="n">reset_index</span><span class="p">()</span>
+        <span class="p">)</span>
+
+        <span class="c1"># add exogenous trajectories</span>
+        <span class="n">exog</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">exogenous_trajectories</span><span class="o">.</span><span class="n">copy</span><span class="p">()</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">exog</span><span class="o">.</span><span class="n">empty</span><span class="p">:</span>
+            <span class="n">exog</span><span class="p">[</span><span class="s1">&#39;Scenario&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">scenario</span>
+        <span class="n">cols</span> <span class="o">=</span> <span class="p">[</span><span class="n">c</span> <span class="k">for</span> <span class="n">c</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">_model</span><span class="o">.</span><span class="n">columns</span> <span class="k">if</span> <span class="n">c</span> <span class="ow">in</span> <span class="n">exog</span><span class="o">.</span><span class="n">columns</span><span class="p">]</span>
+        <span class="n">exog</span> <span class="o">=</span> <span class="n">exog</span><span class="p">[</span><span class="n">cols</span><span class="p">]</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_model</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">concat</span><span class="p">([</span><span class="bp">self</span><span class="o">.</span><span class="n">_model</span><span class="p">,</span> <span class="n">exog</span><span class="p">])</span>
+
+<div class="viewcode-block" id="HarmonizationDriver.harmonize"><a class="viewcode-back" href="../../api.html#aneris.harmonize.HarmonizationDriver.harmonize">[docs]</a>    <span class="k">def</span> <span class="nf">harmonize</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">scenario</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Harmonize a given scneario. Get results from </span>
+<span class="sd">        aneris.harmonize.HarmonizationDriver.results()</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="c1"># need to specify model and scenario in xlator to template</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_hist</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">hist</span><span class="o">.</span><span class="n">copy</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_model</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">model</span><span class="o">.</span><span class="n">copy</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_overrides</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">overrides</span><span class="o">.</span><span class="n">copy</span><span class="p">()</span>
+
+        <span class="c1"># preprocess</span>
+        <span class="n">pp</span> <span class="o">=</span> <span class="n">_TrajectoryPreprocessor</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_hist</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">_model</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">_overrides</span><span class="p">,</span>
+                                     <span class="bp">self</span><span class="o">.</span><span class="n">regions</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">prefix</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">suffix</span><span class="p">)</span>
+        <span class="c1"># TODO, preprocess in init, just process here</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_hist</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">_model</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">_overrides</span> <span class="o">=</span> <span class="n">pp</span><span class="o">.</span><span class="n">process</span><span class="p">(</span>
+            <span class="n">scenario</span><span class="p">)</span><span class="o">.</span><span class="n">results</span><span class="p">()</span>
+
+        <span class="c1"># global only gases</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_glb_model</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">_glb_meta</span> <span class="o">=</span> <span class="n">_harmonize_global_total</span><span class="p">(</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">config</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">prefix</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">suffix</span><span class="p">,</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_hist</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">_model</span><span class="o">.</span><span class="n">copy</span><span class="p">(),</span> <span class="bp">self</span><span class="o">.</span><span class="n">_overrides</span>
+        <span class="p">)</span>
+
+        <span class="c1"># regional gases</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_model</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">_meta</span> <span class="o">=</span> <span class="n">_harmonize_regions</span><span class="p">(</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">config</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">prefix</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">suffix</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">regions</span><span class="p">,</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_hist</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">_model</span><span class="o">.</span><span class="n">copy</span><span class="p">(),</span> <span class="bp">self</span><span class="o">.</span><span class="n">_overrides</span><span class="p">,</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">config</span><span class="p">[</span><span class="s1">&#39;harmonize_year&#39;</span><span class="p">],</span> <span class="bp">self</span><span class="o">.</span><span class="n">add_5regions</span>
+        <span class="p">)</span>
+
+        <span class="c1"># combine special case results with harmonized results</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_glb_model</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_model</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_glb_model</span><span class="o">.</span><span class="n">combine_first</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_model</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_meta</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_glb_meta</span><span class="o">.</span><span class="n">combine_first</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_meta</span><span class="p">)</span>
+
+        <span class="c1"># perform any automated diagnostics/analysis</span>
+        <span class="n">diagnostics</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_model</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">_meta</span><span class="p">)</span>
+
+        <span class="c1"># collect metadata</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_meta</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_meta</span><span class="o">.</span><span class="n">reset_index</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_meta</span><span class="p">[</span><span class="s1">&#39;model&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">model_name</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_meta</span><span class="p">[</span><span class="s1">&#39;scenario&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">scenario</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_meta</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_meta</span><span class="o">.</span><span class="n">set_index</span><span class="p">([</span><span class="s1">&#39;model&#39;</span><span class="p">,</span> <span class="s1">&#39;scenario&#39;</span><span class="p">])</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_postprocess_trajectories</span><span class="p">(</span><span class="n">scenario</span><span class="p">)</span>
+
+        <span class="c1"># store results</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_model_dfs</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_model</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_metadata_dfs</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_meta</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="HarmonizationDriver.scenarios"><a class="viewcode-back" href="../../api.html#aneris.harmonize.HarmonizationDriver.scenarios">[docs]</a>    <span class="k">def</span> <span class="nf">scenarios</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Return all known scenarios&quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">model</span><span class="p">[</span><span class="s1">&#39;Scenario&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">unique</span><span class="p">()</span></div>
+
+<div class="viewcode-block" id="HarmonizationDriver.harmonized_results"><a class="viewcode-back" href="../../api.html#aneris.harmonize.HarmonizationDriver.harmonized_results">[docs]</a>    <span class="k">def</span> <span class="nf">harmonized_results</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Return 2-tuple of (pd.DataFrame of harmonized trajectories, </span>
+<span class="sd">        pd.DataFrame of metadata)</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="p">(</span>
+            <span class="n">pd</span><span class="o">.</span><span class="n">concat</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_model_dfs</span><span class="p">),</span>
+            <span class="n">pd</span><span class="o">.</span><span class="n">concat</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_metadata_dfs</span><span class="p">),</span>
+        <span class="p">)</span></div></div>
+
+
+<span class="k">def</span> <span class="nf">_harmonize_global_total</span><span class="p">(</span><span class="n">config</span><span class="p">,</span> <span class="n">prefix</span><span class="p">,</span> <span class="n">suffix</span><span class="p">,</span> <span class="n">hist</span><span class="p">,</span> <span class="n">model</span><span class="p">,</span> <span class="n">overrides</span><span class="p">):</span>
+    <span class="n">gases</span> <span class="o">=</span> <span class="n">utils</span><span class="o">.</span><span class="n">harmonize_total_gases</span>
+    <span class="n">sector</span> <span class="o">=</span> <span class="s1">&#39;|&#39;</span><span class="o">.</span><span class="n">join</span><span class="p">([</span><span class="n">prefix</span><span class="p">,</span> <span class="n">suffix</span><span class="p">])</span>
+    <span class="n">idx</span> <span class="o">=</span> <span class="p">(</span><span class="n">pd</span><span class="o">.</span><span class="n">IndexSlice</span><span class="p">[</span><span class="s1">&#39;World&#39;</span><span class="p">,</span> <span class="n">gases</span><span class="p">,</span> <span class="n">sector</span><span class="p">],</span>
+           <span class="n">pd</span><span class="o">.</span><span class="n">IndexSlice</span><span class="p">[:])</span>
+    <span class="n">h</span> <span class="o">=</span> <span class="n">hist</span><span class="o">.</span><span class="n">loc</span><span class="p">[</span><span class="n">idx</span><span class="p">]</span><span class="o">.</span><span class="n">copy</span><span class="p">()</span>
+
+    <span class="k">try</span><span class="p">:</span>
+        <span class="n">m</span> <span class="o">=</span> <span class="n">model</span><span class="o">.</span><span class="n">loc</span><span class="p">[</span><span class="n">idx</span><span class="p">]</span><span class="o">.</span><span class="n">copy</span><span class="p">()</span>
+    <span class="k">except</span> <span class="ne">TypeError</span><span class="p">:</span>
+        <span class="n">_warn</span><span class="p">(</span><span class="s1">&#39;Non-history gases not found in model&#39;</span><span class="p">)</span>
+        <span class="k">return</span> <span class="kc">None</span><span class="p">,</span> <span class="kc">None</span>
+
+    <span class="k">if</span> <span class="n">m</span><span class="o">.</span><span class="n">empty</span><span class="p">:</span>
+        <span class="k">return</span> <span class="kc">None</span><span class="p">,</span> <span class="kc">None</span>
+
+    <span class="c1"># catch empty dfs if no global toatls are overriden</span>
+    <span class="k">if</span> <span class="n">overrides</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="n">o</span> <span class="o">=</span> <span class="kc">None</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="n">gases</span> <span class="o">=</span> <span class="n">overrides</span><span class="o">.</span><span class="n">index</span><span class="o">.</span><span class="n">get_level_values</span><span class="p">(</span><span class="s1">&#39;gas&#39;</span><span class="p">)</span><span class="o">.</span><span class="n">intersection</span><span class="p">(</span><span class="n">gases</span><span class="p">)</span>
+        <span class="k">try</span><span class="p">:</span>
+            <span class="n">gases</span> <span class="o">=</span> <span class="n">gases</span> <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">gases</span><span class="p">)</span> <span class="o">&gt;</span> <span class="mi">1</span> <span class="k">else</span> <span class="n">gases</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+        <span class="k">except</span> <span class="ne">IndexError</span><span class="p">:</span>  <span class="c1"># thrown if no harmonize_total_gases</span>
+            <span class="n">o</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="n">idx</span> <span class="o">=</span> <span class="p">(</span><span class="n">pd</span><span class="o">.</span><span class="n">IndexSlice</span><span class="p">[</span><span class="s1">&#39;World&#39;</span><span class="p">,</span> <span class="n">gases</span><span class="p">,</span> <span class="n">sector</span><span class="p">],</span>
+               <span class="n">pd</span><span class="o">.</span><span class="n">IndexSlice</span><span class="p">[:])</span>
+        <span class="k">try</span><span class="p">:</span>
+            <span class="n">o</span> <span class="o">=</span> <span class="n">overrides</span><span class="o">.</span><span class="n">loc</span><span class="p">[</span><span class="n">idx</span><span class="p">]</span><span class="o">.</span><span class="n">copy</span><span class="p">()</span>
+        <span class="k">except</span> <span class="ne">TypeError</span><span class="p">:</span>  <span class="c1"># thrown if gases not</span>
+            <span class="n">o</span> <span class="o">=</span> <span class="kc">None</span>
+
+    <span class="n">utils</span><span class="o">.</span><span class="n">check_null</span><span class="p">(</span><span class="n">m</span><span class="p">,</span> <span class="s1">&#39;model&#39;</span><span class="p">)</span>
+    <span class="n">utils</span><span class="o">.</span><span class="n">check_null</span><span class="p">(</span><span class="n">h</span><span class="p">,</span> <span class="s1">&#39;hist&#39;</span><span class="p">,</span> <span class="n">fail</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+    <span class="n">harmonizer</span> <span class="o">=</span> <span class="n">Harmonizer</span><span class="p">(</span><span class="n">m</span><span class="p">,</span> <span class="n">h</span><span class="p">,</span> <span class="n">config</span><span class="o">=</span><span class="n">config</span><span class="p">)</span>
+    <span class="n">_log</span><span class="p">(</span><span class="s1">&#39;Harmonizing (with example methods):&#39;</span><span class="p">)</span>
+    <span class="n">_log</span><span class="p">(</span><span class="n">harmonizer</span><span class="o">.</span><span class="n">methods</span><span class="p">(</span><span class="n">overrides</span><span class="o">=</span><span class="n">o</span><span class="p">)</span><span class="o">.</span><span class="n">head</span><span class="p">())</span>
+    <span class="k">if</span> <span class="n">o</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="n">_log</span><span class="p">(</span><span class="s1">&#39;and override methods:&#39;</span><span class="p">)</span>
+        <span class="n">_log</span><span class="p">(</span><span class="n">o</span><span class="o">.</span><span class="n">head</span><span class="p">())</span>
+    <span class="n">m</span> <span class="o">=</span> <span class="n">harmonizer</span><span class="o">.</span><span class="n">harmonize</span><span class="p">(</span><span class="n">overrides</span><span class="o">=</span><span class="n">o</span><span class="p">)</span>
+    <span class="n">utils</span><span class="o">.</span><span class="n">check_null</span><span class="p">(</span><span class="n">m</span><span class="p">,</span> <span class="s1">&#39;model&#39;</span><span class="p">)</span>
+
+    <span class="n">metadata</span> <span class="o">=</span> <span class="n">harmonizer</span><span class="o">.</span><span class="n">metadata</span><span class="p">()</span>
+    <span class="k">return</span> <span class="n">m</span><span class="p">,</span> <span class="n">metadata</span>
+
+
+<span class="k">def</span> <span class="nf">_harmonize_regions</span><span class="p">(</span><span class="n">config</span><span class="p">,</span> <span class="n">prefix</span><span class="p">,</span> <span class="n">suffix</span><span class="p">,</span> <span class="n">regions</span><span class="p">,</span> <span class="n">hist</span><span class="p">,</span> <span class="n">model</span><span class="p">,</span> <span class="n">overrides</span><span class="p">,</span>
+                       <span class="n">base_year</span><span class="p">,</span> <span class="n">add_5regions</span><span class="p">):</span>
+
+    <span class="c1"># clean model</span>
+    <span class="n">model</span> <span class="o">=</span> <span class="n">utils</span><span class="o">.</span><span class="n">subtract_regions_from_world</span><span class="p">(</span><span class="n">model</span><span class="p">,</span> <span class="s1">&#39;model&#39;</span><span class="p">,</span> <span class="n">base_year</span><span class="p">)</span>
+    <span class="n">model</span> <span class="o">=</span> <span class="n">utils</span><span class="o">.</span><span class="n">remove_recalculated_sectors</span><span class="p">(</span><span class="n">model</span><span class="p">,</span> <span class="n">prefix</span><span class="p">,</span> <span class="n">suffix</span><span class="p">)</span>
+    <span class="c1"># remove rows with all 0s</span>
+    <span class="n">model</span> <span class="o">=</span> <span class="n">model</span><span class="p">[(</span><span class="n">model</span><span class="o">.</span><span class="n">T</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">)</span><span class="o">.</span><span class="n">any</span><span class="p">()]</span>
+
+    <span class="c1"># clean hist</span>
+    <span class="n">hist</span> <span class="o">=</span> <span class="n">utils</span><span class="o">.</span><span class="n">subtract_regions_from_world</span><span class="p">(</span><span class="n">hist</span><span class="p">,</span> <span class="s1">&#39;hist&#39;</span><span class="p">,</span> <span class="n">base_year</span><span class="p">)</span>
+    <span class="n">hist</span> <span class="o">=</span> <span class="n">utils</span><span class="o">.</span><span class="n">remove_recalculated_sectors</span><span class="p">(</span><span class="n">hist</span><span class="p">,</span> <span class="n">prefix</span><span class="p">,</span> <span class="n">suffix</span><span class="p">)</span>
+    <span class="c1"># remove rows with all 0s</span>
+    <span class="n">hist</span> <span class="o">=</span> <span class="n">hist</span><span class="p">[(</span><span class="n">hist</span><span class="o">.</span><span class="n">T</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">)</span><span class="o">.</span><span class="n">any</span><span class="p">()]</span>
+
+    <span class="k">if</span> <span class="n">model</span><span class="o">.</span><span class="n">empty</span><span class="p">:</span>
+        <span class="k">raise</span> <span class="ne">RuntimeError</span><span class="p">(</span>
+            <span class="s1">&#39;Model is empty after downselecting regional values&#39;</span><span class="p">)</span>
+
+    <span class="c1"># harmonize</span>
+    <span class="n">utils</span><span class="o">.</span><span class="n">check_null</span><span class="p">(</span><span class="n">model</span><span class="p">,</span> <span class="s1">&#39;model&#39;</span><span class="p">)</span>
+    <span class="n">utils</span><span class="o">.</span><span class="n">check_null</span><span class="p">(</span><span class="n">hist</span><span class="p">,</span> <span class="s1">&#39;hist&#39;</span><span class="p">,</span> <span class="n">fail</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+    <span class="n">harmonizer</span> <span class="o">=</span> <span class="n">Harmonizer</span><span class="p">(</span><span class="n">model</span><span class="p">,</span> <span class="n">hist</span><span class="p">,</span> <span class="n">config</span><span class="o">=</span><span class="n">config</span><span class="p">)</span>
+    <span class="n">_log</span><span class="p">(</span><span class="s1">&#39;Harmonizing (with example methods):&#39;</span><span class="p">)</span>
+    <span class="n">_log</span><span class="p">(</span><span class="n">harmonizer</span><span class="o">.</span><span class="n">methods</span><span class="p">(</span><span class="n">overrides</span><span class="o">=</span><span class="n">overrides</span><span class="p">)</span><span class="o">.</span><span class="n">head</span><span class="p">())</span>
+
+    <span class="k">if</span> <span class="n">overrides</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="n">_log</span><span class="p">(</span><span class="s1">&#39;and override methods:&#39;</span><span class="p">)</span>
+        <span class="n">_log</span><span class="p">(</span><span class="n">overrides</span><span class="o">.</span><span class="n">head</span><span class="p">())</span>
+    <span class="n">model</span> <span class="o">=</span> <span class="n">harmonizer</span><span class="o">.</span><span class="n">harmonize</span><span class="p">(</span><span class="n">overrides</span><span class="o">=</span><span class="n">overrides</span><span class="p">)</span>
+    <span class="n">utils</span><span class="o">.</span><span class="n">check_null</span><span class="p">(</span><span class="n">model</span><span class="p">,</span> <span class="s1">&#39;model&#39;</span><span class="p">)</span>
+    <span class="n">metadata</span> <span class="o">=</span> <span class="n">harmonizer</span><span class="o">.</span><span class="n">metadata</span><span class="p">()</span>
+
+    <span class="c1"># add aggregate variables</span>
+    <span class="n">totals</span> <span class="o">=</span> <span class="s1">&#39;|&#39;</span><span class="o">.</span><span class="n">join</span><span class="p">([</span><span class="n">prefix</span><span class="p">,</span> <span class="n">suffix</span><span class="p">])</span>
+    <span class="k">if</span> <span class="n">model</span><span class="o">.</span><span class="n">index</span><span class="o">.</span><span class="n">get_level_values</span><span class="p">(</span><span class="s1">&#39;sector&#39;</span><span class="p">)</span><span class="o">.</span><span class="n">isin</span><span class="p">([</span><span class="n">totals</span><span class="p">])</span><span class="o">.</span><span class="n">any</span><span class="p">():</span>
+        <span class="n">msg</span> <span class="o">=</span> <span class="s1">&#39;Removing sector aggregates. Recalculating with harmonized totals.&#39;</span>
+        <span class="n">_warn</span><span class="p">(</span><span class="n">msg</span><span class="p">)</span>
+        <span class="n">model</span><span class="o">.</span><span class="n">drop</span><span class="p">(</span><span class="n">totals</span><span class="p">,</span> <span class="n">level</span><span class="o">=</span><span class="s1">&#39;sector&#39;</span><span class="p">,</span> <span class="n">inplace</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+    <span class="n">model</span> <span class="o">=</span> <span class="p">(</span>
+        <span class="n">utils</span><span class="o">.</span><span class="n">EmissionsAggregator</span><span class="p">(</span><span class="n">model</span><span class="p">)</span>
+        <span class="o">.</span><span class="n">add_variables</span><span class="p">(</span><span class="n">totals</span><span class="o">=</span><span class="n">totals</span><span class="p">,</span> <span class="n">aggregates</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
+        <span class="o">.</span><span class="n">df</span>
+        <span class="o">.</span><span class="n">set_index</span><span class="p">(</span><span class="n">utils</span><span class="o">.</span><span class="n">df_idx</span><span class="p">)</span>
+    <span class="p">)</span>
+    <span class="n">utils</span><span class="o">.</span><span class="n">check_null</span><span class="p">(</span><span class="n">model</span><span class="p">,</span> <span class="s1">&#39;model&#39;</span><span class="p">)</span>
+
+    <span class="c1"># combine regional values to send back into template form</span>
+    <span class="n">model</span><span class="o">.</span><span class="n">reset_index</span><span class="p">(</span><span class="n">inplace</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+    <span class="n">model</span> <span class="o">=</span> <span class="n">model</span><span class="o">.</span><span class="n">set_index</span><span class="p">(</span><span class="n">utils</span><span class="o">.</span><span class="n">df_idx</span><span class="p">)</span><span class="o">.</span><span class="n">sort_index</span><span class="p">()</span>
+    <span class="n">glb</span> <span class="o">=</span> <span class="n">utils</span><span class="o">.</span><span class="n">combine_rows</span><span class="p">(</span><span class="n">model</span><span class="p">,</span> <span class="s1">&#39;region&#39;</span><span class="p">,</span> <span class="s1">&#39;World&#39;</span><span class="p">,</span>
+                             <span class="n">sumall</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">rowsonly</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+    <span class="n">model</span> <span class="o">=</span> <span class="n">glb</span><span class="o">.</span><span class="n">combine_first</span><span class="p">(</span><span class="n">model</span><span class="p">)</span>
+
+    <span class="c1"># add 5regions</span>
+    <span class="k">if</span> <span class="n">add_5regions</span><span class="p">:</span>
+        <span class="n">_log</span><span class="p">(</span><span class="s1">&#39;Adding 5region values&#39;</span><span class="p">)</span>
+        <span class="c1"># explicitly don&#39;t add World, it already exists from aggregation</span>
+        <span class="n">mapping</span> <span class="o">=</span> <span class="n">regions</span><span class="p">[</span><span class="n">regions</span><span class="p">[</span><span class="s1">&#39;Native Region Code&#39;</span><span class="p">]</span> <span class="o">!=</span> <span class="s1">&#39;World&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">copy</span><span class="p">()</span>
+        <span class="n">aggdf</span> <span class="o">=</span> <span class="n">utils</span><span class="o">.</span><span class="n">agg_regions</span><span class="p">(</span><span class="n">model</span><span class="p">,</span> <span class="n">mapping</span><span class="o">=</span><span class="n">mapping</span><span class="p">,</span>
+                                  <span class="n">rfrom</span><span class="o">=</span><span class="s1">&#39;Native Region Code&#39;</span><span class="p">,</span> <span class="n">rto</span><span class="o">=</span><span class="s1">&#39;5_region&#39;</span><span class="p">)</span>
+        <span class="n">model</span> <span class="o">=</span> <span class="n">model</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">aggdf</span><span class="p">)</span>
+        <span class="k">assert</span><span class="p">(</span><span class="ow">not</span> <span class="n">model</span><span class="o">.</span><span class="n">isnull</span><span class="p">()</span><span class="o">.</span><span class="n">values</span><span class="o">.</span><span class="n">any</span><span class="p">())</span>
+
+    <span class="c1"># duplicates come in from World and World being translated</span>
+    <span class="n">duplicates</span> <span class="o">=</span> <span class="n">model</span><span class="o">.</span><span class="n">index</span><span class="o">.</span><span class="n">duplicated</span><span class="p">(</span><span class="n">keep</span><span class="o">=</span><span class="s1">&#39;first&#39;</span><span class="p">)</span>
+    <span class="k">if</span> <span class="n">duplicates</span><span class="o">.</span><span class="n">any</span><span class="p">():</span>
+        <span class="n">regions</span> <span class="o">=</span> <span class="n">model</span><span class="p">[</span><span class="n">duplicates</span><span class="p">]</span><span class="o">.</span><span class="n">index</span><span class="o">.</span><span class="n">get_level_values</span><span class="p">(</span><span class="s1">&#39;region&#39;</span><span class="p">)</span><span class="o">.</span><span class="n">unique</span><span class="p">()</span>
+        <span class="n">msg</span> <span class="o">=</span> <span class="s1">&#39;Dropping duplicate rows found for regions: </span><span class="si">{}</span><span class="s1">&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">regions</span><span class="p">)</span>
+        <span class="n">_warn</span><span class="p">(</span><span class="n">msg</span><span class="p">)</span>
+        <span class="n">model</span> <span class="o">=</span> <span class="n">model</span><span class="p">[</span><span class="o">~</span><span class="n">duplicates</span><span class="p">]</span>
+
+    <span class="k">return</span> <span class="n">model</span><span class="p">,</span> <span class="n">metadata</span>
+
+
+<div class="viewcode-block" id="diagnostics"><a class="viewcode-back" href="../../api.html#aneris.harmonize.diagnostics">[docs]</a><span class="k">def</span> <span class="nf">diagnostics</span><span class="p">(</span><span class="n">model</span><span class="p">,</span> <span class="n">metadata</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Provide warnings or throw errors based on harmonized model data and </span>
+<span class="sd">    metadata</span>
+
+<span class="sd">    Current diagnostics are:</span>
+<span class="sd">    - large missing values (sector has 20% or more contribution to </span>
+<span class="sd">      history and model does not report sector) </span>
+<span class="sd">      - Warning provided</span>
+<span class="sd">    - non-negative CO2 emissions (values other than CO2 are &lt; 0)</span>
+<span class="sd">      - Error thrown</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    model : pd.DataFrame</span>
+<span class="sd">        harmonized model data in standard calculation format</span>
+<span class="sd">    metadata : pd.DataFrame</span>
+<span class="sd">        harmonization metadata</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="c1">#</span>
+    <span class="c1"># Detect Large Missing Values</span>
+    <span class="c1">#</span>
+    <span class="n">num</span> <span class="o">=</span> <span class="n">metadata</span><span class="p">[</span><span class="s1">&#39;history&#39;</span><span class="p">]</span>
+    <span class="n">denom</span> <span class="o">=</span> <span class="n">metadata</span><span class="p">[</span><span class="s1">&#39;history&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">groupby</span><span class="p">(</span><span class="n">level</span><span class="o">=</span><span class="p">[</span><span class="s1">&#39;region&#39;</span><span class="p">,</span> <span class="s1">&#39;gas&#39;</span><span class="p">])</span><span class="o">.</span><span class="n">sum</span><span class="p">()</span>
+
+    <span class="c1"># special merge because you can&#39;t do operations on multiindex</span>
+    <span class="n">ratio</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">merge</span><span class="p">(</span><span class="n">num</span><span class="o">.</span><span class="n">reset_index</span><span class="p">(),</span>
+                     <span class="n">denom</span><span class="o">.</span><span class="n">reset_index</span><span class="p">(),</span>
+                     <span class="n">on</span><span class="o">=</span><span class="p">[</span><span class="s1">&#39;region&#39;</span><span class="p">,</span> <span class="s1">&#39;gas&#39;</span><span class="p">])</span>
+    <span class="n">ratio</span> <span class="o">=</span> <span class="n">ratio</span><span class="p">[</span><span class="s1">&#39;history_x&#39;</span><span class="p">]</span> <span class="o">/</span> <span class="n">ratio</span><span class="p">[</span><span class="s1">&#39;history_y&#39;</span><span class="p">]</span>
+    <span class="n">ratio</span><span class="o">.</span><span class="n">index</span> <span class="o">=</span> <span class="n">num</span><span class="o">.</span><span class="n">index</span>
+    <span class="n">ratio</span><span class="o">.</span><span class="n">name</span> <span class="o">=</span> <span class="s1">&#39;fraction&#39;</span>
+
+    <span class="c1"># downselect</span>
+    <span class="n">big</span> <span class="o">=</span> <span class="n">ratio</span><span class="p">[</span><span class="n">ratio</span> <span class="o">&gt;</span> <span class="mf">0.2</span><span class="p">]</span>
+    <span class="n">bigmethods</span> <span class="o">=</span> <span class="n">metadata</span><span class="o">.</span><span class="n">loc</span><span class="p">[</span><span class="n">big</span><span class="o">.</span><span class="n">index</span><span class="p">,</span> <span class="s1">&#39;method&#39;</span><span class="p">]</span>
+    <span class="n">bad</span> <span class="o">=</span> <span class="n">bigmethods</span><span class="p">[</span><span class="n">bigmethods</span> <span class="o">==</span> <span class="s1">&#39;model_zero&#39;</span><span class="p">]</span>
+    <span class="n">report</span> <span class="o">=</span> <span class="n">big</span><span class="o">.</span><span class="n">loc</span><span class="p">[</span><span class="n">bad</span><span class="o">.</span><span class="n">index</span><span class="p">]</span><span class="o">.</span><span class="n">reset_index</span><span class="p">()</span>
+
+    <span class="k">if</span> <span class="ow">not</span> <span class="n">report</span><span class="o">.</span><span class="n">empty</span><span class="p">:</span>
+        <span class="n">_warn</span><span class="p">(</span><span class="s1">&#39;LARGE MISSING Values Found!!:</span><span class="se">\n</span><span class="s1"> </span><span class="si">{}</span><span class="s1">&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">report</span><span class="p">))</span>
+
+    <span class="c1">#</span>
+    <span class="c1"># Detect non-negative CO2 emissions</span>
+    <span class="c1">#</span>
+    <span class="n">m</span> <span class="o">=</span> <span class="n">model</span><span class="o">.</span><span class="n">reset_index</span><span class="p">()</span>
+    <span class="n">m</span> <span class="o">=</span> <span class="n">m</span><span class="p">[</span><span class="n">m</span><span class="o">.</span><span class="n">gas</span> <span class="o">!=</span> <span class="s1">&#39;CO2&#39;</span><span class="p">]</span>
+    <span class="n">neg</span> <span class="o">=</span> <span class="n">m</span><span class="p">[(</span><span class="n">m</span><span class="p">[</span><span class="n">utils</span><span class="o">.</span><span class="n">numcols</span><span class="p">(</span><span class="n">m</span><span class="p">)]</span><span class="o">.</span><span class="n">T</span> <span class="o">&lt;</span> <span class="mi">0</span><span class="p">)</span><span class="o">.</span><span class="n">any</span><span class="p">()]</span>
+
+    <span class="k">if</span> <span class="ow">not</span> <span class="n">neg</span><span class="o">.</span><span class="n">empty</span><span class="p">:</span>
+        <span class="n">_warn</span><span class="p">(</span>
+            <span class="s1">&#39;Negative Emissions found for non-CO2 gases:</span><span class="se">\n</span><span class="s1"> </span><span class="si">{}</span><span class="s1">&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">neg</span><span class="p">))</span>
+        <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s1">&#39;Harmonization failed due to negative non-CO2 gases&#39;</span><span class="p">)</span></div>
+</pre></div>
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+            <p class="logo"><a href="../../index.html">
+              <img class="logo" src="../../_static/logo.svg" alt="Logo"/>
+            </a></p><h3>Related Topics</h3>
+<ul>
+  <li><a href="../../index.html">Documentation overview</a><ul>
+  <li><a href="../index.html">Module code</a><ul>
+  </ul></li>
+  </ul></li>
+</ul>
+<div id="searchbox" style="display: none" role="search">
+  <h3>Quick search</h3>
+    <form class="search" action="../../search.html" method="get">
+      <div><input type="text" name="q" /></div>
+      <div><input type="submit" value="Go" /></div>
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="footer">
+      &copy; Copyright 2016, Matthew Gidden.
+    </div>
+  </body>
+</html>

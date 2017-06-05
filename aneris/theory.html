@@ -1,0 +1,200 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>Theory &#8212; aneris 0.1.0 documentation</title>
+    
+    <link rel="stylesheet" href="_static/flasky.css" type="text/css" />
+    <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+    <link rel="stylesheet" href="_static/table_styling.css" type="text/css" />
+    
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    './',
+        VERSION:     '0.1.0',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="_static/jquery.js"></script>
+    <script type="text/javascript" src="_static/underscore.js"></script>
+    <script type="text/javascript" src="_static/doctools.js"></script>
+    <script type="text/javascript" src="https://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+    <link rel="index" title="Index" href="genindex.html" />
+    <link rel="search" title="Search" href="search.html" />
+    <link rel="top" title="aneris 0.1.0 documentation" href="index.html" />
+    <link rel="next" title="Data Model" href="data.html" />
+    <link rel="prev" title="Install" href="install.html" />
+   
+  
+  <link media="only screen and (max-device-width: 480px)" href="_static/small_flask.css" type= "text/css" rel="stylesheet" />
+  <meta name="viewport" content="width=device-width, initial-scale=0.9, maximum-scale=0.9">
+
+  </head>
+  <body role="document">
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="data.html" title="Data Model"
+             accesskey="N">next</a> |</li>
+        <li class="right" >
+          <a href="install.html" title="Install"
+             accesskey="P">previous</a> |</li>
+        <li class="nav-item nav-item-0"><a href="index.html">aneris 0.1.0 documentation</a> &#187;</li> 
+      </ul>
+    </div>  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body" role="main">
+            
+  <div class="section" id="theory">
+<h1>Theory<a class="headerlink" href="#theory" title="Permalink to this headline">¶</a></h1>
+<div class="section" id="methods">
+<h2>Methods<a class="headerlink" href="#methods" title="Permalink to this headline">¶</a></h2>
+<p>All harmonization is based on the following equations.</p>
+<p><span class="math">\(\beta\)</span>: the harmonization convergence parameter</p>
+<div class="math">
+\[\begin{split}\begin{equation}\label{eqs:factor}
+  \beta(t, t_i, t_f) =
+  \begin{cases}
+    1 - \frac{t - t_i}{t_f - t_i},&amp; \text{if } t \leq t_f\\
+    0,                        &amp; \text{otherwise}
+  \end{cases}
+\end{equation}\end{split}\]</div>
+<p><span class="math">\(m^{rat}\)</span>: ratio-based harmoniation</p>
+<div class="math">
+\[\begin{equation}\label{eqs:ratio}
+  m^{rat}(t, m, h, t_i, t_f) = [\beta(t, t_i, t_f) (\frac{h(t_i)}{m(t_i)} - 1) + 1] m(t)
+\end{equation}\]</div>
+<p><span class="math">\(m^{off}\)</span>: offset-based harmoniation</p>
+<div class="math">
+\[\begin{equation}\label{eqs:offset}
+  m^{off}(t, m, h, t_i, t_f) = \beta(t, t_i, t_f) (h(t_i) - m(t_i)) + m(t)
+\end{equation}\]</div>
+<p><span class="math">\(m^{int}\)</span>: linear-interoplation-based harmoniation</p>
+<div class="math">
+\[\begin{split}\begin{equation}\label{eqs:interpolate}
+  m^{int}(t, m, h, t_i, t_f) =
+  \begin{cases}
+    \frac{m(t_f) - h(t_i)}{t_f - t_i}(t - t_i) + h(t_i), &amp; \text{if } t \leq t_f\\
+    m(t), &amp; \text{otherwise}
+  \end{cases}
+\end{equation}\end{split}\]</div>
+<p>These harmonization methods are made available in <code class="code docutils literal"><span class="pre">aneris</span></code> by name
+selection. Available names are listed below:</p>
+<table border="1" class="docutils" id="id1">
+<caption><span class="caption-text">All Harmonization Methods Provided in <code class="code docutils literal"><span class="pre">aneris</span></code></span><a class="headerlink" href="#id1" title="Permalink to this table">¶</a></caption>
+<colgroup>
+<col width="33%" />
+<col width="33%" />
+<col width="33%" />
+</colgroup>
+<thead valign="bottom">
+<tr class="row-odd"><th class="head">Method Name</th>
+<th class="head">Harmonization Family</th>
+<th class="head">Convergence Year</th>
+</tr>
+</thead>
+<tbody valign="top">
+<tr class="row-even"><td><code class="code docutils literal"><span class="pre">constant_ratio</span></code></td>
+<td>ratio</td>
+<td><span class="math">\(t_f = \infty\)</span></td>
+</tr>
+<tr class="row-odd"><td><code class="code docutils literal"><span class="pre">reduce_ratio_&lt;year&gt;</span></code></td>
+<td>ratio</td>
+<td><span class="math">\(t_f = \texttt{&lt;year&gt;}\)</span></td>
+</tr>
+<tr class="row-even"><td><code class="code docutils literal"><span class="pre">constant_offset</span></code></td>
+<td>offset</td>
+<td><span class="math">\(t_f = \infty\)</span></td>
+</tr>
+<tr class="row-odd"><td><code class="code docutils literal"><span class="pre">reduce_offset_&lt;year&gt;</span></code></td>
+<td>offset</td>
+<td><span class="math">\(t_f = \texttt{&lt;year&gt;}\)</span></td>
+</tr>
+<tr class="row-even"><td><code class="code docutils literal"><span class="pre">linear_inerpolate_&lt;year&gt;</span></code></td>
+<td>interpolation</td>
+<td><span class="math">\(t_f = \texttt{&lt;year&gt;}\)</span></td>
+</tr>
+</tbody>
+</table>
+</div>
+<div class="section" id="default-decision-tree">
+<h2>Default Decision Tree<a class="headerlink" href="#default-decision-tree" title="Permalink to this headline">¶</a></h2>
+<p>While any method can be used to harmonize a given trajectory, intelligent
+defaults are made available to the user. These default methods are deteremined
+by use of a <em>decision tree</em>, which analyzes the historical trajectory, model
+trajectory, and relative difference between trajectories in the harmonization
+year. The decision tree as implemented is provided below:</p>
+<div class="figure" id="id2">
+<img alt="_images/decision_tree.png" src="_images/decision_tree.png" />
+<p class="caption"><span class="caption-text">The decision tree use in <code class="code docutils literal"><span class="pre">aneris</span></code> to determine default methods to use
+for each trajectory.</span></p>
+</div>
+</div>
+</div>
+
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+            <p class="logo"><a href="index.html">
+              <img class="logo" src="_static/logo.svg" alt="Logo"/>
+            </a></p>
+  <h3><a href="index.html">Table Of Contents</a></h3>
+  <ul>
+<li><a class="reference internal" href="#">Theory</a><ul>
+<li><a class="reference internal" href="#methods">Methods</a></li>
+<li><a class="reference internal" href="#default-decision-tree">Default Decision Tree</a></li>
+</ul>
+</li>
+</ul>
+<h3>Related Topics</h3>
+<ul>
+  <li><a href="index.html">Documentation overview</a><ul>
+      <li>Previous: <a href="install.html" title="previous chapter">Install</a></li>
+      <li>Next: <a href="data.html" title="next chapter">Data Model</a></li>
+  </ul></li>
+</ul>
+  <div role="note" aria-label="source link">
+    <h3>This Page</h3>
+    <ul class="this-page-menu">
+      <li><a href="_sources/theory.txt"
+            rel="nofollow">Show Source</a></li>
+    </ul>
+   </div>
+<div id="searchbox" style="display: none" role="search">
+  <h3>Quick search</h3>
+    <form class="search" action="search.html" method="get">
+      <div><input type="text" name="q" /></div>
+      <div><input type="submit" value="Go" /></div>
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="footer">
+      &copy; Copyright 2016, Matthew Gidden.
+    </div>
+  </body>
+</html>
