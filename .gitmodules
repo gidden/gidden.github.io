@@ -1,3 +1,6 @@
 [submodule "presentations/reveal.js"]
 	path = presentations/reveal.js
 	url = git@github.com:gidden/reveal.js
+[submodule "presentations/pyam-iamc2017/reveal.js"]
+	path = presentations/pyam-iamc2017/reveal.js
+	url = git@github.com:hakimel/reveal.js
