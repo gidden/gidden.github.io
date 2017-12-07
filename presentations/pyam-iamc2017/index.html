@@ -11776,7 +11776,6 @@ ul.typeahead-list > li > a {
 /* Overrides of notebook CSS for static HTML export */
 .reveal {
   font-size: 160%;
-  overflow-y: scroll;
 }
 .reveal pre {
   width: inherit;
@@ -11806,6 +11805,41 @@ ul.typeahead-list > li > a {
 }
 .reveal .progress {
   position: static;
+}
+.reveal .controls .navigate-left,
+.reveal .controls .navigate-left.enabled {
+  border-right-color: #727272;
+}
+.reveal .controls .navigate-left.enabled:hover,
+.reveal .controls .navigate-left.enabled.enabled:hover {
+  border-right-color: #dfdfdf;
+}
+.reveal .controls .navigate-right,
+.reveal .controls .navigate-right.enabled {
+  border-left-color: #727272;
+}
+.reveal .controls .navigate-right.enabled:hover,
+.reveal .controls .navigate-right.enabled.enabled:hover {
+  border-left-color: #dfdfdf;
+}
+.reveal .controls .navigate-up,
+.reveal .controls .navigate-up.enabled {
+  border-bottom-color: #727272;
+}
+.reveal .controls .navigate-up.enabled:hover,
+.reveal .controls .navigate-up.enabled.enabled:hover {
+  border-bottom-color: #dfdfdf;
+}
+.reveal .controls .navigate-down,
+.reveal .controls .navigate-down.enabled {
+  border-top-color: #727272;
+}
+.reveal .controls .navigate-down.enabled:hover,
+.reveal .controls .navigate-down.enabled.enabled:hover {
+  border-top-color: #dfdfdf;
+}
+.reveal .progress span {
+  background: #727272;
 }
 div.input_area {
   padding: 0.06em;
@@ -11840,6 +11874,19 @@ a.anchor-link {
 .rendered_html p {
   text-align: inherit;
 }
+::-webkit-scrollbar
+{
+  width: 6px;
+  height: 6px;
+}
+::-webkit-scrollbar *
+{
+  background:transparent;
+}
+::-webkit-scrollbar-thumb
+{
+  background: #727272 !important;
+}
 </style>
 
 <!-- Custom stylesheet, it must be in the same directory as the html file -->
@@ -11858,7 +11905,7 @@ a.anchor-link {
 </div>
 <div class="inner_cell">
 <div class="text_cell_render border-box-sizing rendered_html">
-<h1 id="Follow-along-at:-mattgidden.com/presentations/pyam-iamc2017">Follow along at: mattgidden.com/presentations/pyam-iamc2017<a class="anchor-link" href="#Follow-along-at:-mattgidden.com/presentations/pyam-iamc2017">&#194;&#182;</a></h1>
+<h1 id="Follow-along-at:">Follow along at:<a class="anchor-link" href="#Follow-along-at:">&#182;</a></h1><h1 id="mattgidden.com/presentations/pyam-iamc2017"><a href="mattgidden.com/presentations/pyam-iamc2017">mattgidden.com/presentations/pyam-iamc2017</a><a class="anchor-link" href="#mattgidden.com/presentations/pyam-iamc2017">&#182;</a></h1><h1 id="Find-us-on-github:">Find us on github:<a class="anchor-link" href="#Find-us-on-github:">&#182;</a></h1><h1 id="github.com/IAMConsortium/pyam-analysis"><a href="github.com/IAMConsortium/pyam-analysis">github.com/IAMConsortium/pyam-analysis</a><a class="anchor-link" href="#github.com/IAMConsortium/pyam-analysis">&#182;</a></h1>
 </div>
 </div>
 </div></section></section><section><section>
@@ -11866,9 +11913,9 @@ a.anchor-link {
 </div>
 <div class="inner_cell">
 <div class="text_cell_render border-box-sizing rendered_html">
-<h1 id="Diagnostics,-analysis-and-visualization-tools--for-Integrated-Assessment-timeseries-data">Diagnostics, analysis and visualization tools <br /> for Integrated Assessment timeseries data<a class="anchor-link" href="#Diagnostics,-analysis-and-visualization-tools--for-Integrated-Assessment-timeseries-data">&#194;&#182;</a></h1><p><img style="float: right; height: 100px; margin-top: 10px;" src="_static/IIASA_logo.png">
+<h1 id="Diagnostics,-analysis-and-visualization-tools--for-Integrated-Assessment-timeseries-data">Diagnostics, analysis and visualization tools <br /> for Integrated Assessment timeseries data<a class="anchor-link" href="#Diagnostics,-analysis-and-visualization-tools--for-Integrated-Assessment-timeseries-data">&#182;</a></h1><p><img style="float: right; height: 100px; margin-top: 10px;" src="_static/IIASA_logo.png">
 <img style="float: right; height: 80px;" src="_static/IAMC_logo.jpg"></p>
-<h2 id="First-steps-with-the-pyam_analysis-package">First steps with the <code>pyam_analysis</code> package<a class="anchor-link" href="#First-steps-with-the-pyam_analysis-package">&#194;&#182;</a></h2><p>The <code>pyam-analysis</code> package provides a range of diagnostic tools and functions<br>
+<h2 id="First-steps-with-the-pyam_analysis-package">First steps with the <code>pyam_analysis</code> package<a class="anchor-link" href="#First-steps-with-the-pyam_analysis-package">&#182;</a></h2><p>The <code>pyam-analysis</code> package provides a range of diagnostic tools and functions<br>
 for analyzing and working with IAMC-style timeseries data.</p>
 <p>The package can be used with data that follows the data template convention 
 of the <a href="http://www.globalchange.umd.edu/iamc/">Integrated Assessment Modeling Consortium</a> (IAMC).
@@ -11912,67 +11959,12 @@ see <a href="http://data.ene.iiasa.ac.at/database/">data.ene.iiasa.ac.at/databas
 
 </div>
 </div>
-</div>
-<div class="cell border-box-sizing text_cell rendered"><div class="prompt input_prompt">
-</div>
-<div class="inner_cell">
-<div class="text_cell_render border-box-sizing rendered_html">
-<p>This notebook illustrates some basic functionality of the <code>pyam-analsysis</code> package
-and the <code>IamDataFrame</code> class:</p>
-<ol>
-<li>Importing timeseries data from a csv file.</li>
-<li>Listing models, scenarios and variables included in the data.</li>
-<li>Display of timeseries data as dataframe and visualization using simple plotting functions.</li>
-<li>Evaluating the model data and executing a range of diagnostic checks to identify data outliers.</li>
-<li>Categorization of scenarios according to timeseries data.</li>
-</ol>
-
-</div>
-</div>
-</div>
-<div class="cell border-box-sizing text_cell rendered"><div class="prompt input_prompt">
-</div>
-<div class="inner_cell">
-<div class="text_cell_render border-box-sizing rendered_html">
-<h2 id="Tutorial-data">Tutorial data<a class="anchor-link" href="#Tutorial-data">&#194;&#182;</a></h2><p>The timeseries data used in this tutorial is a partial snapshot of the scenario database 
-compiled for the IPCC's Fifth Assessment Report (AR5):</p>
-<blockquote><p>Krey V., O. Masera, G. Blanford, T. Bruckner, R. Cooke, K. Fisher-Vanden, H. Haberl, E. Hertwich, E. Kriegler, D. Mueller, S. Paltsev, L. Price, S. Schlömer, D. Ürge-Vorsatz, D. van Vuuren, and T. Zwickel, 2014: <em>Annex II: Metrics &amp; Methodology</em>.<br>
-In: <em>Climate Change 2014: Mitigation of Climate Change. Contribution of Working Group III to the Fifth Assessment Report of the Intergovernmental Panel on Climate Change</em> [Edenhofer, O., R. Pichs-Madruga, Y. Sokona, E. Farahani, S. Kadner, K. Seyboth, A. Adler, I. Baum, S. Brunner, P. Eickemeier, B. Kriemann, J. Savolainen, S. Schlömer, C. von Stechow, T. Zwickel and J.C. Minx (eds.)]. Cambridge University Press, Cambridge, United Kingdom and New York, NY, USA. <a href="https://www.ipcc.ch/report/ar5/wg3/">Link</a></p>
-</blockquote>
-<p>The complete database is publicly available at <a href="https://tntcat.iiasa.ac.at/AR5DB/">tntcat.iiasa.ac.at/AR5DB/</a>.</p>
-<p><img style="float: right; height: 100px;" src="_static/AMPERE-Logo.png">
-<img style="float: right; height: 40px; margin-top: 50px; margin-right: 20px;" src="_static/EMF-Logo_v2.1.png"></p>
-<p>The data snapshot used for this tutorial consists of selected data from two model intercomparison projects:</p>
-<ul>
-<li>Energy Modeling Forum Round 27 
-(<a href="https://emf.stanford.edu/projects/emf-27-global-model-comparison-exercise"><strong>EMF27</strong></a>),
-see the Special Issue in <a href="https://link.springer.com/journal/10584/123/3/page/1"><em>Climatic Change</em> 3-4, 2014</a>.</li>
-<li>EU FP7 project <a href="https://tntcat.iiasa.ac.at/AMPEREDB/"><strong>AMPERE</strong></a>, 
-see the following scientific publications:<blockquote><ul>
-<li>Riahi, K., et al. (2015). "Locked into Copenhagen pledges — Implications of short-term emission targets 
-for the cost and feasibility of long-term climate goals." 
-<em>Technological Forecasting and Social Change</em> 90(Part A): 8-23.<br>
-<a href="https://doi.org/10.1016/j.techfore.2013.09.016">DOI: 10.1016/j.techfore.2013.09.016</a></li>
-<li>Kriegler, E., et al. (2015). "Making or breaking climate targets: The AMPERE study on 
-staged accession scenarios for climate policy."
-<em>Technological Forecasting and Social Change</em> 90(Part A): 24-44.<br>
-<a href="https://doi.org/10.1016/j.techfore.2013.09.021">DOI: 10.1016/j.techfore.2013.09.021</a></li>
-</ul>
-</blockquote>
-</li>
-</ul>
-<div style="text-align: center; padding: 10px; border: 2px solid red; width: 700px">
-*The data used in this tutorial is ONLY a partial snapshot of the IPCC AR5 scenario database!*  
-*This tutorial is only intended for an illustration of the ``pyam-analysis`` package.*
-</div>
-</div>
-</div>
 </div></section></section><section><section>
 <div class="cell border-box-sizing text_cell rendered"><div class="prompt input_prompt">
 </div>
 <div class="inner_cell">
 <div class="text_cell_render border-box-sizing rendered_html">
-<h2 id="Import-package-and-load-data-from-the-AR5-tutorial-csv-snapshot-file">Import package and load data from the AR5 tutorial csv snapshot file<a class="anchor-link" href="#Import-package-and-load-data-from-the-AR5-tutorial-csv-snapshot-file">&#194;&#182;</a></h2><p>First, we import the snapshot timeseries data from the file <code>tutorial_AR5_data.csv</code> in the <code>tutorial</code> folder.</p>
+<h2 id="Import-package-and-load-data-from-the-AR5-tutorial-csv-snapshot-file">Import package and load data from the AR5 tutorial csv snapshot file<a class="anchor-link" href="#Import-package-and-load-data-from-the-AR5-tutorial-csv-snapshot-file">&#182;</a></h2><p>First, we import the snapshot timeseries data from the file <code>tutorial_AR5_data.csv</code> in the <code>tutorial</code> folder.</p>
 <p>As a first step, we show lists of all models, scenarios, regions, and variables (with units) included in the snapshot.</p>
 
 </div>
@@ -12002,10 +11994,10 @@ staged accession scenarios for climate policy."
 
 
 
-<div id="b90192ec-36e4-4451-ba37-1f7570aa4214"></div>
+<div id="c995c455-a0a5-48df-abee-d6f71da2bde0"></div>
 <div class="output_subarea output_javascript ">
 <script type="text/javascript">
-var element = $('#b90192ec-36e4-4451-ba37-1f7570aa4214');
+var element = $('#c995c455-a0a5-48df-abee-d6f71da2bde0');
 IPython.OutputArea.prototype._should_scroll = function(lines) { return false; }
 </script>
 </div>
@@ -12034,7 +12026,7 @@ IPython.OutputArea.prototype._should_scroll = function(lines) { return false; }
 </div>
 <div class="inner_cell">
 <div class="text_cell_render border-box-sizing rendered_html">
-<h1 id="What's-in-our-dataset?">What's in our dataset?<a class="anchor-link" href="#What's-in-our-dataset?">&#194;&#182;</a></h1>
+<h1 id="What's-in-our-dataset?">What's in our dataset?<a class="anchor-link" href="#What's-in-our-dataset?">&#182;</a></h1>
 </div>
 </div>
 </div></section></section><section><section>
@@ -12261,7 +12253,7 @@ IPython.OutputArea.prototype._should_scroll = function(lines) { return false; }
 </div>
 <div class="inner_cell">
 <div class="text_cell_render border-box-sizing rendered_html">
-<h2 id="Filtering-Data">Filtering Data<a class="anchor-link" href="#Filtering-Data">&#194;&#182;</a></h2>
+<h2 id="Filtering-Data">Filtering Data<a class="anchor-link" href="#Filtering-Data">&#182;</a></h2>
 </div>
 </div>
 </div></section></section><section><section>
@@ -12444,7 +12436,7 @@ IPython.OutputArea.prototype._should_scroll = function(lines) { return false; }
 </div>
 <div class="inner_cell">
 <div class="text_cell_render border-box-sizing rendered_html">
-<h2 id="Working-with-Timeseries">Working with Timeseries<a class="anchor-link" href="#Working-with-Timeseries">&#194;&#182;</a></h2>
+<h2 id="Working-with-Timeseries">Working with Timeseries<a class="anchor-link" href="#Working-with-Timeseries">&#182;</a></h2>
 </div>
 </div>
 </div></section></section><section><section>
@@ -12922,7 +12914,7 @@ IPython.OutputArea.prototype._should_scroll = function(lines) { return false; }
 </div>
 <div class="inner_cell">
 <div class="text_cell_render border-box-sizing rendered_html">
-<h2 id="Plotting-Timeseries">Plotting Timeseries<a class="anchor-link" href="#Plotting-Timeseries">&#194;&#182;</a></h2>
+<h2 id="Plotting-Timeseries">Plotting Timeseries<a class="anchor-link" href="#Plotting-Timeseries">&#182;</a></h2>
 </div>
 </div>
 </div></section></section><section><section>
@@ -13852,7 +13844,7 @@ d2hymWJjOgUbvWaMMSZj7PGaMcaYjLGgY4wxJmMs6BhjjMkYCzrGGGMyxoKOMcaYjLGgY4wxJmMs
 </div>
 <div class="inner_cell">
 <div class="text_cell_render border-box-sizing rendered_html">
-<h2 id="Validating-and-querying-timeseries-data">Validating and querying timeseries data<a class="anchor-link" href="#Validating-and-querying-timeseries-data">&#194;&#182;</a></h2>
+<h2 id="Validating-and-querying-timeseries-data">Validating and querying timeseries data<a class="anchor-link" href="#Validating-and-querying-timeseries-data">&#182;</a></h2>
 </div>
 </div>
 </div></section></section><section><section>
@@ -14126,7 +14118,7 @@ d2hymWJjOgUbvWaMMSZj7PGaMcaYjLGgY4wxJmMs6BhjjMkYCzrGGGMyxoKOMcaYjLGgY4wxJmMs
 </div>
 <div class="inner_cell">
 <div class="text_cell_render border-box-sizing rendered_html">
-<h2 id="Categorization-of-scenarios-by-timeseries-characteristics">Categorization of scenarios by timeseries characteristics<a class="anchor-link" href="#Categorization-of-scenarios-by-timeseries-characteristics">&#194;&#182;</a></h2>
+<h2 id="Categorization-of-scenarios-by-timeseries-characteristics">Categorization of scenarios by timeseries characteristics<a class="anchor-link" href="#Categorization-of-scenarios-by-timeseries-characteristics">&#182;</a></h2>
 </div>
 </div>
 </div></section></section><section><section>
@@ -17045,8 +17037,7 @@ require(
             progress: true,
             history: true,
 
-            theme: Reveal.getQueryHash().theme, // available themes are in /css/theme
-            transition: Reveal.getQueryHash().transition || 'linear', // default/cube/page/concave/zoom/linear/none
+            transition: "slide",
 
             // Optional libraries used to extend on reveal.js
             dependencies: [
@@ -17066,13 +17057,25 @@ require(
 
         Reveal.addEventListener('slidechanged', update);
 
-        var update_scroll = function(event){
-          $(".reveal").scrollTop(0);
-        };
+        function setScrollingSlide() {
+            var scroll = false
+            if (scroll === true) {
+              var h = $('.reveal').height() * 0.95;
+              $('section.present').find('section')
+                .filter(function() {
+                  return $(this).height() > h;
+                })
+                .css('height', 'calc(95vh)')
+                .css('overflow-y', 'scroll')
+                .css('margin-top', '20px');
+            }
+        }
 
-        Reveal.addEventListener('slidechanged', update_scroll);
+        // check and set the scrolling slide every time the slide change
+        Reveal.addEventListener('slidechanged', setScrollingSlide);
 
     }
+
 );
 </script>
 
