@@ -15,8 +15,8 @@
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/2.0.3/jquery.min.js"></script>
 
 <!-- General and theme style sheets -->
-<link rel="stylesheet" href="reveal.js/css/reveal.css">
-<link rel="stylesheet" href="reveal.js/css/theme/simple.css" id="theme">
+<link rel="stylesheet" href="../reveal.js/css/reveal.css">
+<link rel="stylesheet" href="../reveal.js/css/theme/simple.css" id="theme">
 
 <!-- If the query includes 'print-pdf', include the PDF print sheet -->
 <script>
@@ -24,14 +24,14 @@ if( window.location.search.match( /print-pdf/gi ) ) {
         var link = document.createElement( 'link' );
         link.rel = 'stylesheet';
         link.type = 'text/css';
-        link.href = 'reveal.js/css/print/pdf.css';
+        link.href = '../reveal.js/css/print/pdf.css';
         document.getElementsByTagName( 'head' )[0].appendChild( link );
 }
 
 </script>
 
 <!--[if lt IE 9]>
-<script src="reveal.js/lib/js/html5shiv.js"></script>
+<script src="../reveal.js/lib/js/html5shiv.js"></script>
 <![endif]-->
 
 <!-- Loading the mathjax macro -->
@@ -11776,6 +11776,7 @@ ul.typeahead-list > li > a {
 /* Overrides of notebook CSS for static HTML export */
 .reveal {
   font-size: 160%;
+  overflow-y: scroll;
 }
 .reveal pre {
   width: inherit;
@@ -11805,41 +11806,6 @@ ul.typeahead-list > li > a {
 }
 .reveal .progress {
   position: static;
-}
-.reveal .controls .navigate-left,
-.reveal .controls .navigate-left.enabled {
-  border-right-color: #727272;
-}
-.reveal .controls .navigate-left.enabled:hover,
-.reveal .controls .navigate-left.enabled.enabled:hover {
-  border-right-color: #dfdfdf;
-}
-.reveal .controls .navigate-right,
-.reveal .controls .navigate-right.enabled {
-  border-left-color: #727272;
-}
-.reveal .controls .navigate-right.enabled:hover,
-.reveal .controls .navigate-right.enabled.enabled:hover {
-  border-left-color: #dfdfdf;
-}
-.reveal .controls .navigate-up,
-.reveal .controls .navigate-up.enabled {
-  border-bottom-color: #727272;
-}
-.reveal .controls .navigate-up.enabled:hover,
-.reveal .controls .navigate-up.enabled.enabled:hover {
-  border-bottom-color: #dfdfdf;
-}
-.reveal .controls .navigate-down,
-.reveal .controls .navigate-down.enabled {
-  border-top-color: #727272;
-}
-.reveal .controls .navigate-down.enabled:hover,
-.reveal .controls .navigate-down.enabled.enabled:hover {
-  border-top-color: #dfdfdf;
-}
-.reveal .progress span {
-  background: #727272;
 }
 div.input_area {
   padding: 0.06em;
@@ -11874,19 +11840,6 @@ a.anchor-link {
 .rendered_html p {
   text-align: inherit;
 }
-::-webkit-scrollbar
-{
-  width: 6px;
-  height: 6px;
-}
-::-webkit-scrollbar *
-{
-  background:transparent;
-}
-::-webkit-scrollbar-thumb
-{
-  background: #727272 !important;
-}
 </style>
 
 <!-- Custom stylesheet, it must be in the same directory as the html file -->
@@ -11905,7 +11858,7 @@ a.anchor-link {
 </div>
 <div class="inner_cell">
 <div class="text_cell_render border-box-sizing rendered_html">
-<h1 id="Follow-along-at:">Follow along at:<a class="anchor-link" href="#Follow-along-at:">&#182;</a></h1><h1 id="mattgidden.com/presentations/pyam-iamc2017"><a href="http://mattgidden.com//presentations/pyam-iamc2017">mattgidden.com/presentations/pyam-iamc2017</a><a class="anchor-link" href="#mattgidden.com/presentations/pyam-iamc2017">&#182;</a></h1><h1 id="Find-us-on-github:">Find us on github:<a class="anchor-link" href="#Find-us-on-github:">&#182;</a></h1><h1 id="github.com/IAMConsortium/pyam-analysis"><a href="https://www.github.com/IAMConsortium/pyam-analysis">github.com/IAMConsortium/pyam-analysis</a><a class="anchor-link" href="#github.com/IAMConsortium/pyam-analysis">&#182;</a></h1>
+<h1 id="Follow-along-at:">Follow along at:<a class="anchor-link" href="#Follow-along-at:">&#194;&#182;</a></h1><h1 id="mattgidden.com/presentations/pyam-iamc2017"><a href="http://mattgidden.com//presentations/pyam-iamc2017">mattgidden.com/presentations/pyam-iamc2017</a><a class="anchor-link" href="#mattgidden.com/presentations/pyam-iamc2017">&#194;&#182;</a></h1><h1 id="Find-us-on-github:">Find us on github:<a class="anchor-link" href="#Find-us-on-github:">&#194;&#182;</a></h1><h1 id="github.com/IAMConsortium/pyam-analysis"><a href="https://www.github.com/IAMConsortium/pyam-analysis">github.com/IAMConsortium/pyam-analysis</a><a class="anchor-link" href="#github.com/IAMConsortium/pyam-analysis">&#194;&#182;</a></h1>
 </div>
 </div>
 </div></section></section><section><section>
@@ -11913,9 +11866,9 @@ a.anchor-link {
 </div>
 <div class="inner_cell">
 <div class="text_cell_render border-box-sizing rendered_html">
-<h1 id="Diagnostics,-analysis-and-visualization-tools--for-Integrated-Assessment-timeseries-data">Diagnostics, analysis and visualization tools <br /> for Integrated Assessment timeseries data<a class="anchor-link" href="#Diagnostics,-analysis-and-visualization-tools--for-Integrated-Assessment-timeseries-data">&#182;</a></h1><p><img style="float: right; height: 100px; margin-top: 10px;" src="_static/IIASA_logo.png">
+<h1 id="Diagnostics,-analysis-and-visualization-tools--for-Integrated-Assessment-timeseries-data">Diagnostics, analysis and visualization tools <br /> for Integrated Assessment timeseries data<a class="anchor-link" href="#Diagnostics,-analysis-and-visualization-tools--for-Integrated-Assessment-timeseries-data">&#194;&#182;</a></h1><p><img style="float: right; height: 100px; margin-top: 10px;" src="_static/IIASA_logo.png">
 <img style="float: right; height: 80px;" src="_static/IAMC_logo.jpg"></p>
-<h2 id="First-steps-with-the-pyam_analysis-package">First steps with the <code>pyam_analysis</code> package<a class="anchor-link" href="#First-steps-with-the-pyam_analysis-package">&#182;</a></h2><p>The <code>pyam-analysis</code> package provides a range of diagnostic tools and functions<br>
+<h2 id="First-steps-with-the-pyam_analysis-package">First steps with the <code>pyam_analysis</code> package<a class="anchor-link" href="#First-steps-with-the-pyam_analysis-package">&#194;&#182;</a></h2><p>The <code>pyam-analysis</code> package provides a range of diagnostic tools and functions<br>
 for analyzing and working with IAMC-style timeseries data.</p>
 <p>The package can be used with data that follows the data template convention 
 of the <a href="http://www.globalchange.umd.edu/iamc/">Integrated Assessment Modeling Consortium</a> (IAMC).
@@ -11964,7 +11917,7 @@ see <a href="http://data.ene.iiasa.ac.at/database/">data.ene.iiasa.ac.at/databas
 </div>
 <div class="inner_cell">
 <div class="text_cell_render border-box-sizing rendered_html">
-<h2 id="Import-package-and-load-data-from-the-AR5-tutorial-csv-snapshot-file">Import package and load data from the AR5 tutorial csv snapshot file<a class="anchor-link" href="#Import-package-and-load-data-from-the-AR5-tutorial-csv-snapshot-file">&#182;</a></h2><p>First, we import the snapshot timeseries data from the file <code>tutorial_AR5_data.csv</code> in the <code>tutorial</code> folder.</p>
+<h2 id="Import-package-and-load-data-from-the-AR5-tutorial-csv-snapshot-file">Import package and load data from the AR5 tutorial csv snapshot file<a class="anchor-link" href="#Import-package-and-load-data-from-the-AR5-tutorial-csv-snapshot-file">&#194;&#182;</a></h2><p>First, we import the snapshot timeseries data from the file <code>tutorial_AR5_data.csv</code> in the <code>tutorial</code> folder.</p>
 <p>As a first step, we show lists of all models, scenarios, regions, and variables (with units) included in the snapshot.</p>
 
 </div>
@@ -11994,10 +11947,10 @@ see <a href="http://data.ene.iiasa.ac.at/database/">data.ene.iiasa.ac.at/databas
 
 
 
-<div id="f4004768-df89-4030-a85d-1212befaa80a"></div>
+<div id="b6da11d1-e5a5-4dc5-92f5-e95f9c9d4736"></div>
 <div class="output_subarea output_javascript ">
 <script type="text/javascript">
-var element = $('#f4004768-df89-4030-a85d-1212befaa80a');
+var element = $('#b6da11d1-e5a5-4dc5-92f5-e95f9c9d4736');
 IPython.OutputArea.prototype._should_scroll = function(lines) { return false; }
 </script>
 </div>
@@ -12026,7 +11979,7 @@ IPython.OutputArea.prototype._should_scroll = function(lines) { return false; }
 </div>
 <div class="inner_cell">
 <div class="text_cell_render border-box-sizing rendered_html">
-<h1 id="What's-in-our-dataset?">What's in our dataset?<a class="anchor-link" href="#What's-in-our-dataset?">&#182;</a></h1>
+<h1 id="What's-in-our-dataset?">What's in our dataset?<a class="anchor-link" href="#What's-in-our-dataset?">&#194;&#182;</a></h1>
 </div>
 </div>
 </div></section></section><section><section>
@@ -12253,7 +12206,7 @@ IPython.OutputArea.prototype._should_scroll = function(lines) { return false; }
 </div>
 <div class="inner_cell">
 <div class="text_cell_render border-box-sizing rendered_html">
-<h2 id="Filtering-Data">Filtering Data<a class="anchor-link" href="#Filtering-Data">&#182;</a></h2>
+<h2 id="Filtering-Data">Filtering Data<a class="anchor-link" href="#Filtering-Data">&#194;&#182;</a></h2>
 </div>
 </div>
 </div></section></section><section><section>
@@ -12436,7 +12389,7 @@ IPython.OutputArea.prototype._should_scroll = function(lines) { return false; }
 </div>
 <div class="inner_cell">
 <div class="text_cell_render border-box-sizing rendered_html">
-<h2 id="Working-with-Timeseries">Working with Timeseries<a class="anchor-link" href="#Working-with-Timeseries">&#182;</a></h2>
+<h2 id="Working-with-Timeseries">Working with Timeseries<a class="anchor-link" href="#Working-with-Timeseries">&#194;&#182;</a></h2>
 </div>
 </div>
 </div></section></section><section><section>
@@ -12914,7 +12867,7 @@ IPython.OutputArea.prototype._should_scroll = function(lines) { return false; }
 </div>
 <div class="inner_cell">
 <div class="text_cell_render border-box-sizing rendered_html">
-<h2 id="Plotting-Timeseries">Plotting Timeseries<a class="anchor-link" href="#Plotting-Timeseries">&#182;</a></h2>
+<h2 id="Plotting-Timeseries">Plotting Timeseries<a class="anchor-link" href="#Plotting-Timeseries">&#194;&#182;</a></h2>
 </div>
 </div>
 </div></section></section><section><section>
@@ -13844,7 +13797,7 @@ d2hymWJjOgUbvWaMMSZj7PGaMcaYjLGgY4wxJmMs6BhjjMkYCzrGGGMyxoKOMcaYjLGgY4wxJmMs
 </div>
 <div class="inner_cell">
 <div class="text_cell_render border-box-sizing rendered_html">
-<h2 id="Validating-and-querying-timeseries-data">Validating and querying timeseries data<a class="anchor-link" href="#Validating-and-querying-timeseries-data">&#182;</a></h2>
+<h2 id="Validating-and-querying-timeseries-data">Validating and querying timeseries data<a class="anchor-link" href="#Validating-and-querying-timeseries-data">&#194;&#182;</a></h2>
 </div>
 </div>
 </div></section></section><section><section>
@@ -14118,7 +14071,7 @@ d2hymWJjOgUbvWaMMSZj7PGaMcaYjLGgY4wxJmMs6BhjjMkYCzrGGGMyxoKOMcaYjLGgY4wxJmMs
 </div>
 <div class="inner_cell">
 <div class="text_cell_render border-box-sizing rendered_html">
-<h2 id="Categorization-of-scenarios-by-timeseries-characteristics">Categorization of scenarios by timeseries characteristics<a class="anchor-link" href="#Categorization-of-scenarios-by-timeseries-characteristics">&#182;</a></h2>
+<h2 id="Categorization-of-scenarios-by-timeseries-characteristics">Categorization of scenarios by timeseries characteristics<a class="anchor-link" href="#Categorization-of-scenarios-by-timeseries-characteristics">&#194;&#182;</a></h2>
 </div>
 </div>
 </div></section></section><section><section>
@@ -17025,8 +16978,8 @@ require(
       waitSeconds: 15
     },
     [
-      "reveal.js/lib/js/head.min.js",
-      "reveal.js/js/reveal.js"
+      "../reveal.js/lib/js/head.min.js",
+      "../reveal.js/js/reveal.js"
     ],
 
     function(head, Reveal){
@@ -17037,13 +16990,14 @@ require(
             progress: true,
             history: true,
 
-            transition: "slide",
+            theme: Reveal.getQueryHash().theme, // available themes are in /css/theme
+            transition: Reveal.getQueryHash().transition || 'linear', // default/cube/page/concave/zoom/linear/none
 
             // Optional libraries used to extend on reveal.js
             dependencies: [
-                { src: "reveal.js/lib/js/classList.js",
+                { src: "../reveal.js/lib/js/classList.js",
                   condition: function() { return !document.body.classList; } },
-                { src: "reveal.js/plugin/notes/notes.js",
+                { src: "../reveal.js/plugin/notes/notes.js",
                   async: true,
                   condition: function() { return !!document.body.classList; } }
             ]
@@ -17057,25 +17011,13 @@ require(
 
         Reveal.addEventListener('slidechanged', update);
 
-        function setScrollingSlide() {
-            var scroll = false
-            if (scroll === true) {
-              var h = $('.reveal').height() * 0.95;
-              $('section.present').find('section')
-                .filter(function() {
-                  return $(this).height() > h;
-                })
-                .css('height', 'calc(95vh)')
-                .css('overflow-y', 'scroll')
-                .css('margin-top', '20px');
-            }
-        }
+        var update_scroll = function(event){
+          $(".reveal").scrollTop(0);
+        };
 
-        // check and set the scrolling slide every time the slide change
-        Reveal.addEventListener('slidechanged', setScrollingSlide);
+        Reveal.addEventListener('slidechanged', update_scroll);
 
     }
-
 );
 </script>
 
